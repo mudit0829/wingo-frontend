@@ -1,94 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>WinGo Game</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    button { padding: 10px 20px; margin: 5px; }
-    .won { color: green; }
-    .lost { color: red; }
-    .pending { color: orange; }
-  </style>
-</head>
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>WinGo Game</title>
+<style>
+  body {font-family: Arial; padding: 20px;}
+  button {padding: 10px 20px; margin: 5px;}
+  .won {color: green;} .lost {color: red;} .pending {color: orange;}
+</style></head>
 <body>
 
-  <h2 id="welcomeMsg">Welcome!</h2>
-  <p id="userRole">Role: </p>
-  <button onclick="logout()">Logout</button>
+<h2>Welcome, <span id="userName"></span>!</h2>
+<p>Role: <span id="userRole"></span></p>
+<button onclick="logout()">Logout</button>
 
-  <hr />
+<hr />
 
-  <h3>Place Your Bet</h3>
-  <button onclick="placeBet('Red')">🔴 Red</button>
-  <button onclick="placeBet('Green')">🟢 Green</button>
-  <button onclick="placeBet('Violet')">🟣 Violet</button>
-  <p id="betStatus"></p>
+<h3>Place Your Bet</h3>
+<button onclick="placeBet('Red')">🔴 Red</button>
+<button onclick="placeBet('Green')">🟢 Green</button>
+<button onclick="placeBet('Violet')">🟣 Violet</button>
+<p id="betStatus"></p>
 
-  <hr />
+<hr />
 
-  <h3>Your Last 5 Bets</h3>
-  <ul id="betHistory"></ul>
+<h3>Your Last 5 Bets</h3>
+<ul id="betHistory"><li>Loading...</li></ul>
 
-  <script>
-    const username = localStorage.getItem("username");
-    const token = localStorage.getItem("token");
+<script>
+  const username = localStorage.getItem("username");
+  if (!username) window.location.href = "index.html";
+  document.getElementById("userName").innerText = username;
+  document.getElementById("userRole").innerText = localStorage.getItem("role");
 
-    if (!username || !token) {
-      window.location.href = "index.html";
+  async function placeBet(color) {
+    const amount = parseInt(prompt("Enter your bet amount:"));
+    if (!amount || isNaN(amount)) {
+      document.getElementById("betStatus").innerText = "❌ Invalid amount.";
+      return;
     }
-
-    document.getElementById("welcomeMsg").innerText = `Welcome, ${username}!`;
-    document.getElementById("userRole").innerText = `Role: ${localStorage.getItem("role")}`;
-
-    async function placeBet(color) {
-      const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets/place", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, color })
-      });
-
-      const data = await res.json();
-      document.getElementById("betStatus").innerText = data.message || "✅ Bet placed!";
-      loadBets();
-    }
-
-    async function loadBets() {
-      const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets/" + username);
-      const bets = await res.json();
-
-      const betList = bets.slice(-5).reverse().map(bet => {
-        let statusText = '';
-        let statusClass = '';
-
-        if (bet.status === "Won") {
-          statusText = "✅ Won";
-          statusClass = "won";
-        } else if (bet.status === "Lost") {
-          statusText = "❌ Lost";
-          statusClass = "lost";
-        } else {
-          statusText = "⏳ Pending";
-          statusClass = "pending";
-        }
-
-        return `<li>
-          Color: <strong>${bet.color}</strong> |
-          Status: <span class="${statusClass}">${statusText}</span> |
-          Result: <strong>${bet.resultColor || "TBD"}</strong>
-        </li>`;
-      }).join("");
-
-      document.getElementById("betHistory").innerHTML = betList || "<li>No bets yet.</li>";
-    }
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-
+    const rounds = await (await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds")).json();
+    const roundId = rounds[0]?.roundId;
+    const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({username, color, amount, roundId})
+    });
+    const data = await res.json();
+    document.getElementById("betStatus").innerText = res.ok ? "✅ "+data.message : "❌ "+(data.message||"Failed");
     loadBets();
-    setInterval(loadBets, 10000); // Auto-refresh bet history every 10 seconds
-  </script>
-</body>
-</html>
+  }
+
+  async function loadBets() {
+    const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/${username}`);
+    const bets = await res.json();
+    const list = document.getElementById("betHistory");
+    if (!bets.length) { list.innerHTML = "<li>No bets yet.</li>"; return; }
+    list.innerHTML = bets.slice(0,5).map(b => {
+      const cls = b.status==="Won" ? "won" : b.status==="Lost" ? "lost" : "pending";
+      const emoji = b.status==="Won" ? "✅" : b.status==="Lost" ? "❌" : "⏳";
+      return `<li class="${cls}">${emoji} Color: <b>${b.color}</b> | Amount: ₹${b.amount} | Result: <b>${b.resultColor||"TBD"}</b></li>`;
+    }).join("");
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+  }
+
+  loadBets();
+  setInterval(loadBets, 10000);
+</script>
+
+</body></html>
