@@ -1,51 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
+  <meta charset="UTF-8">
+  <title>WinGo Login</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #eef2f3;
-      text-align: center;
-      padding: 50px;
-    }
-    input {
-      padding: 10px;
-      margin: 10px;
-      width: 250px;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .error {
-      color: red;
-      margin-top: 15px;
-    }
+    #message { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
-
   <h2>WinGo Login</h2>
-
-  <input type="text" id="username" placeholder="Username" /><br />
-  <input type="password" id="password" placeholder="Password" /><br />
+  <input type="text" id="username" placeholder="Username"><br><br>
+  <input type="password" id="password" placeholder="Password"><br><br>
   <button onclick="login()">Login</button>
-
-  <div class="error" id="errorMsg"></div>
+  <p id="message"></p>
 
   <script>
     async function login() {
+      const msgEl = document.getElementById("message");
+      msgEl.textContent = "";
+
       const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const errorDiv = document.getElementById("errorMsg");
+      const password = document.getElementById("password").value;
 
       if (!username || !password) {
-        errorDiv.textContent = "Please enter both username and password.";
+        msgEl.textContent = "🚫 Please enter both username and password.";
         return;
       }
 
@@ -58,25 +36,18 @@
 
         const data = await res.json();
 
-        if (!res.ok) {
-          errorDiv.textContent = data.message || "Invalid credentials";
-          return;
-        }
-
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("role", data.role);
-
-        if (data.role === "admin") {
-          window.location.href = "admin.html";
-        } else {
+        if (res.ok) {
+          localStorage.setItem("username", data.username);
+          localStorage.setItem("role", data.role);
           window.location.href = "game.html";
+        } else {
+          msgEl.textContent = data.message || "🚫 Login failed";
         }
       } catch (err) {
-        errorDiv.textContent = "Server error. Try again later.";
-        console.error(err);
+        msgEl.textContent = "🚫 Network error – check your connection.";
+        console.error("Login error:", err);
       }
     }
   </script>
-
 </body>
 </html>
