@@ -50,33 +50,30 @@
       }
 
       try {
-        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/users");
-        const users = await res.json();
+        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
 
-        console.log("✅ Fetched users from backend:", users);
-        console.log("🧑 Entered username:", username);
-        console.log("🔑 Entered password:", password);
+        const data = await res.json();
 
-        const matched = users.find(
-          (u) => u.username === username && u.password === password
-        );
+        if (!res.ok) {
+          errorDiv.textContent = data.message || "Invalid credentials";
+          return;
+        }
 
-        console.log("✅ Matched user:", matched);
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("role", data.role);
 
-        if (matched) {
-          localStorage.setItem("username", matched.username);
-          localStorage.setItem("role", matched.role);
-          if (matched.role === "admin") {
-            window.location.href = "admin.html";
-          } else {
-            window.location.href = "game.html";
-          }
+        if (data.role === "admin") {
+          window.location.href = "admin.html";
         } else {
-          errorDiv.textContent = "Invalid credentials.";
+          window.location.href = "game.html";
         }
       } catch (err) {
         errorDiv.textContent = "Server error. Try again later.";
-        console.error("❌ Error during login:", err);
+        console.error(err);
       }
     }
   </script>
