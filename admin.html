@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel - WinGo</title>
+  <style>
+    body { font-family: sans-serif; padding: 50px; text-align: center; }
+    h2 { color: #c00; }
+    .info { font-size: 18px; margin: 20px 0; }
+    button { padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h2>Admin Panel</h2>
+  <div class="info">
+    You are logged in as <b id="role">admin</b>.
+  </div>
+  <button onclick="logout()">Logout</button>
+
+  <script>
+    const role = localStorage.getItem("role");
+    if (role !== "admin") {
+      alert("Access denied. Redirecting...");
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("role").innerText = role;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
