@@ -31,6 +31,11 @@
     .red { background: #e74c3c; color: white; }
     .green { background: #2ecc71; color: white; }
     .violet { background: #9b59b6; color: white; }
+    #logout {
+      margin-top: 30px;
+      background: #555;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -40,12 +45,14 @@
   <div class="timer" id="timer">30</div>
 
   <div class="buttons">
-    <button class="red">Red</button>
-    <button class="green">Green</button>
-    <button class="violet">Violet</button>
+    <button class="red" onclick="placeBet('Red')">Red</button>
+    <button class="green" onclick="placeBet('Green')">Green</button>
+    <button class="violet" onclick="placeBet('Violet')">Violet</button>
   </div>
 
   <div class="result" id="result">Waiting for result...</div>
+
+  <button id="logout" onclick="logout()">Logout</button>
 
   <script>
     let timeLeft = 30;
@@ -69,6 +76,39 @@
       }, 1000);
     }
 
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+
+    async function placeBet(color) {
+      const username = localStorage.getItem("username");
+      if (!username) {
+        alert("You must be logged in.");
+        return;
+      }
+
+      try {
+        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username, color })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("Bet placed: " + data.bet.color);
+        } else {
+          alert("Failed: " + data.message);
+        }
+      } catch (err) {
+        alert("Error placing bet.");
+      }
+    }
+
+    // Start game if user
     const role = localStorage.getItem("role");
     if (role !== "user") {
       alert("Only users can access this page.");
@@ -76,15 +116,6 @@
     } else {
       startRound();
     }
-
-    const logoutBtn = document.createElement("button");
-    logoutBtn.innerText = "Logout";
-    logoutBtn.style.marginTop = "30px";
-    logoutBtn.onclick = function () {
-      localStorage.clear();
-      window.location.href = "index.html";
-    };
-    document.body.appendChild(logoutBtn);
   </script>
 
 </body>
