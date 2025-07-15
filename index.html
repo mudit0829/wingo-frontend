@@ -40,12 +40,12 @@
 
   <script>
     async function login() {
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
       const errorDiv = document.getElementById("errorMsg");
 
       if (!username || !password) {
-        errorDiv.textContent = "Please enter both fields";
+        errorDiv.textContent = "Please enter both username and password.";
         return;
       }
 
@@ -66,10 +66,11 @@
             window.location.href = "game.html";
           }
         } else {
-          errorDiv.textContent = "Invalid credentials";
+          errorDiv.textContent = "Invalid credentials.";
         }
       } catch (err) {
-        errorDiv.textContent = "Server error. Try again later.";
+        errorDiv.textContent = "Error connecting to server.";
+        console.error(err);
       }
     }
   </script>
