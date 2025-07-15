@@ -53,9 +53,15 @@
         const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/users");
         const users = await res.json();
 
+        console.log("✅ Fetched users from backend:", users);
+        console.log("🧑 Entered username:", username);
+        console.log("🔑 Entered password:", password);
+
         const matched = users.find(
           (u) => u.username === username && u.password === password
         );
+
+        console.log("✅ Matched user:", matched);
 
         if (matched) {
           localStorage.setItem("username", matched.username);
@@ -70,7 +76,7 @@
         }
       } catch (err) {
         errorDiv.textContent = "Server error. Try again later.";
-        console.error(err);
+        console.error("❌ Error during login:", err);
       }
     }
   </script>
