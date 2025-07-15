@@ -1,68 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>WinGo Demo - Login/Register</title>
+  <title>Login</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
-    .box { background: white; padding: 20px; max-width: 400px; margin: auto; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-    input, select { width: 100%; margin: 10px 0; padding: 10px; }
-    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; }
-    .msg { margin-top: 10px; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f3;
+      text-align: center;
+      padding: 50px;
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 250px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
 
-<div class="box">
-  <h2>Login or Register</h2>
+  <h2>WinGo Login</h2>
 
-  <select id="mode">
-    <option value="login">Login</option>
-    <option value="register">Register</option>
-  </select>
+  <input type="text" id="username" placeholder="Username" /><br />
+  <input type="password" id="password" placeholder="Password" /><br />
+  <button onclick="login()">Login</button>
 
-  <input type="text" id="username" placeholder="Username" />
-  <input type="password" id="password" placeholder="Password" />
-  <select id="role">
-    <option value="user">User</option>
-    <option value="admin">Admin</option>
-  </select>
+  <div class="error" id="errorMsg"></div>
 
-  <button onclick="submitForm()">Submit</button>
+  <script>
+    async function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const errorDiv = document.getElementById("errorMsg");
 
-  <div class="msg" id="msg"></div>
-</div>
+      if (!username || !password) {
+        errorDiv.textContent = "Please enter both fields";
+        return;
+      }
 
-<script>
-const API = "https://wingo-backend-nqk5.onrender.com/api/users";
+      try {
+        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/users");
+        const users = await res.json();
 
-async function submitForm() {
-  const mode = document.getElementById("mode").value;
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
-  const msg = document.getElementById("msg");
+        const matched = users.find(
+          (u) => u.username === username && u.password === password
+        );
 
-  const url = API + (mode === "login" ? "/login" : "/register");
-  const body = { username, password, ...(mode === "register" && { role }) };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-
-  const data = await res.json();
-  msg.innerText = data.message || "Done";
-
-  // Optional: redirect to game page
-  if (data.message && data.message.includes("successful")) {
-    localStorage.setItem("role", data.role || role);
-    setTimeout(() => {
-      window.location.href = role === "admin" ? "admin.html" : "game.html";
-    }, 1000);
-  }
-}
-</script>
+        if (matched) {
+          localStorage.setItem("username", matched.username);
+          localStorage.setItem("role", matched.role);
+          if (matched.role === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "game.html";
+          }
+        } else {
+          errorDiv.textContent = "Invalid credentials";
+        }
+      } catch (err) {
+        errorDiv.textContent = "Server error. Try again later.";
+      }
+    }
+  </script>
 
 </body>
 </html>
