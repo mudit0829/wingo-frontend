@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WinGo Game</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    h2 { margin-bottom: 20px; }
+    .info { font-size: 18px; margin-top: 20px; }
+    button { padding: 10px 20px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h2>Welcome to WinGo Game</h2>
+  <div class="info">
+    You are logged in as <b id="role">user</b>.
+  </div>
+  <button onclick="logout()">Logout</button>
+
+  <script>
+    const role = localStorage.getItem("role");
+    if (role !== "user") {
+      alert("Access denied. Redirecting...");
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("role").innerText = role;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
