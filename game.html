@@ -1,45 +1,60 @@
-<script>
-  const backendUrl = "https://wingo-backend-nqk5.onrender.com"; // your backend URL
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WinGo Game</title>
+</head>
+<body>
+  <h2>Welcome, <span id="userName"></span>!</h2>
+  <p>Role: <span id="userRole"></span></p>
+  <button onclick="logout()">Logout</button>
 
-  async function placeBet(color) {
+  <h3>Place Your Bet</h3>
+  <label>Choose Color:</label>
+  <select id="color">
+    <option value="Red">Red</option>
+    <option value="Green">Green</option>
+    <option value="Violet">Violet</option>
+  </select><br><br>
+
+  <button onclick="placeBet()">Place Bet</button>
+  <p id="betMessage"></p>
+
+  <script>
+    // Check login
     const username = localStorage.getItem("username");
-    const amount = parseInt(prompt(`Enter amount for ${color} bet:`));
-    if (!username || !amount || isNaN(amount)) {
-      alert("Invalid username or amount");
-      return;
+    const role = localStorage.getItem("role");
+
+    if (!username) {
+      window.location.href = "index.html";
     }
 
-    // ✅ 1. Fetch latest round
-    let roundId;
-    try {
-      const res = await fetch(`${backendUrl}/api/rounds`);
+    document.getElementById("userName").textContent = username;
+    document.getElementById("userRole").textContent = role;
+
+    async function placeBet() {
+      const color = document.getElementById("color").value;
+
+      const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets/place", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, color })
+      });
+
       const data = await res.json();
-      roundId = data[0]?.roundId;
-    } catch (err) {
-      alert("Unable to fetch round info");
-      return;
+
+      if (res.ok) {
+        document.getElementById("betMessage").textContent = "✅ Bet placed successfully!";
+      } else {
+        document.getElementById("betMessage").textContent = "❌ " + (data.message || "Error placing bet.");
+      }
     }
 
-    // ✅ 2. Send bet
-    const bet = {
-      username,
-      color,
-      amount,
-      roundId // ✅ use roundId, not roundTime
-    };
-
-    const response = await fetch(`${backendUrl}/api/bets`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(bet)
-    });
-
-    if (response.ok) {
-      alert("Bet placed successfully!");
-    } else {
-      alert("Error placing bet.");
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
     }
-  }
-</script>
+  </script>
+</body>
+</html>
