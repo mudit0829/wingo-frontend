@@ -69,7 +69,6 @@
       }, 1000);
     }
 
-    // Role check
     const role = localStorage.getItem("role");
     if (role !== "user") {
       alert("Only users can access this page.");
@@ -78,7 +77,6 @@
       startRound();
     }
 
-    // Optional logout button
     const logoutBtn = document.createElement("button");
     logoutBtn.innerText = "Logout";
     logoutBtn.style.marginTop = "30px";
