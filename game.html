@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>WinGo Game</title>
   <style>
-    button { margin: 5px; }
-    #result, #bets, #status { margin-top: 20px; }
+    button, input { margin: 5px; }
+    #result, #bets, #status, #history { margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -14,6 +14,8 @@
   <button onclick="logout()">Logout</button>
 
   <h3>Place Your Bet</h3>
+  <input type="number" id="amountInput" placeholder="Enter amount" min="1" />
+  <br />
   <button onclick="placeBet('Red')">Red</button>
   <button onclick="placeBet('Green')">Green</button>
   <button onclick="placeBet('Violet')">Violet</button>
@@ -25,31 +27,39 @@
   <h3>Your Previous Bets</h3>
   <ul id="bets"></ul>
 
+  <h3>Previous Game Results</h3>
+  <ul id="history"></ul>
+
   <script>
     const username = localStorage.getItem("username");
     const role = localStorage.getItem("role");
 
-    if (!username) {
-      window.location.href = "index.html";
-    }
+    if (!username) window.location.href = "index.html";
 
     document.getElementById("usernameDisplay").textContent = username;
     document.getElementById("roleDisplay").textContent = role;
 
     async function placeBet(color) {
+      const amount = document.getElementById("amountInput").value;
       const statusEl = document.getElementById("status");
+      if (!amount || amount <= 0) {
+        statusEl.textContent = "❌ Please enter a valid amount.";
+        return;
+      }
+
       statusEl.textContent = "Placing bet...";
 
       try {
         const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, color }),
+          body: JSON.stringify({ username, color, amount }),
         });
 
         const data = await res.json();
         if (res.ok) {
           statusEl.textContent = "✅ Bet placed!";
+          document.getElementById("amountInput").value = "";
           loadBets();
         } else {
           statusEl.textContent = "❌ " + data.message;
@@ -69,7 +79,7 @@
 
         bets.slice().reverse().forEach(bet => {
           const li = document.createElement("li");
-          li.textContent = `${bet.color} - ${new Date(bet.createdAt).toLocaleTimeString()} - ${bet.status}`;
+          li.textContent = `${bet.color} - ₹${bet.amount} - ${new Date(bet.createdAt).toLocaleTimeString()} - ${bet.status}`;
           betsList.appendChild(li);
         });
       } catch (err) {
@@ -81,10 +91,20 @@
       try {
         const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds");
         const data = await res.json();
-        const latest = data[data.length - 2]; // skip current running round
+        const latest = data[data.length - 2];
         if (latest) {
           document.getElementById("result").textContent = `Round ${latest.roundId} ➤ ${latest.result || "Pending"}`;
         }
+
+        // Show history (last 10)
+        const historyList = document.getElementById("history");
+        historyList.innerHTML = "";
+        data.slice(-10).reverse().forEach(round => {
+          const li = document.createElement("li");
+          li.textContent = `Round ${round.roundId} ➤ ${round.result || "Pending"}`;
+          historyList.appendChild(li);
+        });
+
       } catch (err) {
         console.error("Error loading result:", err);
       }
@@ -97,7 +117,7 @@
 
     loadBets();
     loadCurrentResult();
-    setInterval(loadCurrentResult, 5000); // auto-update every 5 seconds
+    setInterval(loadCurrentResult, 5000); // auto-update every 5s
   </script>
 </body>
 </html>
