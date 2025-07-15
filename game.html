@@ -77,6 +77,16 @@
     } else {
       startRound();
     }
+
+    // Optional logout button
+    const logoutBtn = document.createElement("button");
+    logoutBtn.innerText = "Logout";
+    logoutBtn.style.marginTop = "30px";
+    logoutBtn.onclick = function () {
+      localStorage.clear();
+      window.location.href = "index.html";
+    };
+    document.body.appendChild(logoutBtn);
   </script>
 
 </body>
