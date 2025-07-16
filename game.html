@@ -1,123 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>WinGo Game</title>
-  <style>
-    button, input { margin: 5px; }
-    #result, #bets, #status, #history { margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <h2>Welcome, <span id="usernameDisplay"></span>!</h2>
-  <p>Role: <span id="roleDisplay"></span></p>
-  <button onclick="logout()">Logout</button>
-
-  <h3>Place Your Bet</h3>
-  <input type="number" id="amountInput" placeholder="Enter amount" min="1" />
-  <br />
-  <button onclick="placeBet('Red')">Red</button>
-  <button onclick="placeBet('Green')">Green</button>
-  <button onclick="placeBet('Violet')">Violet</button>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Game</title><style>button, input{margin:5px}</style></head><body>
+  <h2>Welcome, <span id="user"></span></h2>
+  <p>Role: <span id="role"></span> <button onclick="logout()">Logout</button></p>
+  <h3>Place Bet</h3>
+  <select id="color"><option>Red</option><option>Green</option><option>Violet</option></select>
+  <input type="number" id="amount" placeholder="Amount">
+  <button onclick="place()">Place Bet</button>
   <p id="status"></p>
-
-  <h3>Current Round Result</h3>
-  <div id="result">Loading...</div>
-
-  <h3>Your Previous Bets</h3>
-  <ul id="bets"></ul>
-
-  <h3>Previous Game Results</h3>
-  <ul id="history"></ul>
-
+  <h3>Current Result</h3><p id="result">Loading...</p>
+  <h3>Your Bets</h3><ul id="bets"></ul>
   <script>
-    const username = localStorage.getItem("username");
-    const role = localStorage.getItem("role");
+    const u = localStorage.getItem("username");
+    if (!u) window.location.href="index.html";
+    document.getElementById("user").innerText = u;
+    document.getElementById("role").innerText = localStorage.getItem("role");
 
-    if (!username) window.location.href = "index.html";
-
-    document.getElementById("usernameDisplay").textContent = username;
-    document.getElementById("roleDisplay").textContent = role;
-
-    async function placeBet(color) {
-      const amount = document.getElementById("amountInput").value;
-      const statusEl = document.getElementById("status");
-      if (!amount || amount <= 0) {
-        statusEl.textContent = "❌ Please enter a valid amount.";
-        return;
-      }
-
-      statusEl.textContent = "Placing bet...";
-
-      try {
-        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, color, amount }),
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          statusEl.textContent = "✅ Bet placed!";
-          document.getElementById("amountInput").value = "";
-          loadBets();
-        } else {
-          statusEl.textContent = "❌ " + data.message;
-        }
-      } catch (error) {
-        statusEl.textContent = "❌ Failed to place bet.";
-        console.error(error);
-      }
+    async function place(){
+      const c = document.getElementById("color").value;
+      const a = parseInt(document.getElementById("amount").value);
+      if (!a || a<=0) {document.getElementById("status").innerText="Invalid amount";return;}
+      const rounds = await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds").then(d=>d.json());
+      const id = rounds[0]?.roundId;
+      const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({username:u,color:c,amount:a,roundId:id})
+      });
+      const jd = await res.json();
+      document.getElementById("status").innerText = res.ok ? "Bet placed" : jd.message;
+      load();
     }
 
-    async function loadBets() {
-      try {
-        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/user/${username}`);
-        const bets = await res.json();
-        const betsList = document.getElementById("bets");
-        betsList.innerHTML = "";
-
-        bets.slice().reverse().forEach(bet => {
-          const li = document.createElement("li");
-          li.textContent = `${bet.color} - ₹${bet.amount} - ${new Date(bet.createdAt).toLocaleTimeString()} - ${bet.status}`;
-          betsList.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Error loading bets:", err);
-      }
+    async function load(){
+      const bets = await fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/${u}`).then(d=>d.json());
+      document.getElementById("bets").innerHTML = bets.map(b=>`<li>${b.color} ₹${b.amount} — ${b.status} (res:${b.resultColor||"TBD"})</li>`).join("");
+      const rounds = await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds").then(d=>d.json());
+      const r = rounds[0];
+      document.getElementById("result").innerText = `Round ${r.roundId} = ${r.result||"Pending"}`;
     }
 
-    async function loadCurrentResult() {
-      try {
-        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds");
-        const data = await res.json();
-        const latest = data[data.length - 2];
-        if (latest) {
-          document.getElementById("result").textContent = `Round ${latest.roundId} ➤ ${latest.result || "Pending"}`;
-        }
-
-        // Show history (last 10)
-        const historyList = document.getElementById("history");
-        historyList.innerHTML = "";
-        data.slice(-10).reverse().forEach(round => {
-          const li = document.createElement("li");
-          li.textContent = `Round ${round.roundId} ➤ ${round.result || "Pending"}`;
-          historyList.appendChild(li);
-        });
-
-      } catch (err) {
-        console.error("Error loading result:", err);
-      }
-    }
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-
-    loadBets();
-    loadCurrentResult();
-    setInterval(loadCurrentResult, 5000); // auto-update every 5s
+    function logout(){localStorage.clear();window.location.href="index.html";}
+    load();
+    setInterval(load, 5000);
   </script>
-</body>
-</html>
+</body></html>
