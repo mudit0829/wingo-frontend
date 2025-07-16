@@ -80,24 +80,24 @@
       }
     }
 
-  async function loadBets() {
-  try {
-    const res = await fetch(`${API_BASE}/api/bets/${username}`);
-    if (!res.ok) throw new Error("Failed to fetch bets");
+    async function loadBets() {
+      try {
+        const res = await fetch(`${API_BASE}/api/bets/${username}`);
+        if (!res.ok) throw new Error("Failed to fetch bets");
 
-    const userBets = await res.json();
-    const betList = userBets.slice(-10).reverse().map(bet => {
-      return `<li>
-        ${bet.color} - ₹${bet.amount || 0} - ${bet.status} 
-        ${bet.resultColor ? `(Result: ${bet.resultColor})` : ""}
-      </li>`;
-    }).join("");
+        const userBets = await res.json();
+        const betList = userBets.slice(-10).reverse().map(bet => {
+          return `<li>
+            ${bet.color} - ₹${bet.amount || 0} - ${bet.status}
+            ${bet.resultColor ? `(Result: ${bet.resultColor})` : ""}
+          </li>`;
+        }).join("");
 
-    document.getElementById("bet-history").innerHTML = betList;
-  } catch (err) {
-    console.error("Error loading bets:", err);
-  }
-}
+        document.getElementById("bet-history").innerHTML = betList;
+      } catch (err) {
+        console.error("Error loading bets:", err);
+      }
+    }
 
     async function loadLatestResult() {
       try {
