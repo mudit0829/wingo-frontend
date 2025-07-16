@@ -80,12 +80,12 @@
       }
     }
 
-   async function loadBets() {
+  async function loadBets() {
   try {
     const res = await fetch(`${API_BASE}/api/bets/${username}`);
     if (!res.ok) throw new Error("Failed to fetch bets");
-    const userBets = await res.json();
 
+    const userBets = await res.json();
     const betList = userBets.slice(-10).reverse().map(bet => {
       return `<li>
         ${bet.color} - ₹${bet.amount || 0} - ${bet.status} 
