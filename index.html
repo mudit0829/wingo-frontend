@@ -11,39 +11,47 @@
   <p id="errorMessage" style="color:red;"></p>
 
   <script>
-    const API_BASE = "https://wingo-backend-nqk5.onrender.com";
+  const API_BASE = "https://wingo-backend-nqk5.onrender.com";
 
-    document.getElementById("login-form").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const u = document.getElementById("username").value.trim();
-      const p = document.getElementById("password").value;
+  document.getElementById("login-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const u = document.getElementById("username").value.trim();
+    const p = document.getElementById("password").value;
 
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: u, password: p })
-        });
-        const data = await res.json();
-        console.log("Login response:", data);
+    console.log("🔐 Starting login for:", u);
 
-        if (res.ok) {
-          localStorage.setItem("username", data.username);
-          localStorage.setItem("role", data.role);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      console.log("🗞️ Raw response status:", res.status);
 
-          if (data.role === "admin") {
-            window.location.href = "admin.html";
-          } else {
-            window.location.href = "game.html";
-          }
+      const data = await res.json();
+      console.log("📨 Parsed response JSON:", data);
+
+      if (res.ok) {
+        console.log("✅ Login success, role:", data.role);
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("role", data.role);
+
+        if (data.role === "admin") {
+          console.log("➡️ Redirect to admin.html");
+          window.location.href = "admin.html";
         } else {
-          document.getElementById("errorMessage").textContent = data.message;
+          console.log("➡️ Redirect to game.html");
+          window.location.href = "game.html";
         }
-      } catch (err) {
-        console.error("Login error:", err);
-        document.getElementById("errorMessage").textContent = "Network or server error.";
+      } else {
+        console.log("❌ Login failed:", data.message);
+        document.getElementById("errorMessage").textContent = data.message;
       }
-    });
-  </script>
+    } catch (err) {
+      console.error("⚠️ Unexpected error during login:", err);
+      document.getElementById("errorMessage").textContent = "Network or server error.";
+    }
+  });
+</script>
 </body>
 </html>
