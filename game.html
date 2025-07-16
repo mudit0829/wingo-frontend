@@ -1,125 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>WinGo Game</title>
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-    input {
-      margin: 5px;
-      padding: 5px;
-    }
-    #logout {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <button id="logout">Logout</button>
-  <h2>Welcome, <span id="username"></span>!</h2>
-  <h3>Role: <span id="role"></span></h3>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>WinGo Game</title></head><body>
+<button id="logout">Logout</button>
+<h2>Welcome, <span id="username"></span>!</h2>
+<h3>Role: <span id="role"></span></h3>
+<br/>
+<label>Amount:</label><input id="amount" type="number"/><br/>
+<button onclick="place('Red')">Red</button>
+<button onclick="place('Green')">Green</button>
+<button onclick="place('Violet')">Violet</button>
+<h3 id="status"></h3>
+<h3>Latest:</h3><div id="latest">Loading...</div>
+<h3>Your Bets:</h3><ul id="bet-history"></ul>
+<script>
+  const API = "https://wingo-backend-nqk5.onrender.com";
+  const u = localStorage.getItem("username"), r = localStorage.getItem("role");
+  if (!u) location.href = "index.html";
+  document.getElementById("username").innerHTML = u;
+  document.getElementById("role").innerHTML = r;
+  document.getElementById("logout").addEventListener("click", () => {
+    localStorage.clear(); location.href = "index.html";
+  });
 
-  <h3>Place Your Bet</h3>
-  <label>Amount:</label>
-  <input type="number" id="amount" placeholder="Enter bet amount" required />
-  <br/>
-  <button onclick="placeBet('Red')">Red</button>
-  <button onclick="placeBet('Green')">Green</button>
-  <button onclick="placeBet('Violet')">Violet</button>
-
-  <h3 id="bet-status"></h3>
-
-  <h3>Latest Result:</h3>
-  <div id="latest-result">Loading...</div>
-
-  <h3>Your Previous Bets:</h3>
-  <ul id="bet-history"></ul>
-
-  <script>
-    const API_BASE = "https://wingo-backend-nqk5.onrender.com";
-
-    const username = localStorage.getItem("username");
-    const role = localStorage.getItem("role");
-
-    if (!username) window.location.href = "index.html";
-
-    document.getElementById("username").innerText = username;
-    document.getElementById("role").innerText = role;
-
-    document.getElementById("logout").onclick = () => {
-      localStorage.clear();
-      window.location.href = "index.html";
-    };
-
-    async function placeBet(color) {
-      const amount = document.getElementById("amount").value;
-      if (!amount || amount <= 0) return alert("Enter a valid amount");
-
-      try {
-        const res = await fetch(`${API_BASE}/api/bets`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, color, amount }),
-        });
-        const data = await res.json();
-        document.getElementById("bet-status").innerText = data.message || "Bet placed!";
-        loadBets();
-      } catch (err) {
-        console.error(err);
-        alert("Error placing bet.");
-      }
-    }
-
-async function loadBets() {
-  try {
-    const res = await fetch(`${API_BASE}/api/bets/user/${username}`);
-    if (!res.ok) throw new Error("Failed to fetch bets");
-
-    const userBets = await res.json();
-    const betList = userBets
-      .slice(-10)
-      .reverse()
-      .map(bet => `
-        <li>
-          ${bet.color} - ₹${bet.amount || 0} - ${bet.status}
-          ${bet.resultColor ? `(Result: ${bet.resultColor})` : ""}
-        </li>
-      `).join("");
-
-    document.getElementById("bet-history").innerHTML = betList;
-  } catch (err) {
-    console.error("Error loading bets:", err);
-    document.getElementById("bet-history").innerHTML = "<li>Failed to load bets</li>";
-  }
-}
-
-    async function loadLatestResult() {
-      try {
-        const res = await fetch(`${API_BASE}/api/rounds`);
-        const data = await res.json();
-        const last = data.find(round => round.result !== null);
-        document.getElementById("latest-result").innerText = last ? last.result : "Pending...";
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
+  async function place(c) {
+    const amt = document.getElementById("amount").value;
+    if (!amt || amt <= 0) return alert("Enter valid amount");
+    const res = await fetch(`${API}/api/bets`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: u, color: c, amount: amt })
+    });
+    const json = await res.json();
+    document.getElementById("status").textContent = json.message;
     loadBets();
-    loadLatestResult();
-    setInterval(() => {
-      loadBets();
-      loadLatestResult();
-    }, 5000);
-  </script>
-</body>
-</html>
+  }
+
+  async function loadBets() {
+    const res = await fetch(`${API}/api/bets/user/${u}`);
+    if (!res.ok) return console.error("Load bets failed", res.status);
+    const bets = await res.json();
+    document.getElementById("bet-history").innerHTML = bets.slice(0,10).map(b =>
+      `<li>${b.color} - ₹${b.amount} - ${b.status}${b.resultColor ? ` (Res: ${b.resultColor})` : ""}</li>`
+    ).join("");
+  }
+
+  async function loadLatest() {
+    const res = await fetch(`${API}/api/rounds`);
+    const rdata = await res.json();
+    const last = rdata.find(r => r.result !== null);
+    document.getElementById("latest").textContent = last ? last.result : "Pending...";
+  }
+
+  loadBets(); loadLatest(); setInterval(() => { loadBets(); loadLatest(); }, 5000);
+</script></body></html>
