@@ -1,34 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Panel - WinGo</title>
+  <title>Admin Dashboard</title>
   <style>
-    body { font-family: sans-serif; padding: 50px; text-align: center; }
-    h2 { color: #c00; }
-    .info { font-size: 18px; margin: 20px 0; }
-    button { padding: 10px 20px; }
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    .bet-table, .round-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    .bet-table th, .bet-table td,
+    .round-table th, .round-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    .btn {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .green { background: #4CAF50; color: white; }
+    .red { background: #f44336; color: white; }
+    .violet { background: #9C27B0; color: white; }
   </style>
 </head>
 <body>
-  <h2>Admin Panel</h2>
-  <div class="info">
-    You are logged in as <b id="role">admin</b>.
-  </div>
-  <button onclick="logout()">Logout</button>
+  <h2>Admin Dashboard</h2>
+
+  <h3>All User Bets</h3>
+  <table class="bet-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Color</th>
+        <th>Amount</th>
+        <th>Round</th>
+        <th>Status</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody id="betsTableBody"></tbody>
+  </table>
+
+  <h3>Set Result for Round</h3>
+  <input type="text" id="roundIdInput" placeholder="Enter Round ID" />
+  <button class="btn red" onclick="setResult('Red')">Set Red</button>
+  <button class="btn green" onclick="setResult('Green')">Set Green</button>
+  <button class="btn violet" onclick="setResult('Violet')">Set Violet</button>
+
+  <h3>Check User Profit/Loss</h3>
+  <input type="text" id="usernameInput" placeholder="Enter Username" />
+  <button onclick="getUserStats()">Get Stats</button>
+  <p id="profitOutput"></p>
 
   <script>
-    const role = localStorage.getItem("role");
-    if (role !== "admin") {
-      alert("Access denied. Redirecting...");
-      window.location.href = "index.html";
-    } else {
-      document.getElementById("role").innerText = role;
+    const API = "https://wingo-backend-nqk5.onrender.com/api";
+
+    async function loadBets() {
+      const res = await fetch(`${API}/bets`);
+      const data = await res.json();
+      const tableBody = document.getElementById("betsTableBody");
+      tableBody.innerHTML = "";
+      data.forEach(bet => {
+        const row = `
+          <tr>
+            <td>${bet.username}</td>
+            <td>${bet.color}</td>
+            <td>${bet.amount}</td>
+            <td>${bet.roundId}</td>
+            <td>${bet.status}</td>
+            <td>${bet.resultColor || "Pending"}</td>
+          </tr>`;
+        tableBody.innerHTML += row;
+      });
     }
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
+    async function setResult(color) {
+      const roundId = document.getElementById("roundIdInput").value;
+      if (!roundId) return alert("Please enter a Round ID");
+      const res = await fetch(`${API}/bets/set-result`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roundId, result: color })
+      });
+      const data = await res.json();
+      alert(data.message);
+      loadBets(); // refresh table
     }
+
+    async function getUserStats() {
+      const username = document.getElementById("usernameInput").value;
+      if (!username) return alert("Enter a username");
+      const res = await fetch(`${API}/bets/user-stats/${username}`);
+      const data = await res.json();
+      document.getElementById("profitOutput").innerText = `User: ${data.username} | Profit: ₹${data.profit}`;
+    }
+
+    loadBets();
   </script>
 </body>
 </html>
