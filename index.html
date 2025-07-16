@@ -1,30 +1,52 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Login</title></head><body>
-  <h2>WinGo Login</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+</head>
+<body>
+  <h2>Login</h2>
   <form id="loginForm">
-    <input id="username" placeholder="Username" required /><br/>
-    <input id="password" placeholder="Password" type="password" required /><br/>
+    <input type="text" id="username" placeholder="Username" required /><br />
+    <input type="password" id="password" placeholder="Password" required /><br />
     <button type="submit">Login</button>
   </form>
-  <p id="message" style="color:red;"></p>
+  <p id="errorMessage" style="color:red;"></p>
+
   <script>
-    document.getElementById("loginForm").addEventListener("submit", async e => {
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-      const u = document.getElementById("username").value;
-      const p = document.getElementById("password").value;
-      const r = await fetch("https://wingo-backend-nqk5.onrender.com/api/auth/login", {
-        method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({username:u,password:p})
-      });
-      const d = await r.json();
-      if (r.ok) {
-        localStorage.setItem("username", d.username);
-        localStorage.setItem("role", d.role);
-        if (data.role === "admin") {
-  window.location.href = "admin.html";
-} else {
-  window.location.href = "game.html";
-}
-;
-      } else document.getElementById("message").innerText = d.message;
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("username", data.username);
+          localStorage.setItem("role", data.role);
+
+          if (data.role === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "game.html";
+          }
+        } else {
+          document.getElementById("errorMessage").textContent = data.message || "Login failed";
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById("errorMessage").textContent = "Server error. Try again later.";
+      }
     });
   </script>
-</body></html>
+</body>
+</html>
