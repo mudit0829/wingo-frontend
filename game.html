@@ -82,7 +82,7 @@
 
 async function loadBets() {
   try {
-    const res = await fetch(`${API_BASE}/api/bets/${username}`);
+    const res = await fetch(`${API_BASE}/api/bets?username=${username}`);
     if (!res.ok) throw new Error("Failed to fetch bets");
 
     const userBets = await res.json();
