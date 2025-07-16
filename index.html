@@ -18,7 +18,12 @@
       if (r.ok) {
         localStorage.setItem("username", d.username);
         localStorage.setItem("role", d.role);
-        window.location.href = "game.html";
+        if (data.role === "admin") {
+  window.location.href = "admin.html";
+} else {
+  window.location.href = "game.html";
+}
+;
       } else document.getElementById("message").innerText = d.message;
     });
   </script>
