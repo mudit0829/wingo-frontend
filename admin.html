@@ -1,107 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Admin Dashboard</title>
-  <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-    }
-    h2 {
-      color: #333;
-    }
-    .bet-table, .round-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-    }
-    .bet-table th, .bet-table td,
-    .round-table th, .round-table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-    }
-    .btn {
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    .green { background: #4CAF50; color: white; }
-    .red { background: #f44336; color: white; }
-    .violet { background: #9C27B0; color: white; }
-  </style>
 </head>
 <body>
   <h2>Admin Dashboard</h2>
-
-  <h3>All User Bets</h3>
-  <table class="bet-table">
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Color</th>
-        <th>Amount</th>
-        <th>Round</th>
-        <th>Status</th>
-        <th>Result</th>
-      </tr>
-    </thead>
-    <tbody id="betsTableBody"></tbody>
-  </table>
-
-  <h3>Set Result for Round</h3>
-  <input type="text" id="roundIdInput" placeholder="Enter Round ID" />
-  <button class="btn red" onclick="setResult('Red')">Set Red</button>
-  <button class="btn green" onclick="setResult('Green')">Set Green</button>
-  <button class="btn violet" onclick="setResult('Violet')">Set Violet</button>
-
-  <h3>Check User Profit/Loss</h3>
-  <input type="text" id="usernameInput" placeholder="Enter Username" />
-  <button onclick="getUserStats()">Get Stats</button>
-  <p id="profitOutput"></p>
+  <button onclick="logout()">Logout</button>
+  <h3>Current Round Result: <span id="latestResult">Loading...</span></h3>
+  <button onclick="generateResult()">Generate Result</button>
+  <h3>All Bets:</h3>
+  <ul id="allBets"></ul>
 
   <script>
-    const API = "https://wingo-backend-nqk5.onrender.com/api";
+    const API = "https://wingo-backend-nqk5.onrender.com";
+    const role = localStorage.getItem("role");
+    if (role !== "admin") location.href = "index.html";
 
-    async function loadBets() {
-      const res = await fetch(`${API}/bets`);
-      const data = await res.json();
-      const tableBody = document.getElementById("betsTableBody");
-      tableBody.innerHTML = "";
-      data.forEach(bet => {
-        const row = `
-          <tr>
-            <td>${bet.username}</td>
-            <td>${bet.color}</td>
-            <td>${bet.amount}</td>
-            <td>${bet.roundId}</td>
-            <td>${bet.status}</td>
-            <td>${bet.resultColor || "Pending"}</td>
-          </tr>`;
-        tableBody.innerHTML += row;
-      });
+    function logout() {
+      localStorage.clear();
+      location.href = "index.html";
     }
 
-    async function setResult(color) {
-      const roundId = document.getElementById("roundIdInput").value;
-      if (!roundId) return alert("Please enter a Round ID");
-      const res = await fetch(`${API}/bets/set-result`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roundId, result: color })
-      });
-      const data = await res.json();
-      alert(data.message);
-      loadBets(); // refresh table
+    async function fetchAllBets() {
+      const res = await fetch(`${API}/api/bets`);
+      const bets = await res.json();
+      document.getElementById("allBets").innerHTML = bets.slice(0, 20).map(b =>
+        `<li>${b.username} bet ₹${b.amount} on ${b.color} [${b.status}]</li>`
+      ).join("");
     }
 
-    async function getUserStats() {
-      const username = document.getElementById("usernameInput").value;
-      if (!username) return alert("Enter a username");
-      const res = await fetch(`${API}/bets/user-stats/${username}`);
-      const data = await res.json();
-      document.getElementById("profitOutput").innerText = `User: ${data.username} | Profit: ₹${data.profit}`;
+    async function loadLatestResult() {
+      const res = await fetch(`${API}/api/rounds`);
+      const rounds = await res.json();
+      const latest = rounds.find(r => r.result);
+      document.getElementById("latestResult").textContent = latest ? latest.result : "Pending...";
     }
 
-    loadBets();
+    async function generateResult() {
+      const res = await fetch(`${API}/api/admin/generate-result`, { method: "POST" });
+      const json = await res.json();
+      alert(json.message);
+      loadLatestResult();
+      fetchAllBets();
+    }
+
+    fetchAllBets();
+    loadLatestResult();
+    setInterval(() => { loadLatestResult(); fetchAllBets(); }, 10000);
   </script>
 </body>
 </html>
