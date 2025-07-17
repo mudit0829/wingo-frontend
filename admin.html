@@ -1,38 +1,47 @@
-<script>
-  async function generateResult() {
-    try {
-      const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/cron/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - WinGo</title>
+</head>
+<body>
+  <h1>Welcome, Admin</h1>
+  <h2>Recent Game Rounds</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Round ID</th>
+        <th>Result</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody id="roundTableBody">
+      <tr><td colspan="3">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    fetch('https://wingo-backend-nqk5.onrender.com/api/rounds')
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById('roundTableBody');
+        tbody.innerHTML = ''; // Clear existing rows
+        data.reverse().forEach(round => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${round.roundId}</td>
+            <td>${round.result}</td>
+            <td>${new Date(round.timestamp).toLocaleString()}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      })
+      .catch(err => {
+        console.error("Error loading rounds:", err);
+        document.getElementById('roundTableBody').innerHTML =
+          '<tr><td colspan="3">Failed to load rounds</td></tr>';
       });
-
-      if (!res.ok) {
-        throw new Error("Failed to generate result");
-      }
-
-      const data = await res.json();
-      const result = data?.data?.result;
-      const roundId = data?.data?.roundId;
-      const now = new Date();
-      const formattedTime = now.toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-        timeZone: "Asia/Kolkata" // Optional: for India time
-      });
-
-      document.getElementById("resultMessage").innerHTML = `
-        ✅ <b>Result:</b> ${result}<br>
-        🆔 <b>Round ID:</b> ${roundId}<br>
-        🕒 <b>Time:</b> ${formattedTime}
-      `;
-    } catch (err) {
-      console.error("❌ Error:", err);
-      document.getElementById("resultMessage").innerHTML = "❌ Error: " + err.message;
-    }
-  }
-</script>
+  </script>
+</body>
+</html>
