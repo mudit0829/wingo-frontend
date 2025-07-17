@@ -29,9 +29,7 @@
       tbody.innerHTML = ''; // Clear existing rows
       data.reverse().forEach(round => {
         const row = document.createElement('tr');
-        const formattedTime = isNaN(Number(round.timestamp))
-          ? 'Invalid Date'
-          : new Date(Number(round.timestamp)).toLocaleString();
+        const formattedDate = new Date(round.timestamp).toLocaleString();
         row.innerHTML = `
           <td>${round.roundId}</td>
           <td>${round.result}</td>
