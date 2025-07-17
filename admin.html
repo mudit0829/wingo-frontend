@@ -32,9 +32,9 @@
 <body>
   <h1>Welcome, Admin</h1>
 
-  <button class="button" id="startTimerBtn">Start 30s Timer</button>
-  <button class="button" id="generateResultBtn">Generate Result</button>
-  <button class="button" id="logoutBtn">Logout</button>
+  <button class="button" onclick="startTimer()">Start 30s Timer</button>
+  <button class="button" onclick="generateResult()">Generate Result</button>
+  <button class="button" onclick="logout()">Logout</button>
 
   <h2>Recent Game Rounds</h2>
   <table id="roundsTable">
@@ -47,6 +47,36 @@
 
   <script>
     const apiUrl = 'https://wingo-backend-nqk5.onrender.com';
+
+    function logout() {
+      localStorage.removeItem('username');
+      localStorage.removeItem('role');
+      window.location.href = 'index.html';
+    }
+
+    function startTimer() {
+      alert("🔁 30-second timer started...");
+      setTimeout(() => {
+        alert("⏱️ 30 seconds over. You can now generate result.");
+      }, 30000);
+    }
+
+    async function generateResult() {
+      try {
+        const res = await fetch(`${apiUrl}/api/cron/generate`, {
+          method: 'POST'
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Error generating result");
+
+        alert("✅ Result Generated: " + data.result);
+        loadRounds(); // Refresh table
+      } catch (err) {
+        console.error("❌ Error:", err);
+        alert("❌ Error generating result.");
+      }
+    }
 
     async function loadRounds() {
       try {
@@ -76,42 +106,8 @@
       }
     }
 
-    window.onload = function () {
-      loadRounds();
-
-      document.getElementById("logoutBtn").onclick = function () {
-        localStorage.removeItem("username");
-        localStorage.removeItem("role");
-        window.location.href = "index.html";
-      };
-
-      document.getElementById("generateResultBtn").onclick = async function () {
-        try {
-          const res = await fetch(`${apiUrl}/api/cron/generate-result`, {
-            method: 'POST'
-          });
-          const result = await res.json();
-          alert("✅ " + result.message);
-          loadRounds();
-        } catch (err) {
-          alert("❌ Error generating result");
-          console.error(err);
-        }
-      };
-
-      document.getElementById("startTimerBtn").onclick = async function () {
-        try {
-          const res = await fetch(`${apiUrl}/api/cron/start-timer`, {
-            method: 'POST'
-          });
-          const result = await res.json();
-          alert("⏳ " + result.message);
-        } catch (err) {
-          alert("❌ Error starting timer");
-          console.error(err);
-        }
-      };
-    };
+    // Load rounds on page load
+    loadRounds();
   </script>
 </body>
 </html>
