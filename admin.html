@@ -89,7 +89,7 @@
     }
 
     function generateResult() {
-      fetch(`${API_BASE}/api/admin/generate-result`, {
+      fetch(`${API_BASE}/api/cron/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
