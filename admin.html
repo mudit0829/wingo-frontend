@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    button { background-color: #4CAF50; color: white; padding: 10px; margin: 5px; border: none; border-radius: 5px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-    th { background-color: #f2f2f2; }
+    body { font-family: Arial; background: #f4f4f4; margin: 20px; }
+    h1 { color: #333; }
+    button { padding: 10px; margin: 10px 5px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; }
   </style>
 </head>
 <body>
-  <h1>Welcome, Admin</h1>
-  <button onclick="startTimer()">Start 30s Timer</button>
-  <button onclick="generateResult()">Generate Result</button>
-  <button onclick="logout()">Logout</button>
+  <div class="top-bar">
+    <h1>Admin Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-  <h2>Recent Game Rounds</h2>
+  <button onclick="startTimer()">Start Timer</button>
+  <button onclick="generateResult()">Generate Result</button>
+
   <table>
     <thead>
       <tr>
@@ -26,51 +30,56 @@
         <th>Timestamp</th>
       </tr>
     </thead>
-    <tbody id="roundTable"></tbody>
+    <tbody id="roundTableBody"></tbody>
   </table>
 
   <script>
-    const API_URL = 'https://wingo-backend-nqk5.onrender.com';
+    const API_BASE = "https://wingo-backend-nqk5.onrender.com";
 
     async function fetchRounds() {
-      const res = await fetch(`${API_URL}/api/rounds`);
-      const rounds = await res.json();
-      const table = document.getElementById("roundTable");
+      const res = await fetch(`${API_BASE}/api/rounds`);
+      const data = await res.json();
+      const table = document.getElementById("roundTableBody");
       table.innerHTML = "";
-      rounds.slice().reverse().forEach(round => {
+
+      data.forEach(round => {
         const row = document.createElement("tr");
-        const timeStr = new Date(round.timestamp).toLocaleString();
-        row.innerHTML = `<td>${round.roundId}</td><td>${round.result}</td><td>${timeStr}</td>`;
+        row.innerHTML = `
+          <td>${round.roundId}</td>
+          <td>${round.result || "-"}</td>
+          <td>${new Date(round.timestamp).toLocaleString()}</td>
+        `;
         table.appendChild(row);
       });
     }
 
-    async function generateResult() {
+    async function startTimer() {
       try {
-        const res = await fetch(`${API_URL}/api/cron/generate-result`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+        const res = await fetch(`${API_BASE}/api/cron/start-timer`, {
+          method: "POST",
         });
         const data = await res.json();
-        if (data.success) {
-          alert(`Result generated: ${data.result} for Round ${data.roundId}`);
-          fetchRounds();
-        } else {
-          alert("Failed to generate result");
-        }
+        alert(data.message || "Timer started.");
       } catch (err) {
-        console.error("Generate Result Error:", err);
-        alert("Error occurred while generating result");
+        alert("Error starting timer.");
       }
     }
 
-    function startTimer() {
-      alert("This would start a 30s auto-result cron in full app.");
+    async function generateResult() {
+      try {
+        const res = await fetch(`${API_BASE}/api/cron/generate-result`, {
+          method: "POST",
+        });
+        const data = await res.json();
+        alert(data.message || "Result generated.");
+        fetchRounds();
+      } catch (err) {
+        alert("Error generating result.");
+      }
     }
 
     function logout() {
-      localStorage.removeItem("username");
-      localStorage.removeItem("role");
+      localStorage.clear();
       window.location.href = "index.html";
     }
 
