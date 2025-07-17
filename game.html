@@ -1,29 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WinGo Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #f8f9fa; padding: 20px; }
+    h1, h2 { margin: 10px 0; }
+    button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+    input { padding: 8px; width: 100px; font-size: 16px; }
+    #history { margin-top: 20px; }
+    .red { color: red; font-weight: bold; }
+    .green { color: green; font-weight: bold; }
+    .violet { color: purple; font-weight: bold; }
+  </style>
+</head>
 <body>
-  <h2>Welcome to WinGo</h2>
-  <h3 id="timer">Next Result in: 30s</h3>
-  <div id="game-result">Waiting for result...</div>
+  <h1>WinGo Game</h1>
 
-  <br />
+  <div>
+    <p><strong>User:</strong> <span id="username"></span></p>
+    <p><strong>Time Left:</strong> <span id="timer">30</span> seconds</p>
+    <p><strong>Current Result:</strong> <span id="result">Loading...</span></p>
+  </div>
 
-  <input type="number" id="betAmount" placeholder="Enter Amount" min="1" />
-  <br /><br />
+  <div>
+    <input type="number" id="betAmount" placeholder="Amount" min="1" />
+    <br />
+    <button onclick="placeBet('Red')">Red</button>
+    <button onclick="placeBet('Green')">Green</button>
+    <button onclick="placeBet('Violet')">Violet</button>
+  </div>
 
-  <button onclick="placeBet('Red')">Bet Red</button>
-  <button onclick="placeBet('Green')">Bet Green</button>
-  <button onclick="placeBet('Violet')">Bet Violet</button>
-
-  <p id="bet-response"></p>
+  <h3>Last 10 Game Results</h3>
+  <div id="history">Loading history...</div>
 
   <script>
     const API = 'https://wingo-backend-nqk5.onrender.com';
-    let countdown = 30;
+    const username = localStorage.getItem('username');
+    document.getElementById("username").textContent = username || "Unknown";
+
+    let timer = 30;
 
     function updateTimer() {
-      document.getElementById("timer").textContent = `Next Result in: ${countdown}s`;
-      countdown--;
-      if (countdown < 0) {
-        countdown = 30;
+      timer--;
+      if (timer <= 0) {
+        timer = 30;
         loadCurrentResult();
+        loadGameHistory();
+      }
+      document.getElementById("timer").textContent = timer;
+    }
+
+    async function placeBet(color) {
+      const amount = document.getElementById("betAmount").value;
+      if (!amount || isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid amount");
+        return;
+      }
+
+      const res = await fetch(`${API}/api/bets`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          color,
+          amount
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("Bet placed on " + color);
+      } else {
+        alert(data.message || "Error placing bet");
       }
     }
 
@@ -31,53 +83,43 @@
       try {
         const res = await fetch(`${API}/api/rounds`);
         const data = await res.json();
-        const recent = data.reverse().find(r => r.result !== null);
-        if (recent) {
-          document.getElementById("game-result").textContent =
-            `Round ${recent._id.slice(-4)} Result: ${recent.result}`;
+        const latest = data.find(r => r.result);
+        if (latest) {
+          const colorClass = latest.result.toLowerCase();
+          document.getElementById("result").innerHTML =
+            `<span class="${colorClass}">${latest.result}</span>`;
         } else {
-          document.getElementById("game-result").textContent = "Waiting for result...";
+          document.getElementById("result").textContent = "Pending...";
         }
       } catch (err) {
-        console.error("Error loading result:", err);
-        document.getElementById("game-result").textContent = "Error loading result";
+        document.getElementById("result").textContent = "Error loading result";
       }
     }
 
-    async function placeBet(color) {
-      const amount = document.getElementById("betAmount").value;
-      if (!amount || amount <= 0) {
-        alert("Please enter a valid amount.");
-        return;
-      }
-
-      const username = localStorage.getItem("username") || "user"; // fallback
+    async function loadGameHistory() {
       try {
         const res = await fetch(`${API}/api/rounds`);
-        const rounds = await res.json();
-        const latest = rounds.reverse()[0];
+        const data = await res.json();
+        const recentRounds = data.reverse().filter(r => r.result).slice(0, 10);
 
-        const betRes = await fetch(`${API}/api/bets`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username,
-            color,
-            amount,
-            roundId: latest._id,
-            timestamp: new Date().toISOString(),
-          }),
-        });
+        const html = recentRounds.map(r =>
+          `<div>Round ${r._id.slice(-4)} → 
+           <span class="${r.result.toLowerCase()}">${r.result}</span></div>`
+        ).join('');
 
-        const result = await betRes.json();
-        document.getElementById("bet-response").textContent = result.message || "Bet placed!";
+        document.getElementById("history").innerHTML = html;
       } catch (err) {
-        console.error(err);
-        document.getElementById("bet-response").textContent = "Error placing bet";
+        document.getElementById("history").textContent = "Error loading history";
       }
     }
 
-    setInterval(updateTimer, 1000);
+    setInterval(() => {
+      updateTimer();
+    }, 1000);
+
+    // Load on start
     loadCurrentResult();
+    loadGameHistory();
   </script>
 </body>
+</html>
