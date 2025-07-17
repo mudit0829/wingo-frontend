@@ -21,27 +21,31 @@
     </tbody>
   </table>
 
-  <script>
-    fetch('https://wingo-backend-nqk5.onrender.com/api/rounds')
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.getElementById('roundTableBody');
-        tbody.innerHTML = ''; // Clear existing rows
-        data.reverse().forEach(round => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${round.roundId}</td>
-            <td>${round.result}</td>
-            <td>${new Date(round.timestamp).toLocaleString()}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      })
-      .catch(err => {
-        console.error("Error loading rounds:", err);
-        document.getElementById('roundTableBody').innerHTML =
-          '<tr><td colspan="3">Failed to load rounds</td></tr>';
+ <script>
+  fetch('https://wingo-backend-nqk5.onrender.com/api/rounds')
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.getElementById('roundTableBody');
+      tbody.innerHTML = ''; // Clear existing rows
+      data.reverse().forEach(round => {
+        const row = document.createElement('tr');
+        const formattedTime = isNaN(Number(round.timestamp))
+          ? 'Invalid Date'
+          : new Date(Number(round.timestamp)).toLocaleString();
+        row.innerHTML = `
+          <td>${round.roundId}</td>
+          <td>${round.result}</td>
+          <td>${formattedTime}</td>
+        `;
+        tbody.appendChild(row);
       });
-  </script>
+    })
+    .catch(err => {
+      console.error("Error loading rounds:", err);
+      document.getElementById('roundTableBody').innerHTML =
+        '<tr><td colspan="3">Failed to load rounds</td></tr>';
+    });
+</script>
+
 </body>
 </html>
