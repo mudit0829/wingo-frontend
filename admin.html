@@ -10,22 +10,27 @@
     table {
       border-collapse: collapse;
       margin-top: 20px;
+      width: 100%;
     }
     th, td {
       border: 1px solid #444;
       padding: 8px;
+      text-align: center;
     }
     .button {
-      margin-right: 10px;
-      margin-top: 10px;
-      padding: 8px 12px;
+      margin: 10px 10px 0 0;
+      padding: 10px 16px;
       background-color: #4CAF50;
       color: white;
       border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
     .button:hover {
       background-color: #45a049;
+    }
+    h1, h2 {
+      color: #333;
     }
   </style>
 </head>
@@ -54,27 +59,32 @@
       window.location.href = 'index.html';
     }
 
-    function startTimer() {
-      alert("🔁 30-second timer started...");
-      setTimeout(() => {
-        alert("⏱️ 30 seconds over. You can now generate result.");
-      }, 30000);
+    async function startTimer() {
+      try {
+        const res = await fetch(`${apiUrl}/api/cron/start-timer`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Timer failed');
+        alert("⏱️ 30s Timer Started: " + data.message);
+      } catch (err) {
+        console.error("❌ Timer Error:", err);
+        alert("❌ Error starting timer: " + err.message);
+      }
     }
 
     async function generateResult() {
       try {
-        const res = await fetch(`${apiUrl}/api/cron/generate`, {
+        const res = await fetch(`${apiUrl}/api/cron/generate-result`, {
           method: 'POST'
         });
-
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Error generating result");
-
         alert("✅ Result Generated: " + data.result);
-        loadRounds(); // Refresh table
+        loadRounds(); // refresh rounds
       } catch (err) {
-        console.error("❌ Error:", err);
-        alert("❌ Error generating result.");
+        console.error("❌ Generate Result Error:", err);
+        alert("❌ Error: " + err.message);
       }
     }
 
@@ -96,7 +106,6 @@
           const row = table.insertRow();
           row.insertCell(0).innerText = round.roundId;
           row.insertCell(1).innerText = round.result || 'null';
-
           const date = new Date(Number(round.timestamp));
           row.insertCell(2).innerText = isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleString();
         });
