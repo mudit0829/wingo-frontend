@@ -1,70 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - WinGo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f3;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h2>Admin Dashboard</h2>
-  <button onclick="logout()">Logout</button>
-  <h3>Current Round Result: <span id="latestResult">Loading...</span></h3>
+  <h1>Admin Dashboard</h1>
   <button onclick="generateResult()">Generate Result</button>
-  <h3>All Bets:</h3>
-  <ul id="allBets"></ul>
 
   <script>
-    const API = "https://wingo-backend-nqk5.onrender.com";
-    const role = localStorage.getItem("role");
-    if (role !== "admin") location.href = "index.html";
+    async function generateResult() {
+      try {
+        const response = await fetch("https://wingo-backend-nqk5.onrender.com/api/cron/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
 
-    function logout() {
-      localStorage.clear();
-      location.href = "index.html";
-    }
-
-    async function fetchAllBets() {
-      const res = await fetch(`${API}/api/bets`);
-      const bets = await res.json();
-      document.getElementById("allBets").innerHTML = bets.slice(0, 20).map(b =>
-        `<li>${b.username} bet ₹${b.amount} on ${b.color} [${b.status}]</li>`
-      ).join("");
-    }
-
-    async function loadLatestResult() {
-      const res = await fetch(`${API}/api/rounds`);
-      const rounds = await res.json();
-      const latest = rounds.find(r => r.result);
-      document.getElementById("latestResult").textContent = latest ? latest.result : "Pending...";
-    }
-
-   <script>
-  async function generateResult() {
-    try {
-      const response = await fetch("https://wingo-backend-nqk5.onrender.com/api/cron/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+        if (!response.ok) {
+          throw new Error("Failed to generate result");
         }
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to generate result");
+        const data = await response.json();
+        alert("Result generated: " + data.result);
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Error generating result: " + error.message);
       }
-
-      const data = await response.json();
-      alert("Result generated: " + data.result);
-    } catch (error) {
-      console.error("Error:", error.message);
-      alert("Error generating result");
     }
-  }
-</script>
-
-    }
-
-    fetchAllBets();
-    loadLatestResult();
-    setInterval(() => { loadLatestResult(); fetchAllBets(); }, 10000);
   </script>
 </body>
 </html>
