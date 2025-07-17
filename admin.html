@@ -1,49 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard - WinGo</title>
+  <title>Admin Panel - WinGo</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+    }
+    .button {
+      margin-right: 10px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
   <h1>Welcome, Admin</h1>
+
+  <button class="button" onclick="startTimer()">Start 30s Timer</button>
+  <button class="button" onclick="generateResult()">Generate Result</button>
+  <button class="button" onclick="logout()">Logout</button>
+
   <h2>Recent Game Rounds</h2>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>Round ID</th>
-        <th>Result</th>
-        <th>Timestamp</th>
-      </tr>
-    </thead>
-    <tbody id="roundTableBody">
-      <tr><td colspan="3">Loading...</td></tr>
-    </tbody>
+  <table id="roundsTable">
+    <tr>
+      <th>Round ID</th>
+      <th>Result</th>
+      <th>Timestamp</th>
+    </tr>
   </table>
 
- <script>
-  fetch('https://wingo-backend-nqk5.onrender.com/api/rounds')
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.getElementById('roundTableBody');
-      tbody.innerHTML = ''; // Clear existing rows
-      data.reverse().forEach(round => {
-        const row = document.createElement('tr');
-        const formattedDate = new Date(round.timestamp).toLocaleString();
-        row.innerHTML = `
-          <td>${round.roundId}</td>
-          <td>${round.result}</td>
-          <td>${formattedTime}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    })
-    .catch(err => {
-      console.error("Error loading rounds:", err);
-      document.getElementById('roundTableBody').innerHTML =
-        '<tr><td colspan="3">Failed to load rounds</td></tr>';
-    });
-</script>
+  <script>
+    const apiUrl = 'https://wingo-backend-nqk5.onrender.com';
 
+    function logout() {
+      localStorage.removeItem('username');
+      localStorage.removeItem('role');
+      window.location.href = 'index.html';
+    }
+
+    function startTimer() {
+      alert("🔁 30-second timer started...");
+      setTimeout(() => {
+        alert("⏱️ 30 seconds over. Now generate result.");
+      }, 30000);
+    }
+
+    async function generateResult() {
+      try {
+        const res = await fetch(`${apiUrl}/api/cron/generate`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Error generating result");
+        alert("✅ Result Generated: " + data.result);
+        loadRounds(); // refresh rounds
+      } catch (err) {
+        console.error("❌ Error:", err);
+        alert("❌ Error: " + err);
+      }
+    }
+
+    async function loadRounds() {
+      try {
+        const res = await fetch(`${apiUrl}/api/rounds`);
+        const rounds = await res.json();
+
+        const table = document.getElementById('roundsTable');
+        table.innerHTML = `
+          <tr>
+            <th>Round ID</th>
+            <th>Result</th>
+            <th>Timestamp</th>
+          </tr>
+        `;
+
+        rounds.reverse().forEach(round => {
+          const row = table.insertRow();
+          row.insertCell(0).innerText = round.roundId;
+          row.insertCell(1).innerText = round.result || 'null';
+
+          const date = new Date(Number(round.timestamp));
+          row.insertCell(2).innerText = isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleString();
+        });
+
+      } catch (err) {
+        console.error("❌ Error loading rounds:", err);
+      }
+    }
+
+    // Load rounds on page load
+    loadRounds();
+  </script>
 </body>
 </html>
