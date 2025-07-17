@@ -1,52 +1,81 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>WinGo Game</title></head><body>
-<button id="logout">Logout</button>
-<h2>Welcome, <span id="username"></span>!</h2>
-<h3>Role: <span id="role"></span></h3>
-<br/>
-<label>Amount:</label><input id="amount" type="number"/><br/>
-<button onclick="place('Red')">Red</button>
-<button onclick="place('Green')">Green</button>
-<button onclick="place('Violet')">Violet</button>
-<h3 id="status"></h3>
-<h3>Latest:</h3><div id="latest">Loading...</div>
-<h3>Your Bets:</h3><ul id="bet-history"></ul>
-<script>
-  const API = "https://wingo-backend-nqk5.onrender.com";
-  const u = localStorage.getItem("username"), r = localStorage.getItem("role");
-  if (!u) location.href = "index.html";
-  document.getElementById("username").innerHTML = u;
-  document.getElementById("role").innerHTML = r;
-  document.getElementById("logout").addEventListener("click", () => {
-    localStorage.clear(); location.href = "index.html";
-  });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - WinGo</title>
+</head>
+<body>
+  <h2>Welcome Admin!</h2>
+  <button id="logout">Logout</button>
 
-  async function place(c) {
-    const amt = document.getElementById("amount").value;
-    if (!amt || amt <= 0) return alert("Enter valid amount");
-    const res = await fetch(`${API}/api/bets`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: u, color: c, amount: amt })
+  <h3>Latest Game Result:</h3>
+  <div id="latest-result">Loading...</div>
+
+  <h3>All Bets:</h3>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Color</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody id="bet-table"></tbody>
+  </table>
+
+  <script>
+    const API = "https://wingo-backend-nqk5.onrender.com";
+    const u = localStorage.getItem("username");
+    const r = localStorage.getItem("role");
+
+    if (!u || r !== "admin") {
+      alert("Access Denied");
+      location.href = "index.html";
+    }
+
+    document.getElementById("logout").addEventListener("click", () => {
+      localStorage.clear();
+      location.href = "index.html";
     });
-    const json = await res.json();
-    document.getElementById("status").textContent = json.message;
+
+    async function loadBets() {
+      try {
+        const res = await fetch(`${API}/api/bets`);
+        const bets = await res.json();
+        const table = document.getElementById("bet-table");
+        table.innerHTML = bets.slice(0, 20).map(bet => `
+          <tr>
+            <td>${bet.username}</td>
+            <td>${bet.color}</td>
+            <td>₹${bet.amount}</td>
+            <td>${bet.status}</td>
+            <td>${bet.resultColor || "Pending"}</td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        console.error("Error loading bets", err);
+      }
+    }
+
+    async function loadLatestResult() {
+      try {
+        const res = await fetch(`${API}/api/rounds`);
+        const rounds = await res.json();
+        const last = rounds.find(r => r.result !== null);
+        document.getElementById("latest-result").textContent = last ? last.result : "Pending...";
+      } catch (err) {
+        console.error("Error loading latest result", err);
+      }
+    }
+
     loadBets();
-  }
-
-  async function loadBets() {
-    const res = await fetch(`${API}/api/bets/user/${u}`);
-    if (!res.ok) return console.error("Load bets failed", res.status);
-    const bets = await res.json();
-    document.getElementById("bet-history").innerHTML = bets.slice(0,10).map(b =>
-      `<li>${b.color} - ₹${b.amount} - ${b.status}${b.resultColor ? ` (Res: ${b.resultColor})` : ""}</li>`
-    ).join("");
-  }
-
-  async function loadLatest() {
-    const res = await fetch(`${API}/api/rounds`);
-    const rdata = await res.json();
-    const last = rdata.find(r => r.result !== null);
-    document.getElementById("latest").textContent = last ? last.result : "Pending...";
-  }
-
-  loadBets(); loadLatest(); setInterval(() => { loadBets(); loadLatest(); }, 5000);
-</script></body></html>
+    loadLatestResult();
+    setInterval(() => {
+      loadBets();
+      loadLatestResult();
+    }, 5000);
+  </script>
+</body>
+</html>
