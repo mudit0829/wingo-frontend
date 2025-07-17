@@ -1,30 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>WinGo Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
-    }
-    #timer {
-      font-size: 24px;
-      color: red;
-      margin-bottom: 20px;
-    }
-    #game-result {
-      font-size: 28px;
-      font-weight: bold;
-      color: green;
-    }
-  </style>
-</head>
 <body>
   <h2>Welcome to WinGo</h2>
   <h3 id="timer">Next Result in: 30s</h3>
   <div id="game-result">Waiting for result...</div>
+
+  <br />
+
+  <input type="number" id="betAmount" placeholder="Enter Amount" min="1" />
+  <br /><br />
+
+  <button onclick="placeBet('Red')">Bet Red</button>
+  <button onclick="placeBet('Green')">Bet Green</button>
+  <button onclick="placeBet('Violet')">Bet Violet</button>
+
+  <p id="bet-response"></p>
 
   <script>
     const API = 'https://wingo-backend-nqk5.onrender.com';
@@ -33,7 +21,6 @@
     function updateTimer() {
       document.getElementById("timer").textContent = `Next Result in: ${countdown}s`;
       countdown--;
-
       if (countdown < 0) {
         countdown = 30;
         loadCurrentResult();
@@ -57,8 +44,40 @@
       }
     }
 
+    async function placeBet(color) {
+      const amount = document.getElementById("betAmount").value;
+      if (!amount || amount <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+      }
+
+      const username = localStorage.getItem("username") || "user"; // fallback
+      try {
+        const res = await fetch(`${API}/api/rounds`);
+        const rounds = await res.json();
+        const latest = rounds.reverse()[0];
+
+        const betRes = await fetch(`${API}/api/bets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username,
+            color,
+            amount,
+            roundId: latest._id,
+            timestamp: new Date().toISOString(),
+          }),
+        });
+
+        const result = await betRes.json();
+        document.getElementById("bet-response").textContent = result.message || "Bet placed!";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("bet-response").textContent = "Error placing bet";
+      }
+    }
+
     setInterval(updateTimer, 1000);
     loadCurrentResult();
   </script>
 </body>
-</html>
