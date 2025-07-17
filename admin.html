@@ -7,13 +7,14 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background-color: #f8f8f8;
+      background-color: #f4f4f4;
     }
     h1 {
       color: #333;
     }
     button {
       padding: 10px 20px;
+      margin-bottom: 20px;
       font-size: 16px;
       background-color: #4CAF50;
       color: white;
@@ -22,12 +23,30 @@
       cursor: pointer;
     }
     button:hover {
-      background-color: #45a049;
+      background-color: #388E3C;
     }
     #resultMsg {
-      margin-top: 20px;
+      margin-top: 15px;
       font-size: 18px;
-      font-weight: bold;
+      color: green;
+    }
+    #history {
+      margin-top: 30px;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    #history h3 {
+      margin-bottom: 10px;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
     }
   </style>
 </head>
@@ -35,6 +54,11 @@
   <h1>Admin Panel</h1>
   <button onclick="generateResult()">Generate Result</button>
   <div id="resultMsg"></div>
+
+  <div id="history">
+    <h3>Game History (Last 10)</h3>
+    <ul id="historyList"></ul>
+  </div>
 
   <script>
     function generateResult() {
@@ -46,19 +70,41 @@
       })
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Failed to generate result. Server returned error.");
+          throw new Error("Failed to generate result");
         }
         return res.json();
       })
       .then((data) => {
         document.getElementById("resultMsg").innerText = "✅ Result Generated: " + data.result;
-        console.log("✅ Result:", data);
+        fetchHistory(); // Refresh game history after result
       })
       .catch((err) => {
         console.error("❌ Error:", err);
-        document.getElementById("resultMsg").innerText = "❌ Error generating result. Check console.";
+        document.getElementById("resultMsg").innerText = "❌ Error generating result";
       });
     }
+
+    function fetchHistory() {
+      fetch("https://wingo-backend-nqk5.onrender.com/api/rounds")
+        .then((res) => res.json())
+        .then((data) => {
+          const historyList = document.getElementById("historyList");
+          historyList.innerHTML = ""; // Clear old list
+
+          const last10 = data.slice(-10).reverse(); // Get latest 10 rounds
+          last10.forEach((round) => {
+            const li = document.createElement("li");
+            li.innerText = `${new Date(round.createdAt).toLocaleString()} - Result: ${round.result}`;
+            historyList.appendChild(li);
+          });
+        })
+        .catch((err) => {
+          console.error("❌ Error loading history:", err);
+        });
+    }
+
+    // Load history on page load
+    window.onload = fetchHistory;
   </script>
 </body>
 </html>
