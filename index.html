@@ -1,48 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>WinGo Login</title>
 </head>
 <body>
   <h2>Login</h2>
-  <form id="login-form">
-    <input type="text" id="username" placeholder="Username" required /><br/>
-    <input type="password" id="password" placeholder="Password" required /><br/>
-    <button type="submit">Login</button>
-  </form>
-  <p id="errorMessage" style="color:red;"></p>
+  <input type="text" id="username" placeholder="Username"><br><br>
+  <input type="password" id="password" placeholder="Password"><br><br>
+  <button onclick="login()">Login</button>
+  <h3 id="msg"></h3>
 
   <script>
-    const API_BASE = "https://wingo-backend-nqk5.onrender.com";
+    const API = "https://wingo-backend-nqk5.onrender.com";
 
-    document.getElementById("login-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const u = document.getElementById("username").value.trim();
-      const p = document.getElementById("password").value;
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
 
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: u, password: p }),
-      });
+      if (!username || !password) {
+        msg.textContent = "Please enter username and password.";
+        return;
+      }
 
-      const data = await res.json();
+      try {
+        const res = await fetch(`${API}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
 
-      if (res.ok) {
+        const data = await res.json();
+
+        if (!res.ok) {
+          msg.textContent = data.message || "Login failed.";
+          return;
+        }
+
         localStorage.setItem("username", data.username);
         localStorage.setItem("role", data.role);
 
-        // Redirect based on role
+        // ✅ Redirect based on role
         if (data.role === "admin") {
-          window.location.href = "admin.html";
+          location.href = "admin.html";
         } else {
-          window.location.href = "game.html";
+          location.href = "game.html";
         }
-      } else {
-        document.getElementById("errorMessage").textContent = data.message;
+
+      } catch (err) {
+        console.error("Login error:", err);
+        msg.textContent = "Server error. Try again later.";
       }
-    });
+    }
   </script>
 </body>
 </html>
