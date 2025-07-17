@@ -1,81 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard - WinGo</title>
+  <meta charset="UTF-8" />
+  <title>WinGo Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    #timer {
+      font-size: 24px;
+      color: red;
+      margin-bottom: 20px;
+    }
+    #game-result {
+      font-size: 28px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
 </head>
 <body>
-  <h2>Welcome Admin!</h2>
-  <button id="logout">Logout</button>
-
-  <h3>Latest Game Result:</h3>
-  <div id="latest-result">Loading...</div>
-
-  <h3>All Bets:</h3>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Color</th>
-        <th>Amount</th>
-        <th>Status</th>
-        <th>Result</th>
-      </tr>
-    </thead>
-    <tbody id="bet-table"></tbody>
-  </table>
+  <h2>Welcome to WinGo</h2>
+  <h3 id="timer">Next Result in: 30s</h3>
+  <div id="game-result">Waiting for result...</div>
 
   <script>
-    const API = "https://wingo-backend-nqk5.onrender.com";
-    const u = localStorage.getItem("username");
-    const r = localStorage.getItem("role");
+    const API = 'https://wingo-backend-nqk5.onrender.com';
+    let countdown = 30;
 
-    if (!u || r !== "admin") {
-      alert("Access Denied");
-      location.href = "index.html";
-    }
+    function updateTimer() {
+      document.getElementById("timer").textContent = `Next Result in: ${countdown}s`;
+      countdown--;
 
-    document.getElementById("logout").addEventListener("click", () => {
-      localStorage.clear();
-      location.href = "index.html";
-    });
-
-    async function loadBets() {
-      try {
-        const res = await fetch(`${API}/api/bets`);
-        const bets = await res.json();
-        const table = document.getElementById("bet-table");
-        table.innerHTML = bets.slice(0, 20).map(bet => `
-          <tr>
-            <td>${bet.username}</td>
-            <td>${bet.color}</td>
-            <td>₹${bet.amount}</td>
-            <td>${bet.status}</td>
-            <td>${bet.resultColor || "Pending"}</td>
-          </tr>
-        `).join("");
-      } catch (err) {
-        console.error("Error loading bets", err);
+      if (countdown < 0) {
+        countdown = 30;
+        loadCurrentResult();
       }
     }
 
-    async function loadLatestResult() {
+    async function loadCurrentResult() {
       try {
         const res = await fetch(`${API}/api/rounds`);
-        const rounds = await res.json();
-        const last = rounds.find(r => r.result !== null);
-        document.getElementById("latest-result").textContent = last ? last.result : "Pending...";
+        const data = await res.json();
+        const recent = data.reverse().find(r => r.result !== null);
+        if (recent) {
+          document.getElementById("game-result").textContent =
+            `Round ${recent._id.slice(-4)} Result: ${recent.result}`;
+        } else {
+          document.getElementById("game-result").textContent = "Waiting for result...";
+        }
       } catch (err) {
-        console.error("Error loading latest result", err);
+        console.error("Error loading result:", err);
+        document.getElementById("game-result").textContent = "Error loading result";
       }
     }
 
-    loadBets();
-    loadLatestResult();
-    setInterval(() => {
-      loadBets();
-      loadLatestResult();
-    }, 5000);
+    setInterval(updateTimer, 1000);
+    loadCurrentResult();
   </script>
 </body>
 </html>
