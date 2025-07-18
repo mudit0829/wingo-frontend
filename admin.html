@@ -54,7 +54,7 @@
   }
 
   function generateResult() {
-    fetch(`${apiBase}/api/cron/generate`, { method: 'POST' })
+    fetch(`${apiBase}/api/cron/generate-result`, { method: 'POST' })
       .then(res => res.json())
       .then(() => {
         alert("✅ Result generated!");
