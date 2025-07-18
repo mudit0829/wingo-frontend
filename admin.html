@@ -1,28 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel</title>
+  <title>Admin Dashboard</title>
   <style>
-    body { font-family: Arial; background: #f4f4f4; margin: 20px; }
-    h1 { color: #333; }
-    button { padding: 10px; margin: 10px 5px; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-    .top-bar { display: flex; justify-content: space-between; align-items: center; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #logoutBtn {
+      float: right;
+    }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <h1>Admin Dashboard</h1>
-    <button onclick="logout()">Logout</button>
-  </div>
-
+  <h1>Admin Dashboard</h1>
   <button onclick="startTimer()">Start Timer</button>
   <button onclick="generateResult()">Generate Result</button>
+  <button id="logoutBtn" onclick="logout()">Logout</button>
 
-  <table>
+  <table id="roundsTable">
     <thead>
       <tr>
         <th>Round ID</th>
@@ -30,59 +50,68 @@
         <th>Timestamp</th>
       </tr>
     </thead>
-    <tbody id="roundTableBody"></tbody>
+    <tbody></tbody>
   </table>
 
   <script>
-    const API_BASE = "https://wingo-backend-nqk5.onrender.com";
+    const apiBase = 'https://wingo-backend-nqk5.onrender.com';
 
-    async function fetchRounds() {
-      const res = await fetch(`${API_BASE}/api/rounds`);
-      const data = await res.json();
-      const table = document.getElementById("roundTableBody");
-      table.innerHTML = "";
+    function fetchRounds() {
+      fetch(`${apiBase}/api/rounds`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector("#roundsTable tbody");
+          tbody.innerHTML = "";
 
-      data.forEach(round => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${round.roundId}</td>
-          <td>${round.result || "-"}</td>
-          <td>${new Date(round.timestamp).toLocaleString()}</td>
-        `;
-        table.appendChild(row);
-      });
+          data.reverse().forEach(round => {
+            const tr = document.createElement("tr");
+
+            const roundIdCell = document.createElement("td");
+            roundIdCell.textContent = round.roundId || "-";
+
+            const resultCell = document.createElement("td");
+            resultCell.textContent = round.result || "-";
+
+            const timestampCell = document.createElement("td");
+            const date = new Date(round.timestamp);
+            timestampCell.textContent = isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleString();
+
+            tr.appendChild(roundIdCell);
+            tr.appendChild(resultCell);
+            tr.appendChild(timestampCell);
+
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(err => {
+          console.error("Error fetching rounds:", err);
+        });
     }
 
-    async function startTimer() {
-      try {
-        const res = await fetch(`${API_BASE}/api/cron/start-timer`, {
-          method: "POST",
-        });
-        const data = await res.json();
-        alert(data.message || "Timer started.");
-      } catch (err) {
-        alert("Error starting timer.");
-      }
+    function startTimer() {
+      fetch(`${apiBase}/api/cron/start`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => alert("Timer started"))
+        .catch(err => alert("Error starting timer"));
     }
 
-    async function generateResult() {
-      try {
-        const res = await fetch(`${API_BASE}/api/cron/generate-result`, {
-          method: "POST",
-        });
-        const data = await res.json();
-        alert(data.message || "Result generated.");
-        fetchRounds();
-      } catch (err) {
-        alert("Error generating result.");
-      }
+    function generateResult() {
+      fetch(`${apiBase}/api/cron/generate-result`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          alert("Result generated");
+          fetchRounds();
+        })
+        .catch(err => alert("Error generating result"));
     }
 
     function logout() {
-      localStorage.clear();
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
       window.location.href = "index.html";
     }
 
+    // Auto load rounds on page load
     fetchRounds();
   </script>
 </body>
