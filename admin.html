@@ -3,115 +3,73 @@
 <head>
   <title>Admin Dashboard</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-
-    h1 {
-      font-size: 24px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      padding: 12px;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-
-    button {
-      margin-right: 10px;
-      padding: 10px 15px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    #logoutBtn {
-      float: right;
-    }
+    body { font-family: Arial; padding: 20px; }
+    button { margin: 0 10px 20px 0; padding: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
   </style>
 </head>
 <body>
+
   <h1>Admin Dashboard</h1>
   <button onclick="startTimer()">Start Timer</button>
   <button onclick="generateResult()">Generate Result</button>
-  <button id="logoutBtn" onclick="logout()">Logout</button>
+  <button onclick="logout()" style="float: right;">Logout</button>
 
   <table id="roundsTable">
     <thead>
-      <tr>
-        <th>Round ID</th>
-        <th>Result</th>
-        <th>Timestamp</th>
-      </tr>
+      <tr><th>Round ID</th><th>Result</th><th>Timestamp</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <script>
-    const apiBase = 'https://wingo-backend-nqk5.onrender.com';
+<script>
+  const apiBase = 'https://wingo-backend-nqk5.onrender.com';
 
-    function fetchRounds() {
-      fetch(`${apiBase}/api/rounds`)
-        .then(res => res.json())
-        .then(data => {
-          const tbody = document.querySelector("#roundsTable tbody");
-          tbody.innerHTML = "";
+  async function fetchRounds() {
+    try {
+      const res = await fetch(`${apiBase}/api/rounds`);
+      const rounds = await res.json();
 
-          data.reverse().forEach(round => {
-            const tr = document.createElement("tr");
+      const tbody = document.querySelector("#roundsTable tbody");
+      tbody.innerHTML = "";
 
-            const roundIdCell = document.createElement("td");
-            roundIdCell.textContent = round.roundId || "-";
-
-            const resultCell = document.createElement("td");
-            resultCell.textContent = round.result || "-";
-
-            const timestampCell = document.createElement("td");
-            const date = new Date(round.timestamp);
-            timestampCell.textContent = isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleString();
-
-            tr.appendChild(roundIdCell);
-            tr.appendChild(resultCell);
-            tr.appendChild(timestampCell);
-
-            tbody.appendChild(tr);
-          });
-        })
-        .catch(err => {
-          console.error("Error fetching rounds:", err);
-        });
+      rounds.reverse().forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.roundId || "-"}</td>
+          <td>${r.result || "-"}</td>
+          <td>${r.timestamp ? new Date(r.timestamp).toLocaleString() : "-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error("Error fetching rounds:", err);
     }
+  }
 
-    function startTimer() {
-      fetch(`${apiBase}/api/cron/start`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => alert("Timer started"))
-        .catch(err => alert("Error starting timer"));
-    }
+  function startTimer() {
+    fetch(`${apiBase}/api/cron/start`, { method: 'POST' })
+      .then(() => alert("⏱️ Timer started"));
+  }
 
-    function generateResult() {
-      fetch(`${apiBase}/api/cron/generate-result`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          alert("Result generated");
-          fetchRounds();
-        })
-        .catch(err => alert("Error generating result"));
-    }
+  function generateResult() {
+    fetch(`${apiBase}/api/cron/generate`, { method: 'POST' })
+      .then(res => res.json())
+      .then(() => {
+        alert("✅ Result generated!");
+        fetchRounds();
+      })
+      .catch(() => alert("❌ Failed to generate result"));
+  }
 
-    function logout() {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      window.location.href = "index.html";
-    }
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
 
-    fetchRounds();
-  </script>
+  fetchRounds();
+</script>
+
 </body>
 </html>
