@@ -1,58 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <title>WinGo Admin</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h2>Welcome Admin</h2>
-  <button onclick="generateResult()">Generate Result</button>
-  <button onclick="logout()">Logout</button>
+  <h2>WinGo Admin Panel</h2>
 
-  <h3>Round History</h3>
-  <table border="1">
+  <div>
+    <button onclick="generateResult()">Generate Result</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <h3>Recent Rounds</h3>
+  <table id="adminTable">
     <thead>
-      <tr>
-        <th>Round ID</th>
-        <th>Result</th>
-        <th>Timestamp</th>
-      </tr>
+      <tr><th>Round ID</th><th>Result</th><th>Time</th></tr>
     </thead>
-    <tbody id="history"></tbody>
+    <tbody></tbody>
   </table>
 
   <script>
-    const API_URL = 'https://wingo-backend-nqk5.onrender.com';
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const apiBase = 'https://wingo-backend-nqk5.onrender.com';
 
-    async function generateResult() {
-      const res = await fetch(`${API_URL}/api/cron/generateResult`, { method: 'POST' });
-      const data = await res.json();
-      alert(data.message || 'Result Generated');
-      loadHistory();
-    }
-
-    async function loadHistory() {
-      const res = await fetch(`${API_URL}/api/rounds`);
-      const rounds = await res.json();
-      const tbody = document.getElementById('history');
-      tbody.innerHTML = '';
-      rounds.reverse().slice(0, 10).forEach(round => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${round.roundId}</td>
-          <td>${round.result || 'Pending'}</td>
-          <td>${new Date(round.timestamp).toLocaleString()}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+    if (role !== 'admin') window.location.href = 'login.html';
 
     function logout() {
       localStorage.clear();
-      window.location.href = 'index.html';
+      window.location.href = 'login.html';
     }
 
-    loadHistory();
+    async function generateResult() {
+      try {
+        const res = await fetch(`${apiBase}/api/cron/generateResult`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+        alert(data.message || 'Result generated');
+        loadRounds();
+      } catch (err) {
+        alert('Error generating result');
+      }
+    }
+
+    async function loadRounds() {
+      try {
+        const res = await fetch(`${apiBase}/api/rounds`);
+        const data = await res.json();
+
+        const rows = data.slice(-10).reverse().map(round => `
+          <tr>
+            <td>${round.roundId || '-'}</td>
+            <td>${round.result ?? '-'}</td>
+            <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
+          </tr>
+        `).join('');
+
+        document.querySelector('#adminTable tbody').innerHTML = rows;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadRounds();
+    setInterval(loadRounds, 10000);
   </script>
 </body>
 </html>
