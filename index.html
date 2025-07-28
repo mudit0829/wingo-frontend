@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +9,9 @@
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Logo" class="logo" />
+    <h1>WinGo</h1>
     <div class="wallet">
-      Wallet: ₹<span id="wallet-amount">1000</span>
+      Wallet: ₹<span id="wallet">0</span>
     </div>
     <div class="wallet-buttons">
       <button class="withdraw">Withdraw</button>
@@ -18,107 +19,115 @@
     </div>
   </header>
 
-  <section class="info-bar">
-    <div id="round-number">Round #12345</div>
-    <div id="timer">00:25</div>
-    <button id="howToPlayBtn">How to Play</button>
+  <section class="timer-section">
+    Round: <span id="roundNumber">#0000</span> |
+    Time Left: <span id="timer">25</span>s
   </section>
 
-  <main>
-    <section class="color-bet-section">
-      <h3>Color Bet</h3>
-      <div class="color-buttons">
-        <button class="color-btn red" data-color="Red">Red</button>
-        <button class="color-btn green" data-color="Green">Green</button>
-        <button class="color-btn violet" data-color="Violet">Violet</button>
-      </div>
-    </section>
+  <section class="tabs">
+    <button class="tab-btn" onclick="showPopup('howToPlayPopup')">How to Play</button>
+    <button class="tab-btn" onclick="showPopup('colorBetPopup')">Color Bet</button>
+    <button class="tab-btn" onclick="showPopup('numberBetPopup')">Number Bet</button>
+    <button class="tab-btn" onclick="showSection('gameHistory')">Game History</button>
+    <button class="tab-btn" onclick="showSection('myHistory')">My History</button>
+  </section>
 
-    <section class="number-bet-section">
-      <h3>Number Bet</h3>
-      <div class="number-buttons">
-        <button class="number-btn">0</button>
-        <button class="number-btn">1</button>
-        <button class="number-btn">2</button>
-        <button class="number-btn">3</button>
-        <button class="number-btn">4</button>
-        <button class="number-btn">5</button>
-        <button class="number-btn">6</button>
-        <button class="number-btn">7</button>
-        <button class="number-btn">8</button>
-        <button class="number-btn">9</button>
-      </div>
-    </section>
-
-    <section class="history-tabs">
-      <button id="gameHistoryTab">Game History</button>
-      <button id="myHistoryTab">My History</button>
-    </section>
-
-    <section id="historyContent">
-      <!-- Game History Table -->
-      <table id="gameHistory" class="history-table">
-        <thead>
-          <tr><th>Color</th><th>Number</th><th>Color</th></tr>
-        </thead>
-        <tbody id="gameHistoryBody">
-          <!-- Filled by JS -->
-        </tbody>
-      </table>
-
-      <!-- My History Table -->
-      <table id="myHistory" class="history-table hidden">
-        <thead>
-          <tr><th>Round</th><th>Bet</th><th>Result</th><th>+/−</th></tr>
-        </thead>
-        <tbody id="myHistoryBody">
-          <!-- Filled by JS -->
-        </tbody>
-      </table>
-    </section>
-  </main>
-
-  <!-- Modal for How to Play -->
-  <div id="howToPlayModal" class="modal hidden">
-    <div class="modal-content">
-      <span class="close-btn" id="closeHowToPlay">&times;</span>
-      <h3>How to Play</h3>
+  <!-- Popup: How to Play -->
+  <div class="popup" id="howToPlayPopup">
+    <div class="popup-content">
+      <span class="close" onclick="closePopup('howToPlayPopup')">&times;</span>
+      <h2>How to Play</h2>
       <p>
-        • Red wins on 1/3/7/9<br>
-        • Green wins on 0/2/4/6/8<br>
-        • Violet wins on 0 or 5<br>
-        • Violet = 4.5x, Red/Green = 2x, Number = 9x<br>
-        • 2% fee is deducted from all bets<br>
-        • Each round lasts 30s (25s betting + 5s draw)
+        - Bet on Color or Number separately.<br>
+        - Colors: Red/Green (2x), Violet (4.5x)<br>
+        - Number match: 9x<br>
+        - 2% service fee on all bets.<br>
+        - Each round: 25s betting + 5s wait.
       </p>
     </div>
   </div>
 
-  <!-- Modal for Betting -->
-  <div id="betModal" class="modal hidden">
-    <div class="modal-content">
-      <span class="close-btn" id="closeBetModal">&times;</span>
-      <h3 id="betTitle">Placing Bet</h3>
-      <div class="bet-options">
-        <label>Select Amount:</label>
-        <div class="amount-options">
-          <button class="amount-btn">₹1</button>
-          <button class="amount-btn">₹10</button>
-          <button class="amount-btn">₹100</button>
-          <button class="amount-btn">₹1000</button>
-        </div>
-        <label>Multiplier:</label>
-        <div class="multiplier-options">
-          <button class="multiplier-btn">x1</button>
-          <button class="multiplier-btn">x5</button>
-          <button class="multiplier-btn">x20</button>
-          <button class="multiplier-btn">x50</button>
-          <button class="multiplier-btn">x100</button>
-        </div>
-        <button class="place-bet">Place Bet</button>
+  <!-- Popup: Color Bet -->
+  <div class="popup" id="colorBetPopup">
+    <div class="popup-content">
+      <span class="close" onclick="closePopup('colorBetPopup')">&times;</span>
+      <h2>Place Color Bet</h2>
+      <p>Select Color:</p>
+      <div class="color-options">
+        <button onclick="selectColor('Red')">🔴 Red</button>
+        <button onclick="selectColor('Green')">🟢 Green</button>
+        <button onclick="selectColor('Violet')">🟣 Violet</button>
       </div>
+      <p>Select Amount:</p>
+      <div class="amount-options">
+        <button onclick="selectAmount(1)">₹1</button>
+        <button onclick="selectAmount(10)">₹10</button>
+        <button onclick="selectAmount(100)">₹100</button>
+        <button onclick="selectAmount(1000)">₹1000</button>
+      </div>
+      <p>Multiply Bet:</p>
+      <div class="multiplier-options">
+        <button onclick="setMultiplier(1)">x1</button>
+        <button onclick="setMultiplier(5)">x5</button>
+        <button onclick="setMultiplier(20)">x20</button>
+        <button onclick="setMultiplier(50)">x50</button>
+        <button onclick="setMultiplier(100)">x100</button>
+      </div>
+      <button onclick="placeColorBet()">Place Bet</button>
     </div>
   </div>
+
+  <!-- Popup: Number Bet -->
+  <div class="popup" id="numberBetPopup">
+    <div class="popup-content">
+      <span class="close" onclick="closePopup('numberBetPopup')">&times;</span>
+      <h2>Place Number Bet</h2>
+      <div class="number-options">
+        <button onclick="selectNumber(0)">0</button>
+        <button onclick="selectNumber(1)">1</button>
+        <button onclick="selectNumber(2)">2</button>
+        <button onclick="selectNumber(3)">3</button>
+        <button onclick="selectNumber(4)">4</button>
+        <button onclick="selectNumber(5)">5</button>
+        <button onclick="selectNumber(6)">6</button>
+        <button onclick="selectNumber(7)">7</button>
+        <button onclick="selectNumber(8)">8</button>
+        <button onclick="selectNumber(9)">9</button>
+      </div>
+      <div class="amount-options">
+        <button onclick="selectAmount(1)">₹1</button>
+        <button onclick="selectAmount(10)">₹10</button>
+        <button onclick="selectAmount(100)">₹100</button>
+        <button onclick="selectAmount(1000)">₹1000</button>
+      </div>
+      <div class="multiplier-options">
+        <button onclick="setMultiplier(1)">x1</button>
+        <button onclick="setMultiplier(5)">x5</button>
+        <button onclick="setMultiplier(20)">x20</button>
+        <button onclick="setMultiplier(50)">x50</button>
+        <button onclick="setMultiplier(100)">x100</button>
+      </div>
+      <button onclick="placeNumberBet()">Place Bet</button>
+    </div>
+  </div>
+
+  <!-- Game History Section -->
+  <section id="gameHistory" class="hidden">
+    <h3>Game History</h3>
+    <table>
+      <tr><th>Color</th><th>Number</th><th>Color</th></tr>
+      <tbody id="gameHistoryBody"></tbody>
+    </table>
+  </section>
+
+  <!-- My History Section -->
+  <section id="myHistory" class="hidden">
+    <h3>My History</h3>
+    <table>
+      <tr><th>Round</th><th>Date/Time</th><th>Result</th><th>+/-</th></tr>
+      <tbody id="myHistoryBody"></tbody>
+    </table>
+  </section>
 
   <script src="game.js"></script>
 </body>
