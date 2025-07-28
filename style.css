@@ -1,0 +1,30 @@
+
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f4f4f4;
+  padding: 20px;
+}
+#game-info {
+  margin-bottom: 20px;
+}
+#betting-section {
+  background: #fff;
+  padding: 20px;
+  display: inline-block;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+#betting-section select,
+#betting-section input {
+  margin: 10px;
+  padding: 5px;
+}
+button {
+  padding: 10px 20px;
+  background: green;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
