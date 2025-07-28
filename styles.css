@@ -1,156 +1,172 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom, #1a1a2e, #16213e);
-  color: #fff;
   margin: 0;
   padding: 0;
+  background: linear-gradient(to right, #1a1a40, #2a2a72);
+  color: #fff;
   text-align: center;
 }
 
 .logo {
-  font-size: 2.5rem;
+  font-size: 32px;
   font-weight: bold;
-  padding: 15px 0;
-  background: #0f3460;
-  color: #f0a500;
+  margin-top: 20px;
+  color: #00ffcc;
 }
 
-.timer-container {
+.header {
   display: flex;
-  justify-content: center;
-  gap: 25px;
-  padding: 10px 0;
-  font-size: 1.2rem;
-  background-color: #1a1a2e;
-  border-bottom: 2px solid #f0a500;
+  justify-content: space-around;
+  padding: 10px;
+  font-size: 16px;
 }
 
-.selection-buttons {
+.wallet {
+  margin-top: 10px;
+}
+
+.buttons-section {
   display: flex;
   justify-content: center;
+  gap: 12px;
   flex-wrap: wrap;
   margin: 20px 10px;
-  gap: 10px;
 }
 
-.color-btn, .number-btn {
-  padding: 15px 20px;
-  border: none;
+.bet-btn {
+  padding: 14px 20px;
   border-radius: 50px;
-  font-size: 1rem;
-  cursor: pointer;
-  min-width: 90px;
-  transition: all 0.2s ease-in-out;
-  color: #fff;
+  border: none;
+  font-size: 16px;
   font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.color-btn.red { background: #ff4c4c; }
-.color-btn.green { background: #32cd32; }
-.color-btn.violet { background: #a020f0; }
+.bet-btn.red { background: linear-gradient(45deg, #ff4d4d, #cc0000); }
+.bet-btn.green { background: linear-gradient(45deg, #33cc33, #009933); }
+.bet-btn.violet { background: linear-gradient(45deg, #9933ff, #6600cc); }
+
+.number-btns {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px;
+}
 
 .number-btn {
-  background: linear-gradient(145deg, #00c6ff, #0072ff);
+  background: linear-gradient(145deg, #ffb347, #ffcc33);
+  border: none;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.selection-buttons .number-btn:hover,
-.selection-buttons .color-btn:hover {
-  transform: scale(1.1);
-}
-
-#popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #222;
-  padding: 20px;
-  border-radius: 12px;
-  z-index: 999;
+.popup {
   display: none;
-  width: 300px;
-  box-shadow: 0 0 10px #f0a500;
+  position: fixed;
+  top: 25%;
+  left: 10%;
+  width: 80%;
+  background: #1e1e2f;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(255,255,255,0.2);
+  z-index: 1000;
 }
 
-#popup h3 {
+.popup h3 {
   margin-bottom: 10px;
-  font-size: 1.2rem;
+  font-size: 18px;
+  color: #00ffcc;
 }
 
-.amount-options {
+.multiplier-buttons {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
-  margin: 10px 0;
+  margin: 15px 0;
 }
 
-.amount-options button {
-  padding: 10px;
-  font-weight: bold;
-  background: #f0a500;
+.multiplier-btn {
+  padding: 10px 14px;
+  background: #444;
+  color: #fff;
   border: none;
   border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
 }
 
-#popup input {
-  width: 100%;
-  padding: 8px;
-  margin: 10px 0;
+input[type="number"] {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  width: 80%;
+  margin-bottom: 10px;
+}
+
+.popup button {
+  padding: 10px 16px;
+  margin: 5px;
+  font-weight: bold;
   border: none;
   border-radius: 6px;
-}
-
-#popup button.submit {
-  background: #32cd32;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
   cursor: pointer;
-  color: #000;
 }
 
-.history-container {
-  margin: 30px 15px;
-  background: rgba(255,255,255,0.05);
-  padding: 20px;
-  border-radius: 10px;
+.popup .place-btn {
+  background-color: #28a745;
+  color: white;
 }
 
-.history-container table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
+.popup .cancel-btn {
+  background-color: #dc3545;
+  color: white;
 }
 
-.history-container th, .history-container td {
+.game-history, .how-to-play {
+  background: rgba(255,255,255,0.1);
+  margin: 15px;
   padding: 10px;
-  border-bottom: 1px solid #444;
-}
-
-.history-container th {
-  background-color: #0f3460;
-  color: #f0a500;
-}
-
-.how-to-play {
-  margin: 25px;
-  background: rgba(255,255,255,0.05);
-  padding: 20px;
   border-radius: 10px;
   text-align: left;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: 0.95rem;
 }
 
-.how-to-play h3 {
-  color: #f0a500;
-  margin-bottom: 10px;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .popup {
+    left: 5%;
+    width: 90%;
+  }
+
+  .number-btn {
+    width: 50px;
+    height: 50px;
+  }
 }
