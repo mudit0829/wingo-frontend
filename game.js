@@ -1,121 +1,70 @@
-// Dummy wallet balance
-let wallet = 1000;
-
-// Current round and timer
-let currentRound = 123;
-let timeLeft = 25;
-let timerInterval = null;
-
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("wallet-balance").innerText = `₹ ${wallet}`;
-  updateRoundAndTimer();
-  loadRecentResults();
-  loadMyGameHistory();
+  const walletAmount = document.getElementById("wallet-amount");
+  let userWallet = 1000;
+  walletAmount.textContent = userWallet;
 
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    if (timeLeft <= 0) {
-      currentRound++;
-      timeLeft = 30;
-      updateRoundAndTimer();
-    }
-    document.getElementById("timer").innerText = `${timeLeft}s`;
+  const timerElement = document.getElementById("timer");
+  let timeLeft = 25;
+  setInterval(() => {
+    timerElement.textContent = timeLeft + "s";
+    timeLeft = timeLeft <= 0 ? 25 : timeLeft - 1;
   }, 1000);
-});
 
-function updateRoundAndTimer() {
-  document.getElementById("round-number").innerText = `#${currentRound}`;
-}
+  const betButton = document.querySelector(".bet-btn");
+  const popup = document.getElementById("bet-popup");
+  const popupAmount = document.getElementById("bet-amount");
+  const placeBetButton = document.getElementById("place-bet");
 
-// Popup logic
-const popup = document.getElementById("popup");
-const popupTitle = document.getElementById("popup-title");
-const betAmountInput = document.getElementById("bet-amount");
-const multiplierText = document.getElementById("multiplier");
+  let selectedBet = null;
 
-let selectedType = '';
-let selectedValue = '';
-let selectedMultiplier = 0;
+  document.querySelectorAll(".color-buttons button, .number-buttons button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedBet = btn.getAttribute("data-bet");
+      popup.style.display = "flex";
+    });
+  });
 
-function openPopup(type, value) {
-  selectedType = type;
-  selectedValue = value;
-  selectedMultiplier = getMultiplier(type, value);
-  popupTitle.innerText = `Place Bet on ${value}`;
-  multiplierText.innerText = `Payout: x${selectedMultiplier}`;
-  betAmountInput.value = '';
-  popup.style.display = "block";
-}
+  placeBetButton.addEventListener("click", () => {
+    const amount = parseInt(popupAmount.value);
+    if (!amount || amount > userWallet || amount < 1) {
+      alert("Invalid amount");
+      return;
+    }
+    userWallet -= amount;
+    walletAmount.textContent = userWallet;
+    popup.style.display = "none";
+    popupAmount.value = "";
 
-function closePopup() {
-  popup.style.display = "none";
-}
+    const history = document.getElementById("game-history");
+    const row = history.insertRow(1);
+    const betType = isNaN(selectedBet) ? selectedBet.toUpperCase() : "Number " + selectedBet;
+    row.innerHTML = `<td>${betType}</td><td>₹${amount}</td><td>Pending</td>`;
+  });
 
-function placeBet() {
-  const amount = parseFloat(betAmountInput.value);
-  if (!amount || amount <= 0) {
-    alert("Enter valid amount");
-    return;
-  }
+  window.onclick = function(e) {
+    if (e.target === popup) {
+      popup.style.display = "none";
+      popupAmount.value = "";
+    }
+  };
 
-  const serviceFee = 0.02 * amount;
-  const finalAmount = amount - serviceFee;
-  const potentialWin = finalAmount * selectedMultiplier;
-
-  wallet -= amount;
-  document.getElementById("wallet-balance").innerText = `₹ ${wallet}`;
-
-  addToGameHistory(currentRound, selectedType, selectedValue, amount, potentialWin);
-  closePopup();
-}
-
-function getMultiplier(type, value) {
-  if (type === 'color') {
-    if (value === 'Red' || value === 'Green') return 2;
-    if (value === 'Violet') return 4.5;
-  } else if (type === 'number') {
-    return 9;
-  }
-  return 0;
-}
-
-// Load dummy recent results
-function loadRecentResults() {
-  const resultsTable = document.getElementById("results-table");
-  const dummy = [
-    { round: 120, number: 5, color: 'Violet' },
-    { round: 121, number: 7, color: 'Red' },
-    { round: 122, number: 2, color: 'Green' }
+  // Dummy Recent Results
+  const results = [
+    { round: 1021, result: 3 },
+    { round: 1020, result: 5 },
+    { round: 1019, result: 8 },
+    { round: 1018, result: 0 },
+    { round: 1017, result: 1 }
   ];
 
-  dummy.reverse().forEach(res => {
-    const row = resultsTable.insertRow(1);
+  const resultTable = document.getElementById("recent-results");
+  results.forEach(r => {
+    const row = resultTable.insertRow(-1);
+    const color = r.result === 5 || r.result === 0 ? "violet" :
+                  [1, 3, 7, 9].includes(r.result) ? "green" : "red";
     row.innerHTML = `
-      <td>#${res.round}</td>
-      <td>${res.number}</td>
-      <td><div class="color-box color-${res.color.toLowerCase()}"></div> ${res.color}</td>
+      <td>${r.round}</td>
+      <td class="result-cell ${color}">${r.result}</td>
     `;
   });
-}
-
-function loadMyGameHistory() {
-  const historyTable = document.getElementById("history-table");
-  // Clear existing
-  historyTable.innerHTML = `
-    <tr>
-      <th>Round</th><th>Type</th><th>Value</th><th>Amount</th><th>Payout</th>
-    </tr>
-  `;
-}
-
-function addToGameHistory(round, type, value, amount, payout) {
-  const historyTable = document.getElementById("history-table");
-  const row = historyTable.insertRow(1);
-  row.innerHTML = `
-    <td>#${round}</td>
-    <td>${type}</td>
-    <td>${value}</td>
-    <td>₹${amount}</td>
-    <td>₹${payout.toFixed(2)}</td>
-  `;
-}
+});
