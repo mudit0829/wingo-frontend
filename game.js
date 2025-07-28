@@ -1,96 +1,66 @@
-let walletAmount = 1000;
-let roundNumber = 1234;
-let timer = 25;
+document.addEventListener("DOMContentLoaded", () => {
+  const walletSpan = document.getElementById("wallet-amount");
+  const popup = document.querySelector(".popup");
+  const popupTitle = document.getElementById("popup-title");
+  const confirmBet = document.getElementById("confirm-bet");
+  const cancelBet = document.getElementById("cancel-bet");
+  let selectedBet = {};
 
-const walletAmountEl = document.getElementById('wallet-amount');
-const timerEl = document.getElementById('timer');
-const roundNumberEl = document.getElementById('round-number');
-const popup = document.getElementById('popup');
-const overlay = document.getElementById('overlay');
-const betTypeEl = document.getElementById('bet-type');
-const selectedValueEl = document.getElementById('selected-value');
-const multiplierEl = document.getElementById('multiplier');
-const betAmountEl = document.getElementById('bet-amount');
-const confirmBetBtn = document.getElementById('confirm-bet');
-const recentResultsTbody = document.getElementById('recent-results').querySelector('tbody');
-const myGameHistoryTbody = document.getElementById('my-game-history').querySelector('tbody');
+  // Dummy wallet
+  let wallet = 1000;
+  walletSpan.innerText = wallet.toFixed(2);
 
-function updateWalletDisplay() {
-  walletAmountEl.textContent = `Wallet: ₹${walletAmount}`;
-}
-updateWalletDisplay();
+  // Tab click (color/number)
+  document.querySelectorAll(".tab, .number-tab").forEach((el) => {
+    el.addEventListener("click", () => {
+      selectedBet = {
+        type: el.classList.contains("number-tab") ? "number" : "color",
+        value: el.innerText.trim(),
+      };
+      popupTitle.innerText = `Place Bet on ${selectedBet.value}`;
+      popup.style.display = "flex";
+    });
+  });
 
-function updateTimer() {
-  timer--;
-  if (timer <= 0) {
-    roundNumber++;
-    timer = 25;
-    updateRoundDisplay();
-    addToRecentResults();
-  }
-  timerEl.textContent = `${timer}s`;
-}
-setInterval(updateTimer, 1000);
+  // Confirm Bet
+  confirmBet.addEventListener("click", () => {
+    const amount = parseInt(
+      document.querySelector('input[name="amount"]:checked')?.value || "0"
+    );
+    if (wallet >= amount && amount > 0) {
+      wallet -= amount;
+      walletSpan.innerText = wallet.toFixed(2);
+      addToHistory(selectedBet.value, amount);
+      popup.style.display = "none";
+    } else {
+      alert("Invalid Amount or Insufficient Balance");
+    }
+  });
 
-function updateRoundDisplay() {
-  roundNumberEl.textContent = roundNumber;
-}
-updateRoundDisplay();
+  // Cancel popup
+  cancelBet.addEventListener("click", () => {
+    popup.style.display = "none";
+  });
 
-function openBetPopup(type, value) {
-  betTypeEl.textContent = type;
-  selectedValueEl.textContent = value;
-  betAmountEl.value = '';
-  multiplierEl.value = '2';
-  popup.style.display = 'block';
-  overlay.style.display = 'block';
-}
-
-function closeBetPopup() {
-  popup.style.display = 'none';
-  overlay.style.display = 'none';
-}
-
-document.querySelectorAll('.color-btn').forEach(btn => {
-  btn.addEventListener('click', () => openBetPopup('Color', btn.textContent.trim()));
-});
-document.querySelectorAll('.number-btn').forEach(btn => {
-  btn.addEventListener('click', () => openBetPopup('Number', btn.textContent.trim()));
-});
-
-confirmBetBtn.addEventListener('click', () => {
-  const type = betTypeEl.textContent;
-  const value = selectedValueEl.textContent;
-  const amount = parseInt(betAmountEl.value);
-  const multiplier = parseFloat(multiplierEl.value);
-
-  if (isNaN(amount) || amount <= 0 || amount > walletAmount) {
-    alert("Invalid amount.");
-    return;
+  function addToHistory(betValue, amount) {
+    const table = document.getElementById("game-history-body");
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>#${Math.floor(Math.random() * 1000)}</td>
+      <td>${betValue}</td>
+      <td>${amount}</td>
+    `;
+    table.prepend(row);
   }
 
-  walletAmount -= amount;
-  updateWalletDisplay();
-  addToGameHistory(roundNumber, type, value, amount, multiplier);
-  closeBetPopup();
+  // Timer
+  const timerSpan = document.getElementById("timer");
+  let timeLeft = 25;
+  setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      timeLeft = 30;
+    }
+    timerSpan.innerText = timeLeft + "s";
+  }, 1000);
 });
-
-function addToRecentResults() {
-  const fakeResult = Math.floor(Math.random() * 10);
-  const row = document.createElement('tr');
-  row.innerHTML = `<td>${roundNumber}</td><td>${fakeResult}</td><td>${new Date().toLocaleTimeString()}</td>`;
-  recentResultsTbody.prepend(row);
-  if (recentResultsTbody.rows.length > 5) recentResultsTbody.deleteRow(-1);
-}
-
-function addToGameHistory(round, type, value, amount, multiplier) {
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${round}</td>
-    <td>${type}</td>
-    <td>${value}</td>
-    <td>₹${amount}</td>
-    <td>x${multiplier}</td>
-  `;
-  myGameHistoryTbody.prepend(row);
-}
