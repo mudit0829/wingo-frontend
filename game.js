@@ -1,97 +1,93 @@
-document.addEventListener('DOMContentLoaded', () => {
-  let roundNumber = 1;
-  let timer = 25;
-  let countdownInterval;
-  const timerDisplay = document.getElementById('timer');
-  const roundDisplay = document.getElementById('roundNumber');
-  const popup = document.getElementById('betPopup');
-  const amountInput = document.getElementById('betAmount');
-  const multiplierDisplay = document.getElementById('selectedMultiplier');
-  const historyTable = document.getElementById('myGameHistoryBody');
-  const recentResultsTable = document.getElementById('recentResultsBody');
+document.addEventListener("DOMContentLoaded", () => {
+  const popup = document.getElementById("bet-popup");
+  const popupAmount = document.getElementById("bet-amount");
+  const popupType = document.getElementById("bet-type");
+  const confirmBtn = document.getElementById("confirm-bet");
+  const cancelBtn = document.getElementById("cancel-bet");
+  const popupRound = document.getElementById("popup-round");
 
-  let selectedBet = {};
-  let selectedMultiplier = 2;
+  const roundDisplay = document.getElementById("round-number");
+  const timerDisplay = document.getElementById("timer");
 
-  function updateTimer() {
-    timerDisplay.textContent = `${timer}s`;
-    if (timer === 0) {
-      clearInterval(countdownInterval);
-      setTimeout(() => {
-        roundNumber++;
-        roundDisplay.textContent = roundNumber;
-        timer = 25;
-        startTimer();
-        generateResult();
-      }, 5000);
+  let currentRound = 1001;
+  let countdown = 25;
+
+  const updateTimer = () => {
+    timerDisplay.textContent = countdown + "s";
+    if (countdown === 0) {
+      currentRound++;
+      countdown = 25;
+      roundDisplay.textContent = currentRound;
+      generateResult();
     } else {
-      timer--;
+      countdown--;
     }
-  }
+  };
+  setInterval(updateTimer, 1000);
 
-  function startTimer() {
-    timerDisplay.textContent = `${timer}s`;
-    countdownInterval = setInterval(updateTimer, 1000);
-  }
+  roundDisplay.textContent = currentRound;
 
-  startTimer();
-
-  // Handle color and number clicks
-  document.querySelectorAll('.color-buttons button, .number-buttons button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedBet = {
-        type: btn.classList.contains('number') ? 'number' : 'color',
-        value: btn.textContent
-      };
-      document.getElementById('betPopup').style.display = 'block';
+  let selectedBet = null;
+  document.querySelectorAll(".color-button, .number-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedBet = btn.textContent;
+      popupRound.textContent = currentRound;
+      popupType.innerHTML = `
+        <option value="${selectedBet}">${selectedBet}</option>
+        <option value="x2">x2</option>
+        <option value="x5">x5</option>
+        <option value="x10">x10</option>
+        <option value="x50">x50</option>
+        <option value="x100">x100</option>
+      `;
+      popup.style.display = "block";
     });
   });
 
-  document.getElementById('placeBetBtn').addEventListener('click', () => {
-    const amount = parseFloat(amountInput.value);
-    if (!amount || amount <= 0) return alert("Enter valid amount");
-    
-    // Save to history
-    const newRow = historyTable.insertRow(0);
-    newRow.insertCell(0).textContent = roundNumber;
-    newRow.insertCell(1).textContent = selectedBet.type;
-    newRow.insertCell(2).textContent = selectedBet.value;
-    newRow.insertCell(3).textContent = amount;
-    newRow.insertCell(4).textContent = `x${selectedMultiplier}`;
-
-    popup.style.display = 'none';
-    amountInput.value = '';
-    selectedMultiplier = 2;
-    multiplierDisplay.textContent = 'x2';
+  cancelBtn.addEventListener("click", () => {
+    popup.style.display = "none";
+    selectedBet = null;
   });
 
-  document.getElementById('cancelBetBtn').addEventListener('click', () => {
-    popup.style.display = 'none';
-    amountInput.value = '';
+  confirmBtn.addEventListener("click", () => {
+    const amount = popupAmount.value;
+    const type = popupType.value;
+    if (amount && selectedBet) {
+      addToHistory(currentRound, selectedBet, amount, type);
+      popup.style.display = "none";
+      popupAmount.value = "";
+      selectedBet = null;
+    }
   });
 
-  document.querySelectorAll('.multiplier-buttons button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedMultiplier = btn.getAttribute('data-multiplier');
-      multiplierDisplay.textContent = `x${selectedMultiplier}`;
-    });
-  });
+  function addToHistory(round, bet, amount, type) {
+    const historyTable = document.querySelector("#game-history tbody");
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${round}</td>
+      <td>${bet}</td>
+      <td>${amount}</td>
+      <td>${type}</td>
+    `;
+    historyTable.prepend(row);
+  }
 
   function generateResult() {
-    const result = Math.floor(Math.random() * 10);
-    let color = '';
+    const results = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    const result = results[Math.floor(Math.random() * results.length)];
 
-    if ([1, 3, 7, 9].includes(result)) color = 'green';
-    else if ([2, 4, 6, 8].includes(result)) color = 'red';
-    else color = 'violet';
+    let color = "";
+    if (["1", "3", "7", "9"].includes(result)) color = "Green";
+    else if (["2", "4", "6", "8"].includes(result)) color = "Red";
+    else if (["0", "5"].includes(result)) color = "Violet";
 
-    const newRow = recentResultsTable.insertRow(0);
-    newRow.insertCell(0).textContent = roundNumber;
-    newRow.insertCell(1).textContent = result;
-    
-    const colorCell = newRow.insertCell(2);
-    const div = document.createElement('div');
-    div.classList.add('result-color-box', `result-${color}`);
-    colorCell.appendChild(div);
+    const table = document.querySelector("#recent-results tbody");
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${currentRound}</td>
+      <td class="result-${color.toLowerCase()}">${color}</td>
+      <td>${result}</td>
+    `;
+    table.prepend(row);
   }
 });
