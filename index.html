@@ -2,93 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="header">
-    <img src="logo.png" alt="WinGo Logo" class="logo" />
-    <div class="wallet-info">
-      <span id="wallet-amount">Wallet: ₹0</span>
-      <button id="deposit-btn">Deposit</button>
-      <button id="withdraw-btn">Withdraw</button>
+  <div class="header">
+    <img src="https://i.imgur.com/HkR5qA5.png" alt="WinGo Logo" class="logo"/>
+    <div class="wallet-section">
+      Wallet: ₹<span id="walletAmount">1000</span>
+      <button class="wallet-btn">Deposit</button>
+      <button class="wallet-btn">Withdraw</button>
     </div>
-  </header>
+    <div class="round-info">
+      Round: <span id="roundNumber">--</span> | Time Left: <span id="timer">--</span>s
+    </div>
+  </div>
 
-  <section class="game-info">
-    <div id="round-number">Round #0000</div>
-    <div id="timer">00:25</div>
-  </section>
+  <div class="bet-section">
+    <h2>Select Color</h2>
+    <div class="color-buttons">
+      <button class="bet-btn red" data-type="color" data-value="Red" data-multiplier="2">Red</button>
+      <button class="bet-btn green" data-type="color" data-value="Green" data-multiplier="2">Green</button>
+      <button class="bet-btn violet" data-type="color" data-value="Violet" data-multiplier="4.5">Violet</button>
+    </div>
 
-  <main class="main-content">
-    <section class="bet-section">
-      <h2>Choose Color</h2>
-      <div class="color-buttons">
-        <button class="color-btn red" data-color="Red">Red</button>
-        <button class="color-btn green" data-color="Green">Green</button>
-        <button class="color-btn violet" data-color="Violet">Violet</button>
-      </div>
+    <h2>Select Number</h2>
+    <div class="number-buttons">
+      ${[...Array(10).keys()].map(n => `<button class="number-btn" data-type="number" data-value="${n}" data-multiplier="9">${n}</button>`).join('')}
+    </div>
+  </div>
 
-      <h2>Choose Number</h2>
-      <div class="number-buttons">
-        <button class="number-btn" data-number="0">0</button>
-        <button class="number-btn" data-number="1">1</button>
-        <button class="number-btn" data-number="2">2</button>
-        <button class="number-btn" data-number="3">3</button>
-        <button class="number-btn" data-number="4">4</button>
-        <button class="number-btn" data-number="5">5</button>
-        <button class="number-btn" data-number="6">6</button>
-        <button class="number-btn" data-number="7">7</button>
-        <button class="number-btn" data-number="8">8</button>
-        <button class="number-btn" data-number="9">9</button>
-      </div>
-    </section>
+  <div class="how-to-play">
+    <h3>How to Play</h3>
+    <ul>
+      <li><strong>Red</strong>: Win on 1,3,7,9 – Payout: 2x</li>
+      <li><strong>Green</strong>: Win on 0,2,4,6,8 – Payout: 2x</li>
+      <li><strong>Violet</strong>: Win on 0 or 5 – Payout: 4.5x</li>
+      <li><strong>Number</strong>: Match exact – Payout: 9x</li>
+      <li><strong>Service Fee:</strong> 2% is deducted on each bet</li>
+    </ul>
+  </div>
 
-    <section class="results-section">
-      <h2>Recent Results</h2>
-      <table>
-        <thead>
-          <tr><th>Round</th><th>Result</th><th>Multiplier</th></tr>
-        </thead>
-        <tbody id="recent-results"></tbody>
-      </table>
-    </section>
+  <div class="results-section">
+    <h3>Recent Results</h3>
+    <table id="recentResultsTable">
+      <thead><tr><th>Round</th><th>Result</th><th>Color</th></tr></thead>
+      <tbody></tbody>
+    </table>
 
-    <section class="history-section">
-      <h2>My Game History</h2>
-      <table>
-        <thead>
-          <tr><th>Round</th><th>Type</th><th>Selection</th><th>Amount</th><th>Result</th></tr>
-        </thead>
-        <tbody id="my-history"></tbody>
-      </table>
-    </section>
+    <h3>My Game History</h3>
+    <table id="myHistoryTable">
+      <thead><tr><th>Round</th><th>Bet Type</th><th>Value</th><th>Amount</th><th>Result</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    <section class="how-to-play">
-      <h2>How to Play</h2>
-      <ul>
-        <li><strong>Red</strong>: Wins on 1, 3, 7, 9 (x2)</li>
-        <li><strong>Green</strong>: Wins on 0, 2, 4, 6, 8 (x2)</li>
-        <li><strong>Violet</strong>: Wins on 0 & 5 (x4.5)</li>
-        <li><strong>Exact Number</strong>: Wins (x9)</li>
-        <li>2% service fee on all bets</li>
-      </ul>
-    </section>
-  </main>
-
-  <div id="bet-popup" class="popup hidden">
+  <!-- Bet Popup -->
+  <div class="popup" id="betPopup">
     <div class="popup-content">
-      <span class="close-btn" id="close-popup">×</span>
-      <h3 id="bet-title">Placing Bet For:</h3>
-      <label>Amount:
-        <input type="number" id="bet-amount" placeholder="Enter amount" />
-      </label>
-      <button id="place-bet-btn">Place Bet</button>
+      <h3>Enter Bet Amount</h3>
+      <input type="number" id="betAmountInput" placeholder="Amount" min="10" step="10" />
+      <div class="quick-select">
+        <button data-amt="10">₹10</button>
+        <button data-amt="50">₹50</button>
+        <button data-amt="100">₹100</button>
+        <button data-amt="500">₹500</button>
+      </div>
+      <button id="placeBetBtn">Place Bet</button>
+      <button id="closePopupBtn">Cancel</button>
     </div>
   </div>
 
   <script src="game.js"></script>
 </body>
 </html>
-
