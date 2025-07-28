@@ -1,89 +1,93 @@
+let selectedColor = "";
+let selectedNumber = null;
+let walletBalance = 1000;
+let currentRound = 1234;
+let timer = 25;
+
 document.addEventListener("DOMContentLoaded", () => {
-  let selectedType = "";
-  let selectedValue = "";
+  updateTimer();
+  updateWalletDisplay();
+  setInterval(updateTimer, 1000);
+});
 
-  const popup = document.getElementById("betPopup");
-  const overlay = document.getElementById("overlay");
-  const betTypeLabel = document.getElementById("betType");
-  const placeBetBtn = document.getElementById("placeBetBtn");
-  const closePopupBtn = document.getElementById("closePopupBtn");
-  const betAmountInput = document.getElementById("betAmount");
-  const timerElement = document.getElementById("timer");
-  const roundElement = document.getElementById("roundNumber");
-
-  // Dummy values for demo
-  let walletBalance = 1000;
-  let currentRound = 1234;
-  let timer = 25;
-
-  function updateWalletDisplay() {
-    const walletInfo = document.getElementById("walletAmount");
-    if (walletInfo) walletInfo.textContent = walletBalance.toFixed(2);
-  }
-
-  function updateTimer() {
-    if (timerElement) timerElement.textContent = `${timer}s`;
-    if (roundElement) roundElement.textContent = `#${currentRound}`;
+function updateTimer() {
+  const timerEl = document.getElementById("timer");
+  if (timerEl) {
+    timerEl.textContent = `Time Left: ${timer}s`;
     timer--;
-
     if (timer < 0) {
       timer = 25;
       currentRound++;
+      document.getElementById("roundNo").textContent = `Round #${currentRound}`;
     }
   }
+}
 
-  setInterval(updateTimer, 1000);
-  updateWalletDisplay();
-
-  // Show bet popup
-  window.openColorPopup = (color) => {
-    selectedType = "Color";
-    selectedValue = color;
-    showPopup();
-  };
-
-  window.openNumberPopup = (num) => {
-    selectedType = "Number";
-    selectedValue = num;
-    showPopup();
-  };
-
-  function showPopup() {
-    popup.style.display = "block";
-    overlay.style.display = "block";
-    betTypeLabel.textContent = `Placing Bet For: ${selectedType} - ${selectedValue}`;
+function updateWalletDisplay() {
+  const walletEl = document.getElementById("walletBalance");
+  if (walletEl) {
+    walletEl.textContent = walletBalance;
   }
+}
 
-  function closePopup() {
-    popup.style.display = "none";
-    overlay.style.display = "none";
-    selectedType = "";
-    selectedValue = "";
-    betAmountInput.value = "";
-  }
+function openColorPopup() {
+  document.getElementById("colorPopup").classList.remove("hidden");
+}
 
-  placeBetBtn.addEventListener("click", () => {
-    const amount = parseFloat(betAmountInput.value);
-    if (isNaN(amount) || amount <= 0) {
-      alert("Enter a valid amount");
-      return;
-    }
+function openNumberPopup() {
+  document.getElementById("numberPopup").classList.remove("hidden");
+}
 
-    alert(`Placed ₹${amount} on ${selectedType} - ${selectedValue}`);
+function closePopup() {
+  document.querySelectorAll(".popup").forEach(p => p.classList.add("hidden"));
+}
+
+function selectColor(color) {
+  selectedColor = color;
+  document.getElementById("selectedColor").textContent = color;
+  openColorPopup();
+}
+
+function selectNumber(num) {
+  selectedNumber = num;
+  document.getElementById("selectedNumber").textContent = num;
+  openNumberPopup();
+}
+
+function placeColorBet() {
+  const amount = parseFloat(document.getElementById("colorBetAmount").value);
+  if (!isNaN(amount) && amount > 0 && amount <= walletBalance) {
+    const effectiveAmount = amount * 0.98;
+    walletBalance -= amount;
+    updateWalletDisplay();
+    addToHistory(`Color: ${selectedColor}`, amount, effectiveAmount);
     closePopup();
-  });
+  }
+}
 
-  closePopupBtn.addEventListener("click", closePopup);
-  overlay.addEventListener("click", closePopup);
+function placeNumberBet() {
+  const amount = parseFloat(document.getElementById("numberBetAmount").value);
+  if (!isNaN(amount) && amount > 0 && amount <= walletBalance) {
+    const effectiveAmount = amount * 0.98;
+    walletBalance -= amount;
+    updateWalletDisplay();
+    addToHistory(`Number: ${selectedNumber}`, amount, effectiveAmount);
+    closePopup();
+  }
+}
 
-  // Tab toggling
-  window.showTab = (tabId) => {
-    document.querySelectorAll(".tab-section").forEach(tab => {
-      tab.classList.remove("active");
-    });
-    document.getElementById(tabId).classList.add("active");
-  };
+function addToHistory(type, bet, net) {
+  const li = document.createElement("li");
+  li.textContent = `Bet on ${type}, Amount: ₹${bet}, Net: ₹${net.toFixed(2)}`;
+  document.getElementById("historyList").appendChild(li);
+  document.getElementById("resultsList").appendChild(li.cloneNode(true));
+}
 
-  // Dummy How to Play content
-  document.getElementById("howToPlayContent").textContent = "Select color or number and place bet before timer ends.";
-});
+function showTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach(tab => tab.classList.add("hidden"));
+  document.getElementById(tabId).classList.remove("hidden");
+}
+
+function openHowToPlay() {
+  document.getElementById("howToPlayPopup").classList.remove("hidden");
+}
