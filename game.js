@@ -1,139 +1,110 @@
-const apiUrl = 'https://wingo-backend-nqk5.onrender.com';
+const API_BASE = 'https://wingo-backend-nqk5.onrender.com';
+
 let token = localStorage.getItem('token');
 let username = localStorage.getItem('username');
 
 if (!token || !username) {
-  window.location.href = 'login.html';
+    window.location.href = 'login.html';
 }
 
-document.getElementById('username').innerText = username;
+// Show username
+document.getElementById('username').textContent = username;
 
-// Generate number buttons 0-9
-const numberContainer = document.getElementById('numberButtons');
-for (let i = 0; i <= 9; i++) {
-  const btn = document.createElement('button');
-  btn.innerText = i;
-  btn.onclick = () => placeBet(i.toString());
-  numberContainer.appendChild(btn);
-}
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.clear();
+    window.location.href = 'login.html';
+});
 
-function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  window.location.href = 'login.html';
-}
-
-// Countdown Timer
+// Timer countdown
 let timeLeft = 25;
-let inDrawPhase = false;
-updateTimerDisplay();
+const timerDisplay = document.getElementById('timer');
 
-setInterval(() => {
-  timeLeft--;
-  if (timeLeft <= 0) {
-    if (!inDrawPhase) {
-      inDrawPhase = true;
-      timeLeft = 5; // 5 seconds waiting phase
-    } else {
-      inDrawPhase = false;
-      timeLeft = 25; // new round
-      fetchRounds();     // update round results
-      fetchMyHistory();  // update user's bet history
-    }
-  }
-  updateTimerDisplay();
-}, 1000);
+function startTimer() {
+    timeLeft = 25;
+    timerDisplay.textContent = `Time Left: ${timeLeft} seconds`;
 
-function updateTimerDisplay() {
-  document.getElementById('timeLeft').innerText = timeLeft;
+    const interval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time Left: ${timeLeft} seconds`;
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+        }
+    }, 1000);
 }
 
-// Place bet
-function placeBet(betValue) {
-  const amount = document.getElementById('amount').value;
-  if (!amount || amount <= 0) {
-    alert('Please enter a valid amount');
-    return;
-  }
+startTimer();
+setInterval(startTimer, 30000); // New round every 30 seconds
 
-  const payload = {
-    username,
-    amount,
-    betType: isNaN(betValue) ? 'color' : 'number',
-    betValue,
-  };
+// Place Bet
+document.querySelectorAll('.color-btn').forEach(btn => {
+    btn.addEventListener('click', () => placeBet(btn.dataset.color, null));
+});
 
-  fetch(`${apiUrl}/api/bets`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert('Bet placed successfully!');
-        fetchMyHistory(); // refresh user history
-      } else {
-        alert(data.message || 'Bet failed!');
-      }
+document.getElementById('numberButtons').addEventListener('click', (e) => {
+    if (e.target.classList.contains('num-btn')) {
+        placeBet(null, parseInt(e.target.dataset.num));
+    }
+});
+
+function placeBet(color, number) {
+    const amount = parseFloat(document.getElementById('amount').value);
+    if (!amount || amount < 1) return alert('Enter valid amount');
+
+    fetch(`${API_BASE}/api/bets`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ username, color, number, amount })
     })
-    .catch(err => {
-      console.error(err);
-      alert('Error placing bet.');
-    });
-}
-
-// Fetch last 10 rounds
-function fetchRounds() {
-  fetch(`${apiUrl}/api/rounds`)
     .then(res => res.json())
     .then(data => {
-      const table = document.getElementById('roundsTable');
-      table.innerHTML = '';
-      const last10 = data.slice(-10).reverse();
-
-      last10.forEach(round => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${round.roundId}</td>
-          <td>${round.result !== null ? round.result : '-'}</td>
-          <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
-        `;
-        table.appendChild(tr);
-      });
-    });
+        alert('Bet placed!');
+        fetchHistory();
+    })
+    .catch(err => console.error('Bet error:', err));
 }
 
-// Fetch user history
-function fetchMyHistory() {
-  fetch(`${apiUrl}/api/bets/user/${username}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  })
-    .then(res => res.json())
-    .then(data => {
-      const table = document.getElementById('historyTable');
-      table.innerHTML = '';
-      const last10 = data.slice(-10).reverse();
-
-      last10.forEach(bet => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${bet.roundId}</td>
-          <td>${bet.colorBet || '-'}</td>
-          <td>${bet.numberBet || '-'}</td>
-          <td>${bet.amount}</td>
-          <td>${bet.result !== undefined ? bet.result : '-'}</td>
-        `;
-        table.appendChild(tr);
-      });
-    });
+// Show Recent Results
+function fetchResults() {
+    fetch(`${API_BASE}/api/rounds`)
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById('resultTable');
+            table.innerHTML = '';
+            data.slice(-10).reverse().forEach(r => {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${r.roundId}</td>
+                    <td>${r.result}</td>
+                    <td>${new Date(r.timestamp).toLocaleTimeString()}</td>
+                `;
+            });
+        });
 }
 
-// Load on page start
-fetchRounds();
-fetchMyHistory();
+// Show User History
+function fetchHistory() {
+    fetch(`${API_BASE}/api/bets/user/${username}`)
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById('historyTable');
+            table.innerHTML = '';
+            data.slice(-10).reverse().forEach(b => {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${b.roundId}</td>
+                    <td>${b.color || b.number}</td>
+                    <td>${b.amount}</td>
+                    <td>${new Date(b.timestamp).toLocaleTimeString()}</td>
+                `;
+            });
+        });
+}
+
+fetchResults();
+fetchHistory();
+setInterval(fetchResults, 10000);
