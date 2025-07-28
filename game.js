@@ -1,112 +1,139 @@
-const API_BASE = 'https://wingo-backend-nqk5.onrender.com';
+const apiUrl = 'https://wingo-backend-nqk5.onrender.com';
+let token = localStorage.getItem('token');
+let username = localStorage.getItem('username');
 
-// Get token and username from localStorage
-const token = localStorage.getItem('token');
-const username = localStorage.getItem('username');
-
-// DOM elements
-const userSpan = document.getElementById('user');
-const timerSpan = document.getElementById('timer');
-const amountInput = document.getElementById('amount');
-const roundTable = document.getElementById('roundTable');
-const logoutBtn = document.getElementById('logoutBtn');
-const numberBetsContainer = document.getElementById('numberBets');
-
-// Redirect to login if not logged in
 if (!token || !username) {
   window.location.href = 'login.html';
 }
 
-// Show username
-userSpan.textContent = username;
+document.getElementById('username').innerText = username;
 
-// Logout
-logoutBtn.addEventListener('click', () => {
-  localStorage.clear();
-  window.location.href = 'login.html';
-});
-
-// Timer countdown
-let secondsLeft = 30;
-function updateTimer() {
-  timerSpan.textContent = `${secondsLeft} seconds`;
-  secondsLeft--;
-  if (secondsLeft < 0) {
-    secondsLeft = 30;
-  }
+// Generate number buttons 0-9
+const numberContainer = document.getElementById('numberButtons');
+for (let i = 0; i <= 9; i++) {
+  const btn = document.createElement('button');
+  btn.innerText = i;
+  btn.onclick = () => placeBet(i.toString());
+  numberContainer.appendChild(btn);
 }
-setInterval(updateTimer, 1000);
-updateTimer();
 
-// Bet handler
-async function placeBet(color, number) {
-  const amount = parseFloat(amountInput.value);
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+  window.location.href = 'login.html';
+}
+
+// Countdown Timer
+let timeLeft = 25;
+let inDrawPhase = false;
+updateTimerDisplay();
+
+setInterval(() => {
+  timeLeft--;
+  if (timeLeft <= 0) {
+    if (!inDrawPhase) {
+      inDrawPhase = true;
+      timeLeft = 5; // 5 seconds waiting phase
+    } else {
+      inDrawPhase = false;
+      timeLeft = 25; // new round
+      fetchRounds();     // update round results
+      fetchMyHistory();  // update user's bet history
+    }
+  }
+  updateTimerDisplay();
+}, 1000);
+
+function updateTimerDisplay() {
+  document.getElementById('timeLeft').innerText = timeLeft;
+}
+
+// Place bet
+function placeBet(betValue) {
+  const amount = document.getElementById('amount').value;
   if (!amount || amount <= 0) {
-    alert('Enter valid amount');
+    alert('Please enter a valid amount');
     return;
   }
 
-  const betData = {
+  const payload = {
     username,
     amount,
-    color: color || null,
-    number: number ?? null
+    betType: isNaN(betValue) ? 'color' : 'number',
+    betValue,
   };
 
-  try {
-    const res = await fetch(`${API_BASE}/api/bets`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(betData)
+  fetch(`${apiUrl}/api/bets`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('Bet placed successfully!');
+        fetchMyHistory(); // refresh user history
+      } else {
+        alert(data.message || 'Bet failed!');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Error placing bet.');
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Bet failed');
-    alert('Bet placed!');
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
 }
 
-// Attach color button events
-document.getElementById('redBtn').addEventListener('click', () => placeBet('Red'));
-document.getElementById('greenBtn').addEventListener('click', () => placeBet('Green'));
-document.getElementById('violetBtn').addEventListener('click', () => placeBet('Violet'));
+// Fetch last 10 rounds
+function fetchRounds() {
+  fetch(`${apiUrl}/api/rounds`)
+    .then(res => res.json())
+    .then(data => {
+      const table = document.getElementById('roundsTable');
+      table.innerHTML = '';
+      const last10 = data.slice(-10).reverse();
 
-// Generate number bet buttons
-for (let i = 0; i < 10; i++) {
-  const btn = document.createElement('button');
-  btn.textContent = i;
-  btn.onclick = () => placeBet(null, i);
-  numberBetsContainer.appendChild(btn);
+      last10.forEach(round => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${round.roundId}</td>
+          <td>${round.result !== null ? round.result : '-'}</td>
+          <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
+        `;
+        table.appendChild(tr);
+      });
+    });
 }
 
-// Load recent rounds
-async function loadRounds() {
-  try {
-    const res = await fetch(`${API_BASE}/api/rounds`);
-    const rounds = await res.json();
-    roundTable.innerHTML = `
-      <tr><th>Round ID</th><th>Result</th><th>Time</th></tr>
-      ${rounds
-        .slice(-5)
-        .reverse()
-        .map(
-          (r) => `
-        <tr>
-          <td>${r.roundId}</td>
-          <td>${r.result || 'Pending'}</td>
-          <td>${new Date(r.timestamp).toLocaleTimeString()}</td>
-        </tr>
-      `
-        )
-        .join('')}
-    `;
-  } catch (err) {
-    roundTable.innerHTML = '<tr><td colspan="3">Error loading rounds</td></tr>';
-  }
+// Fetch user history
+function fetchMyHistory() {
+  fetch(`${apiUrl}/api/bets/user/${username}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      const table = document.getElementById('historyTable');
+      table.innerHTML = '';
+      const last10 = data.slice(-10).reverse();
+
+      last10.forEach(bet => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${bet.roundId}</td>
+          <td>${bet.colorBet || '-'}</td>
+          <td>${bet.numberBet || '-'}</td>
+          <td>${bet.amount}</td>
+          <td>${bet.result !== undefined ? bet.result : '-'}</td>
+        `;
+        table.appendChild(tr);
+      });
+    });
 }
-setInterval(loadRounds, 3000);
-loadRounds();
+
+// Load on page start
+fetchRounds();
+fetchMyHistory();
