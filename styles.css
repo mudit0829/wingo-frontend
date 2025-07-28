@@ -1,159 +1,133 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f5f6fa;
+  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
+  background: #f9f9f9;
+  color: #333;
+}
+
+.container {
+  padding: 10px;
+  max-width: 480px;
+  margin: auto;
 }
 
 header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   background: #333;
-  color: #fff;
-  padding: 10px 20px;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  border-radius: 10px;
+  position: relative;
 }
 
 .logo {
-  height: 40px;
+  width: 40px;
+  vertical-align: middle;
 }
 
 .wallet {
-  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
 }
 
-.wallet-buttons button {
-  margin-left: 10px;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
+.wallet-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .withdraw {
-  background-color: #e74c3c;
+  background: red;
+  color: white;
 }
 
 .deposit {
-  background-color: #2ecc71;
-}
-
-.info-bar {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  background: #ddd;
-  font-size: 16px;
-}
-
-.color-buttons, .number-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 10px 0;
-}
-
-.color-btn, .number-btn {
-  margin: 5px;
-  padding: 15px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-}
-
-.color-btn.red { background-color: red; }
-.color-btn.green { background-color: green; }
-.color-btn.violet { background-color: purple; }
-
-.number-btn {
-  background-color: #3498db;
-}
-
-.history-tabs {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.history-tabs button {
-  padding: 10px 20px;
-  margin: 0 5px;
-  font-weight: bold;
-  cursor: pointer;
-  border: none;
-  background-color: #2980b9;
+  background: green;
   color: white;
-  border-radius: 4px;
 }
 
-.history-table {
-  width: 90%;
-  margin: 15px auto;
-  border-collapse: collapse;
-  background: white;
-}
-
-.history-table th, .history-table td {
-  border: 1px solid #ccc;
+.withdraw, .deposit, .tabs button, .amount-btn, .multiplier-btn {
   padding: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.section, .tabs, .info-section {
+  margin-top: 15px;
   text-align: center;
 }
 
-.hidden {
+.tabs {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tabs button {
+  flex: 1 1 30%;
+  background: #007bff;
+  color: white;
+}
+
+.color-bet[data-color="Red"] { background: red; }
+.color-bet[data-color="Green"] { background: green; }
+.color-bet[data-color="Violet"] { background: purple; }
+
+.history-section {
   display: none;
+  margin-top: 15px;
+}
+
+.history-section table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-section th, .history-section td {
+  border: 1px solid #ccc;
+  padding: 5px;
+  text-align: center;
 }
 
 .modal {
+  display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
   background: white;
+  margin: 10% auto;
   padding: 20px;
   width: 90%;
-  max-width: 400px;
-  border-radius: 8px;
+  border-radius: 10px;
   position: relative;
 }
 
-.close-btn {
+.close {
   position: absolute;
-  top: 8px;
-  right: 12px;
+  top: 5px;
+  right: 15px;
   font-size: 20px;
   cursor: pointer;
 }
 
-.amount-options button,
-.multiplier-options button {
-  margin: 5px;
-  padding: 8px 12px;
-  border: 1px solid #aaa;
-  border-radius: 6px;
-  background: #eee;
-  cursor: pointer;
+.bet-options, .multiplier-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
-.place-bet {
-  margin-top: 15px;
-  width: 100%;
-  padding: 10px;
-  background-color: #27ae60;
+.amount-btn, .multiplier-btn {
+  background: #007bff;
   color: white;
-  border: none;
-  font-weight: bold;
-  font-size: 16px;
-  border-radius: 6px;
 }
