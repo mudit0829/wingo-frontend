@@ -1,74 +1,89 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const timerEl = document.getElementById("timer");
-  const roundEl = document.getElementById("roundNumber");
-  const walletEl = document.getElementById("walletAmount");
+  let selectedType = "";
+  let selectedValue = "";
 
-  function updateTimer() {
-    if (timerEl) {
-      const seconds = 25 - (Math.floor(Date.now() / 1000) % 30);
-      timerEl.textContent = seconds + "s";
-    }
-  }
+  const popup = document.getElementById("betPopup");
+  const overlay = document.getElementById("overlay");
+  const betTypeLabel = document.getElementById("betType");
+  const placeBetBtn = document.getElementById("placeBetBtn");
+  const closePopupBtn = document.getElementById("closePopupBtn");
+  const betAmountInput = document.getElementById("betAmount");
+  const timerElement = document.getElementById("timer");
+  const roundElement = document.getElementById("roundNumber");
 
-  function updateRound() {
-    if (roundEl) {
-      const totalRounds = 2880;
-      const startTime = new Date();
-      startTime.setHours(0, 0, 0, 0);
-      const elapsed = Math.floor((Date.now() - startTime.getTime()) / 30000);
-      roundEl.textContent = (elapsed % totalRounds) + 1;
-    }
-  }
+  // Dummy values for demo
+  let walletBalance = 1000;
+  let currentRound = 1234;
+  let timer = 25;
 
   function updateWalletDisplay() {
-    if (walletEl) {
-      walletEl.textContent = "1000";
+    const walletInfo = document.getElementById("walletAmount");
+    if (walletInfo) walletInfo.textContent = walletBalance.toFixed(2);
+  }
+
+  function updateTimer() {
+    if (timerElement) timerElement.textContent = `${timer}s`;
+    if (roundElement) roundElement.textContent = `#${currentRound}`;
+    timer--;
+
+    if (timer < 0) {
+      timer = 25;
+      currentRound++;
     }
   }
 
-  updateTimer();
-  updateRound();
-  updateWalletDisplay();
   setInterval(updateTimer, 1000);
-  setInterval(updateRound, 30000);
+  updateWalletDisplay();
 
-  // Show/Hide History
-  document.getElementById("gameHistoryTab").addEventListener("click", () => {
-    document.getElementById("gameHistory").style.display = "block";
-    document.getElementById("myHistory").style.display = "none";
+  // Show bet popup
+  window.openColorPopup = (color) => {
+    selectedType = "Color";
+    selectedValue = color;
+    showPopup();
+  };
+
+  window.openNumberPopup = (num) => {
+    selectedType = "Number";
+    selectedValue = num;
+    showPopup();
+  };
+
+  function showPopup() {
+    popup.style.display = "block";
+    overlay.style.display = "block";
+    betTypeLabel.textContent = `Placing Bet For: ${selectedType} - ${selectedValue}`;
+  }
+
+  function closePopup() {
+    popup.style.display = "none";
+    overlay.style.display = "none";
+    selectedType = "";
+    selectedValue = "";
+    betAmountInput.value = "";
+  }
+
+  placeBetBtn.addEventListener("click", () => {
+    const amount = parseFloat(betAmountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Enter a valid amount");
+      return;
+    }
+
+    alert(`Placed ₹${amount} on ${selectedType} - ${selectedValue}`);
+    closePopup();
   });
 
-  document.getElementById("myHistoryTab").addEventListener("click", () => {
-    document.getElementById("myHistory").style.display = "block";
-    document.getElementById("gameHistory").style.display = "none";
-  });
+  closePopupBtn.addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
 
-  // How to Play modal
-  const howModal = document.getElementById("howToPlayModal");
-  const betModal = document.getElementById("betModal");
-
-  document.getElementById("howToPlayBtn").onclick = () => {
-    howModal.style.display = "block";
-  };
-  document.getElementById("closeModal").onclick = () => {
-    howModal.style.display = "none";
-  };
-  document.getElementById("closeBetModal").onclick = () => {
-    betModal.style.display = "none";
+  // Tab toggling
+  window.showTab = (tabId) => {
+    document.querySelectorAll(".tab-section").forEach(tab => {
+      tab.classList.remove("active");
+    });
+    document.getElementById(tabId).classList.add("active");
   };
 
-  // Color Bet
-  document.querySelectorAll(".color-bet").forEach(btn => {
-    btn.onclick = () => {
-      const color = btn.dataset.color;
-      document.getElementById("betTypeText").textContent = `Place Bet on ${color}`;
-      betModal.style.display = "block";
-    };
-  });
-
-  // Number Bet
-  document.querySelector(".number-bet").onclick = () => {
-    document.getElementById("betTypeText").textContent = `Place Bet on Number`;
-    betModal.style.display = "block";
-  };
+  // Dummy How to Play content
+  document.getElementById("howToPlayContent").textContent = "Select color or number and place bet before timer ends.";
 });
