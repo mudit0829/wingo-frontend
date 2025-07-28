@@ -1,67 +1,93 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinGo Game</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WinGo Game</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div class="header">
-        <h1>🎯 WinGo Game</h1>
-        <div id="round-info">
-            <span>Round: <span id="roundId">--</span></span>
-            <span> | Timer: <span id="timer">--</span></span>
-        </div>
-        <div class="wallet">Wallet: ₹<span id="wallet">0</span></div>
+  <div class="header">
+    <h1>WinGo Game</h1>
+    <div class="round-timer">
+      <p id="roundNo">Round #0000</p>
+      <p id="timer">Time Left: 00</p>
     </div>
+  </div>
 
-    <div class="tabs">
-        <button onclick="showTab('color')">Color Bet</button>
-        <button onclick="showTab('number')">Number Bet</button>
-        <button onclick="openHowToPlay()">How to Play</button>
+  <div class="game-buttons">
+    <button onclick="openColorPopup()">Bet on Color</button>
+    <button onclick="openNumberPopup()">Bet on Number</button>
+  </div>
+
+  <div class="tab-buttons">
+    <button onclick="showTab('history')">Game History</button>
+    <button onclick="showTab('results')">Recent Results</button>
+    <button onclick="openHowToPlay()">How to Play</button>
+  </div>
+
+  <div class="wallet">
+    Wallet Balance: ₹<span id="walletBalance">1000</span>
+  </div>
+
+  <div id="colorPopup" class="popup hidden">
+    <div class="popup-content">
+      <h2>Placing Bet for: <span id="selectedColor">--</span></h2>
+      <input type="number" id="colorBetAmount" placeholder="Enter Bet Amount" />
+      <button onclick="placeColorBet()">Place Bet</button>
+      <button onclick="closePopup()">Cancel</button>
     </div>
+  </div>
 
-    <div class="tab-content" id="colorTab">
-        <h2>Choose Color</h2>
-        <div class="color-buttons">
-            <button class="red" onclick="openColorPopup('Red')">Red</button>
-            <button class="green" onclick="openColorPopup('Green')">Green</button>
-            <button class="violet" onclick="openColorPopup('Violet')">Violet</button>
-        </div>
+  <div id="numberPopup" class="popup hidden">
+    <div class="popup-content">
+      <h2>Placing Bet for Number: <span id="selectedNumber">--</span></h2>
+      <input type="number" id="numberBetAmount" placeholder="Enter Bet Amount" />
+      <button onclick="placeNumberBet()">Place Bet</button>
+      <button onclick="closePopup()">Cancel</button>
     </div>
+  </div>
 
-    <div class="tab-content" id="numberTab" style="display:none">
-        <h2>Choose Number</h2>
-        <div class="number-buttons">
-            <script>
-                for (let i = 0; i <= 9; i++) {
-                    document.write(`<button onclick=\"openNumberPopup(${i})\">${i}</button>`);
-                }
-            </script>
-        </div>
+  <div class="color-options">
+    <button onclick="selectColor('Red')" class="red">Red</button>
+    <button onclick="selectColor('Green')" class="green">Green</button>
+    <button onclick="selectColor('Violet')" class="violet">Violet</button>
+  </div>
+
+  <div class="number-options">
+    <p>Select Number (0-9):</p>
+    <div class="number-grid">
+      <button onclick="selectNumber(0)">0</button>
+      <button onclick="selectNumber(1)">1</button>
+      <button onclick="selectNumber(2)">2</button>
+      <button onclick="selectNumber(3)">3</button>
+      <button onclick="selectNumber(4)">4</button>
+      <button onclick="selectNumber(5)">5</button>
+      <button onclick="selectNumber(6)">6</button>
+      <button onclick="selectNumber(7)">7</button>
+      <button onclick="selectNumber(8)">8</button>
+      <button onclick="selectNumber(9)">9</button>
     </div>
+  </div>
 
-    <div id="popup" class="popup" style="display:none">
-        <div class="popup-content">
-            <span id="betTitle">Placing Bet For:</span>
-            <input type="number" id="betAmount" placeholder="Enter amount" />
-            <button onclick="placeBet()">Place Bet</button>
-            <button onclick="closePopup()">Cancel</button>
-        </div>
+  <div id="history" class="tab-content hidden">
+    <h3>Game History</h3>
+    <ul id="historyList"></ul>
+  </div>
+
+  <div id="results" class="tab-content hidden">
+    <h3>Recent Results</h3>
+    <ul id="resultsList"></ul>
+  </div>
+
+  <div id="howToPlayPopup" class="popup hidden">
+    <div class="popup-content">
+      <h2>How to Play</h2>
+      <p>Select a color or number and place your bet. Red/Green pays 2x, Violet pays 4.5x, and exact number pays 9x. 2% fee applies.</p>
+      <button onclick="closePopup()">Close</button>
     </div>
+  </div>
 
-    <div id="howToPlayModal" class="popup" style="display:none">
-        <div class="popup-content">
-            <h3>How to Play</h3>
-            <p>1. Bet on Color (Red, Green, Violet) or Number (0-9)</p>
-            <p>2. Red/Green: 2x, Violet: 4.5x, Number: 9x</p>
-            <p>3. 2% fee is deducted per bet</p>
-            <button onclick="closeHowToPlay()">Close</button>
-        </div>
-    </div>
-
-    <script src="game.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
