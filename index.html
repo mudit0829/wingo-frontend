@@ -4,71 +4,77 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="favicon.ico" />
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
   <header>
-    <img src="https://mudit0829.github.io/wingo-frontend/logo.png" alt="WinGo Logo" class="logo"/>
-    <div class="wallet">
-      Wallet: ₹<span id="wallet">1000</span>
-      <button class="wallet-btn">Deposit</button>
-      <button class="wallet-btn">Withdraw</button>
+    <img src="logo.png" alt="Wing Go Logo" class="logo"/>
+    <div class="wallet-box">
+      Wallet: ₹<span id="walletAmount">1000</span>
+      <button onclick="deposit()">Deposit</button>
+      <button onclick="withdraw()">Withdraw</button>
+    </div>
+    <div class="timer-round">
+      <span>⏳ Time Left: <span id="timer">30</span>s</span>
+      <span>🎯 Round #: <span id="roundNumber">1</span></span>
     </div>
   </header>
 
-  <section class="game-status">
-    <div id="round-number">Round: #0001</div>
-    <div id="timer">00:25</div>
-  </section>
-
-  <section class="color-bets">
-    <h3>Select a Color</h3>
-    <div class="color-buttons">
-      <button class="color-btn red" data-color="Red" data-multiplier="x2">Red<br><span>x2</span></button>
-      <button class="color-btn green" data-color="Green" data-multiplier="x2">Green<br><span>x2</span></button>
-      <button class="color-btn violet" data-color="Violet" data-multiplier="x4.5">Violet<br><span>x4.5</span></button>
-    </div>
-  </section>
-
-  <section class="number-bets">
-    <h3>Select a Number</h3>
-    <div class="number-grid">
-      ${[...Array(10).keys()].map(n => `<button class="number-btn" data-number="${n}" data-multiplier="x9">${n}<br><span>x9</span></button>`).join('')}
-    </div>
-  </section>
-
-  <div class="popup" id="betPopup">
-    <div class="popup-content">
-      <span class="close" onclick="closePopup()">&times;</span>
-      <h3 id="bet-title">Place your Bet</h3>
-      <div class="amount-options">
-        <button onclick="placeBet(10)">₹10</button>
-        <button onclick="placeBet(50)">₹50</button>
-        <button onclick="placeBet(100)">₹100</button>
+  <main>
+    <section class="bet-section">
+      <h2>🎨 Select Color</h2>
+      <div class="color-buttons">
+        <button class="bet-btn red" data-color="Red">Red</button>
+        <button class="bet-btn green" data-color="Green">Green</button>
+        <button class="bet-btn violet" data-color="Violet">Violet</button>
       </div>
+
+      <h2>🔢 Select Number</h2>
+      <div class="number-buttons">
+        <!-- Generate buttons 0 to 9 -->
+        <script>
+          for (let i = 0; i <= 9; i++) {
+            document.write(`<button class="bet-btn number" data-number="${i}">${i}</button>`);
+          }
+        </script>
+      </div>
+    </section>
+
+    <section class="history-section">
+      <h2>🕘 Game History</h2>
+      <table>
+        <thead>
+          <tr><th>Round</th><th>Result</th><th>Time</th></tr>
+        </thead>
+        <tbody id="gameHistory"></tbody>
+      </table>
+    </section>
+
+    <section class="how-to-play">
+      <h2>📖 How to Play</h2>
+      <ul>
+        <li>🎨 Red: 1, 3, 7, 9 → ×2 | 5 → ×1.5</li>
+        <li>💚 Green: 2, 4, 6, 8 → ×2 | 0 → ×1.5</li>
+        <li>💜 Violet: 0 or 5 → ×4.5</li>
+        <li>🔢 Number: Exact match → ×9</li>
+        <li>💸 2% Service Fee applied to each bet</li>
+      </ul>
+    </section>
+  </main>
+
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <span id="popupTitle">Place your bet</span>
+      <div class="amount-options">
+        <button onclick="selectAmount(10)">₹10</button>
+        <button onclick="selectAmount(50)">₹50</button>
+        <button onclick="selectAmount(100)">₹100</button>
+      </div>
+      <input type="number" id="betAmount" placeholder="Custom Amount"/>
+      <button onclick="confirmBet()">Place Bet</button>
+      <button onclick="closePopup()">Cancel</button>
     </div>
   </div>
-
-  <section class="history">
-    <h3>Game History</h3>
-    <table>
-      <thead>
-        <tr><th>Round</th><th>Result</th><th>Color</th><th>Time</th></tr>
-      </thead>
-      <tbody id="history-body"></tbody>
-    </table>
-  </section>
-
-  <section class="how-to-play">
-    <h3>How to Play</h3>
-    <ul>
-      <li><strong>Red:</strong> Win if number is 1, 3, 7, 9 — Payout: x2</li>
-      <li><strong>Green:</strong> Win if number is 0, 2, 4, 6, 8 — Payout: x2</li>
-      <li><strong>Violet:</strong> Win if number is 0 or 5 — Payout: x4.5</li>
-      <li><strong>Exact Number:</strong> Match exact number — Payout: x9</li>
-    </ul>
-  </section>
 
   <script src="game.js"></script>
 </body>
