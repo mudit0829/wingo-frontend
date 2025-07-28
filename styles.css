@@ -1,171 +1,129 @@
 body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  color: white;
   margin: 0;
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
-  color: #fff;
+  padding: 0;
 }
 
-.logo-text {
-  text-align: center;
-  font-size: 2rem;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #00ffc3;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.timer-round {
+header {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  font-size: 18px;
-  font-weight: bold;
+  justify-content: space-between;
+  align-items: center;
+  background: #111;
+  padding: 15px 25px;
 }
 
-.wallet-bar {
-  text-align: center;
-  margin-top: 10px;
+.logo {
+  height: 40px;
 }
 
-.wallet-bar span {
-  font-weight: bold;
-  font-size: 1.1rem;
+.wallet {
+  font-size: 16px;
 }
 
-.tabs {
+.wallet-btn {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: #ff9900;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}
+
+.game-status {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 25px;
+  font-size: 20px;
+  background: #222;
+}
+
+.color-buttons, .number-grid {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 20px 0;
-  gap: 12px;
+  gap: 15px;
+  margin: 15px 0;
 }
 
-.tab {
-  background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
-  padding: 12px 20px;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: 0.3s ease;
-  font-size: 1rem;
-}
-
-.tab:hover {
-  background: #00ffc3;
-  color: #000;
-}
-
-.number-tab {
-  background: linear-gradient(135deg, #ff9966, #ff5e62);
-  color: white;
+.color-btn, .number-btn {
+  padding: 15px;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
+  border: none;
+  width: 70px;
+  height: 70px;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s;
+  color: white;
+  font-weight: bold;
+  position: relative;
 }
 
-.number-tab:hover {
-  background: #00ffc3;
-  color: #000;
+.color-btn span, .number-btn span {
+  font-size: 12px;
+  display: block;
+}
+
+.red { background: linear-gradient(to right, #ff4e50, #f9d423); }
+.green { background: linear-gradient(to right, #56ab2f, #a8e063); }
+.violet { background: linear-gradient(to right, #654ea3, #eaafc8); }
+
+.number-btn {
+  background: linear-gradient(to bottom right, #1e3c72, #2a5298);
 }
 
 .popup {
-  position: fixed;
-  top: 25%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #1c1c1c;
-  padding: 30px;
-  border-radius: 12px;
   display: none;
-  flex-direction: column;
-  gap: 10px;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
   z-index: 999;
-  border: 2px solid #00ffc3;
+  justify-content: center;
+  align-items: center;
 }
 
-.popup h3 {
-  margin: 0;
-}
-
-.amount-options {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.amount-options button {
-  padding: 10px 14px;
-  background: #00ffc3;
-  border: none;
+.popup-content {
+  background: white;
+  color: black;
+  padding: 25px;
   border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #000;
+  text-align: center;
+  position: relative;
 }
 
-.popup-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-}
-
-.popup-actions button {
-  background: crimson;
-  color: #fff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
+.popup-content button {
+  padding: 10px 15px;
+  margin: 10px;
+  font-size: 16px;
   cursor: pointer;
 }
 
-button.confirm-btn {
-  background: #00ffc3;
-  color: #000;
+.close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
 }
 
-.game-history,
-.recent-results {
-  margin: 30px auto;
-  max-width: 800px;
-  padding: 20px;
-  background: #111;
-  border-radius: 12px;
-  box-shadow: 0 0 10px #00ffc3;
-}
-
-.game-history table,
-.recent-results table {
+.history table {
   width: 100%;
   border-collapse: collapse;
-  text-align: center;
+  margin: 10px 0;
 }
 
-th,
-td {
+.history th, .history td {
   padding: 10px;
-  border-bottom: 1px solid #333;
-}
-
-th {
-  background: #00ffc3;
-  color: #000;
+  text-align: center;
+  border: 1px solid #ccc;
 }
 
 .how-to-play {
   padding: 20px;
-  background: #222;
-  margin: 30px auto;
-  max-width: 800px;
-  border-radius: 12px;
-  color: #ddd;
+  background: rgba(255,255,255,0.1);
+  margin: 20px;
+  border-radius: 10px;
 }
