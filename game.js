@@ -1,123 +1,147 @@
-document.addEventListener("DOMContentLoaded", () => {
-  let selectedBetType = null;
+const API_BASE = "https://wingo-backend-nqk5.onrender.com";
+let currentUser = null;
+let authToken = null;
 
-  const popup = document.getElementById("bet-popup");
-  const betTypeText = document.getElementById("bet-type");
-  const betAmount = document.getElementById("bet-amount");
-  const placeBetBtn = document.getElementById("place-bet-btn");
-  const cancelBetBtn = document.getElementById("cancel-bet-btn");
-  const walletSpan = document.getElementById("wallet-balance");
-  const resultsTable = document.getElementById("results-table");
-  const historyTable = document.getElementById("history-table");
+// Login and load user data
+async function loginUser() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-  // Mock user data
-  let wallet = 1000;
-  let roundId = 101;
-
-  function updateWalletDisplay() {
-    walletSpan.textContent = wallet.toFixed(2);
-  }
-
-  function openBetPopup(type) {
-    selectedBetType = type;
-    popup.classList.remove("hidden");
-    betTypeText.textContent = `You selected: ${type}`;
-    betAmount.value = "";
-  }
-
-  function closeBetPopup() {
-    popup.classList.add("hidden");
-  }
-
-  function addResultRow(round, number, color, time) {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${round}</td>
-      <td>${number}</td>
-      <td style="color:${color.toLowerCase()}">${color}</td>
-      <td>${time}</td>
-    `;
-    resultsTable.prepend(row);
-  }
-
-  function addHistoryRow(round, colorBet, numberBet, multiplier, profit) {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${round}</td>
-      <td>${colorBet || "-"}</td>
-      <td>${numberBet || "-"}</td>
-      <td>${multiplier}x</td>
-      <td>${profit >= 0 ? "₹" + profit.toFixed(2) : "-₹" + Math.abs(profit).toFixed(2)}</td>
-    `;
-    historyTable.prepend(row);
-  }
-
-  document.querySelectorAll(".bet-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      openBetPopup(btn.dataset.color);
+  try {
+    const response = await fetch(`${API_BASE}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: username, password }),
     });
-  });
 
-  document.querySelectorAll(".number-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      openBetPopup(`Number ${btn.dataset.number}`);
+    const data = await response.json();
+
+    if (response.ok) {
+      authToken = data.token;
+      currentUser = data.user;
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("game-section").style.display = "block";
+      await loadUserWallet();
+      await fetchCurrentRound();
+      await fetchHistory();
+    } else {
+      alert(data.message || "Login failed");
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+  }
+}
+
+// Fetch wallet
+async function loadUserWallet() {
+  try {
+    const res = await fetch(`${API_BASE}/api/users/${currentUser.username}/wallet`, {
+      headers: { Authorization: `Bearer ${authToken}` },
     });
-  });
+    const data = await res.json();
+    document.getElementById("wallet-balance").innerText = `₹${data.wallet}`;
+  } catch (error) {
+    console.error("Wallet error:", error);
+  }
+}
 
-  placeBetBtn.addEventListener("click", () => {
-    const amount = parseFloat(betAmount.value);
-    if (isNaN(amount) || amount <= 0) return alert("Enter valid amount");
+// Get current round
+async function fetchCurrentRound() {
+  try {
+    const res = await fetch(`${API_BASE}/api/rounds/current`);
+    const data = await res.json();
 
-    // 2% service fee
-    const fee = amount * 0.02;
-    const effective = amount - fee;
+    document.getElementById("current-round").innerText = `Round ${data.roundId}`;
+    document.getElementById("countdown").innerText = formatCountdown(data.remainingSeconds);
+  } catch (err) {
+    console.error("Round fetch error:", err);
+  }
+}
 
-    wallet -= amount;
-    updateWalletDisplay();
+// Submit bet
+async function placeBet(type) {
+  const amount = parseFloat(document.getElementById("bet-amount").value);
+  if (!amount || amount < 1) return alert("Enter valid amount");
 
-    // Mock result and multiplier
-    const multiplier = [2, 4.5, 9][Math.floor(Math.random() * 3)];
-    const profit = effective * multiplier;
+  const betData = {
+    username: currentUser.username,
+    amount,
+    roundId: document.getElementById("current-round").innerText.split(" ")[1],
+  };
 
-    addHistoryRow(roundId, selectedBetType.includes("Number") ? null : selectedBetType, selectedBetType.includes("Number") ? selectedBetType : null, multiplier, profit - amount);
-    closeBetPopup();
-  });
-
-  cancelBetBtn.addEventListener("click", () => {
-    closeBetPopup();
-  });
-
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    alert("Logged out");
-    // Redirect if needed
-  });
-
-  function startTimer(duration) {
-    const timerDisplay = document.getElementById("timer");
-    let timeLeft = duration;
-    timerDisplay.textContent = timeLeft;
-
-    const interval = setInterval(() => {
-      timeLeft--;
-      timerDisplay.textContent = timeLeft;
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        roundId++;
-        document.getElementById("round-id").textContent = roundId;
-        startTimer(25); // restart for new round
-
-        // mock result
-        const resNum = Math.floor(Math.random() * 10);
-        const resColor = resNum === 5 ? "Violet" : [1,3,7,9].includes(resNum) ? "Green" : "Red";
-        const timestamp = new Date().toLocaleTimeString();
-
-        addResultRow(roundId - 1, resNum, resColor, timestamp);
-      }
-    }, 1000);
+  if (["Red", "Green", "Violet"].includes(type)) {
+    betData.color = type;
+  } else {
+    betData.number = parseInt(type);
   }
 
-  document.getElementById("round-id").textContent = roundId;
-  updateWalletDisplay();
-  startTimer(25);
-});
+  try {
+    const res = await fetch(`${API_BASE}/api/bets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify(betData),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("Bet placed!");
+      await loadUserWallet();
+    } else {
+      alert(data.message || "Bet failed");
+    }
+  } catch (error) {
+    console.error("Bet error:", error);
+  }
+}
+
+// Get recent round results
+async function fetchHistory() {
+  try {
+    const res = await fetch(`${API_BASE}/api/rounds/history?limit=20`);
+    const data = await res.json();
+
+    const historyTable = document.getElementById("recent-history");
+    historyTable.innerHTML = `
+      <tr>
+        <th>Round</th>
+        <th>Number</th>
+        <th>Color</th>
+        <th>Time</th>
+      </tr>
+    `;
+
+    data.forEach(round => {
+      const color = getColorFromNumber(round.result);
+      const row = `
+        <tr>
+          <td>${round.roundId}</td>
+          <td>${round.result}</td>
+          <td><span class="color-badge ${color.toLowerCase()}">${color}</span></td>
+          <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
+        </tr>
+      `;
+      historyTable.innerHTML += row;
+    });
+  } catch (error) {
+    console.error("History fetch error:", error);
+  }
+}
+
+// Color logic
+function getColorFromNumber(num) {
+  if (num === 5 || num === 0) return "Violet";
+  if ([1, 3, 7, 9].includes(num)) return "Green";
+  if ([2, 4, 6, 8].includes(num)) return "Red";
+  return "Unknown";
+}
+
+function formatCountdown(sec) {
+  const min = Math.floor(sec / 60).toString().padStart(2, "0");
+  const s = (sec % 60).toString().padStart(2, "0");
+  return `${min}:${s}`;
+}
+
+document.getElementById("login-button").addEventListener("click", loginUser);
