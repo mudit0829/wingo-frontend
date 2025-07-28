@@ -2,24 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>WinGo Admin Panel</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f2f2f2; }
-    h1 { color: #333; }
-    table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-    button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; }
-    #logout { float: right; background: red; color: white; }
-  </style>
+  <title>Admin Panel</title>
 </head>
 <body>
-  <h1>WinGo Admin Panel</h1>
-  <button id="startTimer">Start Timer</button>
-  <button id="generateResult">Generate Result</button>
-  <button id="logout">Logout</button>
+  <h2>Welcome Admin</h2>
+  <button onclick="generateResult()">Generate Result</button>
+  <button onclick="logout()">Logout</button>
 
-  <table>
+  <h3>Round History</h3>
+  <table border="1">
     <thead>
       <tr>
         <th>Round ID</th>
@@ -27,65 +18,41 @@
         <th>Timestamp</th>
       </tr>
     </thead>
-    <tbody id="roundTableBody"></tbody>
+    <tbody id="history"></tbody>
   </table>
 
   <script>
-    const API = "https://wingo-backend-nqk5.onrender.com";
-    const ADMIN = { email: "admin", password: "admin123" };
-    let token = "";
+    const API_URL = 'https://wingo-backend-nqk5.onrender.com';
 
-    async function login() {
-      const res = await fetch(`${API}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ADMIN)
-      });
+    async function generateResult() {
+      const res = await fetch(`${API_URL}/api/cron/generateResult`, { method: 'POST' });
       const data = await res.json();
-      token = data.token;
-      loadRounds();
+      alert(data.message || 'Result Generated');
+      loadHistory();
     }
 
-    async function loadRounds() {
-      const res = await fetch(`${API}/api/rounds`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      const tbody = document.getElementById("roundTableBody");
-      tbody.innerHTML = "";
-      data.forEach(round => {
-        const tr = document.createElement("tr");
+    async function loadHistory() {
+      const res = await fetch(`${API_URL}/api/rounds`);
+      const rounds = await res.json();
+      const tbody = document.getElementById('history');
+      tbody.innerHTML = '';
+      rounds.reverse().slice(0, 10).forEach(round => {
+        const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${round.roundId || 'N/A'}</td>
-          <td>${round.resultColor || 'Pending'} - ${round.resultNumber ?? 'N/A'}</td>
-          <td>${round.timestamp ? new Date(round.timestamp).toLocaleString() : 'Invalid Date'}</td>
+          <td>${round.roundId}</td>
+          <td>${round.result || 'Pending'}</td>
+          <td>${new Date(round.timestamp).toLocaleString()}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    document.getElementById("startTimer").onclick = async () => {
-      await fetch(`${API}/api/cron/start`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert("Game timer started!");
-    };
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
 
-    document.getElementById("generateResult").onclick = async () => {
-      await fetch(`${API}/api/cron/generate-result`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert("Result generated!");
-      loadRounds();
-    };
-
-    document.getElementById("logout").onclick = () => {
-      window.location.href = "login.html";
-    };
-
-    login();
+    loadHistory();
   </script>
 </body>
 </html>
