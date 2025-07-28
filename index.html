@@ -3,31 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome</title>
+  <title>WinGo Game</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <h2 id="welcome">Welcome</h2>
-    <button onclick="logout()">Logout</button>
+    <h1 class="title">WinGo Game</h1>
+
+    <div class="top-bar">
+      <span id="user-email"></span>
+      <span id="user-balance">Balance: ₹0</span>
+      <button id="logout-btn">Logout</button>
+    </div>
+
+    <div class="timer-container">
+      <span>Next Round In:</span>
+      <span id="timer">00</span>s
+    </div>
+
+    <div class="bet-section">
+      <input type="number" id="bet-amount" placeholder="Enter amount" min="1" />
+
+      <div class="color-buttons">
+        <button class="bet-btn red" data-color="Red">Red</button>
+        <button class="bet-btn green" data-color="Green">Green</button>
+        <button class="bet-btn violet" data-color="Violet">Violet</button>
+      </div>
+
+      <div class="number-buttons">
+        <p>Number Bet:</p>
+        <div class="number-grid">
+          <button class="num-btn" data-number="0">0</button>
+          <button class="num-btn" data-number="1">1</button>
+          <button class="num-btn" data-number="2">2</button>
+          <button class="num-btn" data-number="3">3</button>
+          <button class="num-btn" data-number="4">4</button>
+          <button class="num-btn" data-number="5">5</button>
+          <button class="num-btn" data-number="6">6</button>
+          <button class="num-btn" data-number="7">7</button>
+          <button class="num-btn" data-number="8">8</button>
+          <button class="num-btn" data-number="9">9</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <h2>Last 10 Results</h2>
+      <div id="history"></div>
+    </div>
   </div>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!user || !user.email) {
-      // If not logged in, redirect to login
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (!userData) {
       window.location.href = "login.html";
     } else {
-      // Show user info
-      document.getElementById("welcome").innerText = `Welcome, ${user.email}`;
+      document.getElementById("user-email").innerText = userData.email;
     }
 
-    function logout() {
-      localStorage.removeItem("user");
+    document.getElementById("logout-btn").addEventListener("click", () => {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       window.location.href = "login.html";
-    }
+    });
+
+    let timer = 25;
+    const timerElement = document.getElementById("timer");
+    setInterval(() => {
+      timer--;
+      if (timer <= 0) {
+        timer = 30;
+      }
+      timerElement.innerText = timer < 10 ? "0" + timer : timer;
+    }, 1000);
+
+    // Demo balance for now
+    document.getElementById("user-balance").innerText = "Balance: ₹1000";
+
+    // Add logic to handle bet click and store with backend
+    document.querySelectorAll(".bet-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const color = btn.dataset.color;
+        const amount = document.getElementById("bet-amount").value;
+        alert(`Color Bet: ${color}, Amount: ₹${amount}`);
+        // POST to backend
+      });
+    });
+
+    document.querySelectorAll(".num-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const number = btn.dataset.number;
+        const amount = document.getElementById("bet-amount").value;
+        alert(`Number Bet: ${number}, Amount: ₹${amount}`);
+        // POST to backend
+      });
+    });
   </script>
 </body>
 </html>
