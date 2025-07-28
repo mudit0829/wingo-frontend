@@ -1,110 +1,129 @@
-const API_BASE = 'https://wingo-backend-nqk5.onrender.com';
-
+const backendUrl = 'https://wingo-backend-nqk5.onrender.com';
 let token = localStorage.getItem('token');
 let username = localStorage.getItem('username');
+let currentRoundId = null;
+let countdownInterval = null;
 
 if (!token || !username) {
     window.location.href = 'login.html';
 }
 
-// Show username
-document.getElementById('username').textContent = username;
-
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.clear();
-    window.location.href = 'login.html';
-});
-
 // Timer countdown
-let timeLeft = 25;
-const timerDisplay = document.getElementById('timer');
+function startCountdown(seconds) {
+    const timerDisplay = document.getElementById('timer');
+    clearInterval(countdownInterval);
 
-function startTimer() {
-    timeLeft = 25;
-    timerDisplay.textContent = `Time Left: ${timeLeft} seconds`;
-
-    const interval = setInterval(() => {
-        timeLeft--;
-        timerDisplay.textContent = `Time Left: ${timeLeft} seconds`;
-
-        if (timeLeft <= 0) {
-            clearInterval(interval);
+    countdownInterval = setInterval(() => {
+        timerDisplay.innerText = seconds + 's';
+        seconds--;
+        if (seconds < 0) {
+            clearInterval(countdownInterval);
+            timerDisplay.innerText = 'Waiting...';
         }
     }, 1000);
 }
 
-startTimer();
-setInterval(startTimer, 30000); // New round every 30 seconds
+// Fetch current round
+async function fetchCurrentRound() {
+    const res = await fetch(`${backendUrl}/api/rounds`);
+    const rounds = await res.json();
+    const latestRound = rounds[rounds.length - 1];
+    currentRoundId = latestRound.roundId;
+    document.getElementById('currentRound').innerText = `Round #${currentRoundId}`;
+}
 
-// Place Bet
-document.querySelectorAll('.color-btn').forEach(btn => {
-    btn.addEventListener('click', () => placeBet(btn.dataset.color, null));
-});
+// Fetch user game history
+async function fetchUserHistory() {
+    const res = await fetch(`${backendUrl}/api/bets/user/${username}`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    const bets = await res.json();
+    const tbody = document.getElementById('gameHistoryBody');
+    tbody.innerHTML = '';
 
-document.getElementById('numberButtons').addEventListener('click', (e) => {
-    if (e.target.classList.contains('num-btn')) {
-        placeBet(null, parseInt(e.target.dataset.num));
+    bets.slice().reverse().forEach(bet => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${bet.roundId}</td>
+            <td>${bet.colorBet || '-'}</td>
+            <td>${bet.numberBet !== null ? bet.numberBet : '-'}</td>
+            <td>${bet.result !== null ? bet.result : '-'}</td>
+            <td>${bet.profit !== null ? bet.profit : '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Fetch recent results
+async function fetchRecentResults() {
+    const res = await fetch(`${backendUrl}/api/rounds`);
+    const rounds = await res.json();
+    const resultDiv = document.getElementById('recentResults');
+    resultDiv.innerHTML = '';
+
+    rounds.slice(-10).reverse().forEach(r => {
+        const span = document.createElement('span');
+        span.innerText = r.result;
+        span.classList.add('result-bubble');
+        if (r.result === 0 || r.result === 5) {
+            span.classList.add('violet');
+        } else if ([1,3,7,9].includes(r.result)) {
+            span.classList.add('green');
+        } else if ([2,4,6,8].includes(r.result)) {
+            span.classList.add('red');
+        }
+        resultDiv.appendChild(span);
+    });
+}
+
+// Place bet
+async function placeBet() {
+    const amount = parseFloat(document.getElementById('betAmount').value);
+    const color = document.querySelector('input[name="color"]:checked')?.value;
+    const number = document.getElementById('numberBet').value;
+
+    if (!amount || amount < 1 || (!color && number === '')) {
+        alert('Please enter valid bet details.');
+        return;
     }
-});
 
-function placeBet(color, number) {
-    const amount = parseFloat(document.getElementById('amount').value);
-    if (!amount || amount < 1) return alert('Enter valid amount');
+    const data = {
+        username,
+        roundId: currentRoundId,
+        amount,
+        colorBet: color || null,
+        numberBet: number !== '' ? parseInt(number) : null
+    };
 
-    fetch(`${API_BASE}/api/bets`, {
+    const res = await fetch(`${backendUrl}/api/bets`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ username, color, number, amount })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert('Bet placed!');
-        fetchHistory();
-    })
-    .catch(err => console.error('Bet error:', err));
+        body: JSON.stringify(data)
+    });
+
+    const response = await res.json();
+    alert(response.message || 'Bet placed!');
+    fetchUserHistory();
 }
 
-// Show Recent Results
-function fetchResults() {
-    fetch(`${API_BASE}/api/rounds`)
-        .then(res => res.json())
-        .then(data => {
-            const table = document.getElementById('resultTable');
-            table.innerHTML = '';
-            data.slice(-10).reverse().forEach(r => {
-                const row = table.insertRow();
-                row.innerHTML = `
-                    <td>${r.roundId}</td>
-                    <td>${r.result}</td>
-                    <td>${new Date(r.timestamp).toLocaleTimeString()}</td>
-                `;
-            });
-        });
+// Logout
+function logout() {
+    localStorage.clear();
+    window.location.href = 'login.html';
 }
 
-// Show User History
-function fetchHistory() {
-    fetch(`${API_BASE}/api/bets/user/${username}`)
-        .then(res => res.json())
-        .then(data => {
-            const table = document.getElementById('historyTable');
-            table.innerHTML = '';
-            data.slice(-10).reverse().forEach(b => {
-                const row = table.insertRow();
-                row.innerHTML = `
-                    <td>${b.roundId}</td>
-                    <td>${b.color || b.number}</td>
-                    <td>${b.amount}</td>
-                    <td>${new Date(b.timestamp).toLocaleTimeString()}</td>
-                `;
-            });
-        });
-}
+// Event listeners
+document.getElementById('placeBetBtn').addEventListener('click', placeBet);
+document.getElementById('logoutBtn').addEventListener('click', logout);
 
-fetchResults();
-fetchHistory();
-setInterval(fetchResults, 10000);
+// Init
+fetchCurrentRound();
+fetchUserHistory();
+fetchRecentResults();
+startCountdown(25);
+setInterval(fetchCurrentRound, 10000);
+setInterval(fetchRecentResults, 15000);
+setInterval(fetchUserHistory, 20000);
