@@ -1,129 +1,140 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-  color: white;
   margin: 0;
-  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom, #131862, #1b2448);
+  color: white;
+  text-align: center;
+}
+
+.logo {
+  height: 60px;
+  margin: 10px;
 }
 
 header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  background: #111;
-  padding: 15px 25px;
 }
 
-.logo {
-  height: 40px;
+.wallet-box {
+  margin: 10px;
+  font-size: 18px;
 }
 
-.wallet {
-  font-size: 16px;
-}
-
-.wallet-btn {
-  margin-left: 10px;
-  padding: 5px 10px;
-  background-color: #ff9900;
+.wallet-box button {
+  margin: 5px;
+  padding: 6px 12px;
   border: none;
-  border-radius: 10px;
-  color: white;
+  border-radius: 8px;
+  background-color: #00d4ff;
+  color: #000;
   cursor: pointer;
+  font-weight: bold;
 }
 
-.game-status {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 25px;
+.timer-round {
+  margin: 10px;
   font-size: 20px;
-  background: #222;
 }
 
-.color-buttons, .number-grid {
+.bet-section h2 {
+  margin-top: 20px;
+  font-size: 22px;
+}
+
+.color-buttons,
+.number-buttons {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 15px;
-  margin: 15px 0;
+  gap: 12px;
+  margin: 10px;
 }
 
-.color-btn, .number-btn {
-  padding: 15px;
-  border-radius: 50%;
+.bet-btn {
+  padding: 14px 20px;
   border: none;
-  width: 70px;
-  height: 70px;
-  font-size: 16px;
-  cursor: pointer;
-  color: white;
+  border-radius: 50%;
+  font-size: 18px;
   font-weight: bold;
-  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-.color-btn span, .number-btn span {
-  font-size: 12px;
-  display: block;
+.bet-btn:hover {
+  transform: scale(1.1);
 }
 
-.red { background: linear-gradient(to right, #ff4e50, #f9d423); }
-.green { background: linear-gradient(to right, #56ab2f, #a8e063); }
-.violet { background: linear-gradient(to right, #654ea3, #eaafc8); }
+.bet-btn.red {
+  background: radial-gradient(circle, #ff4e50, #ff0000);
+  color: white;
+}
 
-.number-btn {
-  background: linear-gradient(to bottom right, #1e3c72, #2a5298);
+.bet-btn.green {
+  background: radial-gradient(circle, #4eff70, #00b300);
+  color: black;
+}
+
+.bet-btn.violet {
+  background: radial-gradient(circle, #d689ff, #a000c8);
+  color: white;
+}
+
+.bet-btn.number {
+  background: radial-gradient(circle, #ffef9f, #ffc107);
+  color: black;
+}
+
+.history-section table {
+  width: 90%;
+  margin: 20px auto;
+  border-collapse: collapse;
+}
+
+.history-section th,
+.history-section td {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.how-to-play {
+  margin: 20px;
+  padding: 10px;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 12px;
 }
 
 .popup {
-  display: none;
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.7);
-  z-index: 999;
-  justify-content: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
   align-items: center;
+  justify-content: center;
+}
+
+.popup.hidden {
+  display: none;
 }
 
 .popup-content {
   background: white;
   color: black;
-  padding: 25px;
-  border-radius: 10px;
-  text-align: center;
-  position: relative;
-}
-
-.popup-content button {
-  padding: 10px 15px;
-  margin: 10px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.close {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.history table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
-}
-
-.history th, .history td {
-  padding: 10px;
-  text-align: center;
-  border: 1px solid #ccc;
-}
-
-.how-to-play {
   padding: 20px;
-  background: rgba(255,255,255,0.1);
-  margin: 20px;
-  border-radius: 10px;
+  border-radius: 12px;
+  text-align: center;
+  width: 300px;
+}
+
+.amount-options button {
+  margin: 5px;
+  padding: 10px 14px;
+  border: none;
+  background-color: #00bcd4;
+  color: white;
+  border-radius: 6px;
 }
