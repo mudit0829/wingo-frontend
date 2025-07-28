@@ -7,90 +7,63 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="wallet-section">
-    <h2>Wallet: ₹<span id="wallet">0</span></h2>
-    <button onclick="deposit()">Deposit</button>
-    <button onclick="withdraw()">Withdraw</button>
+  <div class="header">
+    <h1 class="logo">🎯 Wing<span>Go</span></h1>
+    <div class="wallet-section">
+      <p>Wallet: ₹<span id="wallet">1000</span></p>
+      <button class="wallet-btn">Deposit</button>
+      <button class="wallet-btn">Withdraw</button>
+    </div>
+    <div class="timer-round">
+      <p>⏱ Timer: <span id="timer">00:30</span></p>
+      <p>🎯 Round #: <span id="round-number">12345</span></p>
+    </div>
   </div>
 
-  <div class="game-info">
-    <div>Round #: <span id="roundNumber">0000</span></div>
-    <div>Timer: <span id="timer">25</span>s</div>
-  </div>
+  <div class="game-area">
+    <h2>Choose Your Color</h2>
+    <div class="color-buttons">
+      <button class="color-btn red" onclick="openPopup('Red')">Red x2</button>
+      <button class="color-btn green" onclick="openPopup('Green')">Green x2</button>
+      <button class="color-btn violet" onclick="openPopup('Violet')">Violet x4.5</button>
+    </div>
 
-  <div class="color-buttons">
-    <button class="color-btn red" onclick="openColorPopup('Red')">Red (x2)</button>
-    <button class="color-btn green" onclick="openColorPopup('Green')">Green (x2)</button>
-    <button class="color-btn violet" onclick="openColorPopup('Violet')">Violet (x4.5)</button>
-  </div>
-
-  <div class="number-buttons">
-    <h3>Select Number (x9)</h3>
+    <h2>Choose Your Number</h2>
     <div class="number-grid">
-      <button onclick="openNumberPopup(0)">0</button>
-      <button onclick="openNumberPopup(1)">1</button>
-      <button onclick="openNumberPopup(2)">2</button>
-      <button onclick="openNumberPopup(3)">3</button>
-      <button onclick="openNumberPopup(4)">4</button>
-      <button onclick="openNumberPopup(5)">5</button>
-      <button onclick="openNumberPopup(6)">6</button>
-      <button onclick="openNumberPopup(7)">7</button>
-      <button onclick="openNumberPopup(8)">8</button>
-      <button onclick="openNumberPopup(9)">9</button>
+      ${[...Array(10).keys()].map(n => `<button class="number-btn" onclick="openPopup('${n}')">${n} x9</button>`).join('')}
     </div>
   </div>
 
-  <!-- Bet Popup -->
-  <div id="popup" class="popup hidden">
-    <div class="popup-content">
-      <span id="betInfo"></span>
-      <p>Select Bet Amount:</p>
-      <div class="bet-amounts">
-        <button onclick="placeBet(10)">₹10</button>
-        <button onclick="placeBet(50)">₹50</button>
-        <button onclick="placeBet(100)">₹100</button>
-        <button onclick="placeBet(500)">₹500</button>
-        <button onclick="placeBet(1000)">₹1000</button>
-      </div>
-      <button class="close-btn" onclick="closePopup()">Close</button>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button onclick="showTab('history')">Game History</button>
-    <button onclick="showTab('results')">Recent Results</button>
-    <button onclick="showTab('how')">How to Play</button>
-  </div>
-
-  <div id="history" class="tab-content hidden">
+  <div class="game-tabs">
     <h3>Game History</h3>
     <table>
       <thead>
-        <tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>
+        <tr>
+          <th>Round</th>
+          <th>Result</th>
+          <th>Time</th>
+        </tr>
       </thead>
-      <tbody id="historyTable"></tbody>
+      <tbody id="history-body"></tbody>
     </table>
-  </div>
 
-  <div id="results" class="tab-content hidden">
-    <h3>Recent Results</h3>
-    <table>
-      <thead>
-        <tr><th>Round</th><th>Color</th><th>Number</th></tr>
-      </thead>
-      <tbody id="resultTable"></tbody>
-    </table>
-  </div>
-
-  <div id="how" class="tab-content hidden">
     <h3>How to Play</h3>
     <ul>
-      <li>Red wins on: 1, 3, 7, 9 → 2x</li>
-      <li>Green wins on: 0, 2, 4, 6, 8 → 2x</li>
-      <li>Violet wins on: 0 or 5 → 4.5x</li>
-      <li>Exact number match → 9x</li>
-      <li>2% service fee applies on each bet</li>
+      <li><strong>Red</strong>: 1,3,7,9 → x2; 0 → x1.5</li>
+      <li><strong>Green</strong>: 2,4,6,8 → x2; 5 → x1.5</li>
+      <li><strong>Violet</strong>: 0 or 5 → x4.5</li>
+      <li><strong>Number</strong>: Exact match → x9</li>
+      <li>Service Fee: 2% on each bet</li>
     </ul>
+  </div>
+
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <h3>Placing Bet For: <span id="selected-option"></span></h3>
+      <input type="number" id="bet-amount" placeholder="Enter Amount (Min ₹10)" />
+      <button onclick="confirmBet()">Place Bet</button>
+      <button class="close-btn" onclick="closePopup()">Cancel</button>
+    </div>
   </div>
 
   <script src="game.js"></script>
