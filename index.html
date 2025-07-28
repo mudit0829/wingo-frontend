@@ -4,57 +4,72 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🎯 WinGo Game</h1>
-  
-  <div>
-    <p>Logged in as: <span id="username">Unknown</span>
-      <button onclick="logout()">Logout</button>
-    </p>
-    <p>⏳ Time Left: <span id="timeLeft">--</span> seconds</p>
+  <div class="container">
+    <header>
+      <h1>🎯 WinGo Game</h1>
+      <div class="user-info">
+        <span id="loggedInUser">Logged in as: <strong id="username">Unknown</strong></span>
+        <button id="logoutBtn">Logout</button>
+      </div>
+      <div class="timer">
+        ⏳ Time Left: <span id="timer">--</span> seconds
+      </div>
+    </header>
+
+    <section class="betting-section">
+      <h2>Place Your Bets</h2>
+      <label for="amount">Amount:</label>
+      <input type="number" id="betAmount" value="100" min="1" />
+
+      <div class="color-buttons">
+        <button class="color-btn red" data-color="Red">Red</button>
+        <button class="color-btn green" data-color="Green">Green</button>
+        <button class="color-btn violet" data-color="Violet">Violet</button>
+      </div>
+
+      <h3>Number Bets (0–9)</h3>
+      <div class="number-buttons" id="numberButtons">
+        <!-- Number buttons will be generated here -->
+      </div>
+    </section>
+
+    <section class="history-section">
+      <h3>🎲 Recent Results</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Round ID</th>
+            <th>Result</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="recentRoundsTable">
+          <!-- Rows populated via JavaScript -->
+        </tbody>
+      </table>
+    </section>
+
+    <section class="my-bets-section">
+      <h3>📜 My Game History</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Round ID</th>
+            <th>Color</th>
+            <th>Number</th>
+            <th>Amount</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="myHistoryTable">
+          <!-- Rows populated via JavaScript -->
+        </tbody>
+      </table>
+    </section>
   </div>
-
-  <h2>Place Your Bets</h2>
-
-  <label for="amount">Amount:</label>
-  <input type="number" id="amount" placeholder="Enter amount">
-
-  <div>
-    <button onclick="placeBet('Red')">Red</button>
-    <button onclick="placeBet('Green')">Green</button>
-    <button onclick="placeBet('Violet')">Violet</button>
-  </div>
-
-  <h3>Number Bets (0–9)</h3>
-  <div id="numberButtons"></div>
-
-  <h3>Recent Rounds</h3>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>Round ID</th>
-        <th>Result</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-    <tbody id="roundsTable"></tbody>
-  </table>
-
-  <h3>My Game History</h3>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>Round ID</th>
-        <th>Color Bet</th>
-        <th>Number Bet</th>
-        <th>Amount</th>
-        <th>Result</th>
-      </tr>
-    </thead>
-    <tbody id="historyTable"></tbody>
-  </table>
 
   <script src="game.js"></script>
 </body>
