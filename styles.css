@@ -1,186 +1,171 @@
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #f0f4ff, #e3f2fd);
-  color: #333;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
+  color: #fff;
 }
 
-header {
-  background-color: #3f51b5;
-  color: white;
+.logo-text {
   text-align: center;
-  padding: 20px;
-  font-size: 24px;
+  font-size: 2rem;
+  margin-top: 10px;
   font-weight: bold;
-  letter-spacing: 1px;
+  color: #00ffc3;
 }
 
-#wallet-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background-color: #e8eaf6;
-}
-
-#wallet-amount {
-  font-weight: bold;
-  font-size: 18px;
-}
-
-.wallet-buttons button {
-  margin-left: 10px;
-  background-color: #4caf50;
-  color: white;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.wallet-buttons button:hover {
-  background-color: #45a049;
-}
-
-#timer-section {
+.header {
   text-align: center;
-  padding: 15px;
-  background-color: #c5cae9;
-  font-size: 18px;
+  margin-bottom: 10px;
 }
 
-.section-title {
-  margin: 15px 20px 10px;
-  font-size: 20px;
-  color: #303f9f;
-}
-
-.color-buttons,
-.number-buttons {
+.timer-round {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  padding: 10px 0;
-  gap: 15px;
-}
-
-.color-btn {
-  padding: 10px 20px;
+  gap: 20px;
+  font-size: 18px;
   font-weight: bold;
-  border: none;
-  border-radius: 20px;
-  color: white;
+}
+
+.wallet-bar {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.wallet-bar span {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 20px 0;
+  gap: 12px;
+}
+
+.tab {
+  background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+  padding: 12px 20px;
+  border-radius: 25px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: 0.3s ease;
+  font-size: 1rem;
 }
 
-.color-btn.red {
-  background: linear-gradient(45deg, #e53935, #d32f2f);
-}
-.color-btn.green {
-  background: linear-gradient(45deg, #43a047, #2e7d32);
-}
-.color-btn.violet {
-  background: linear-gradient(45deg, #8e24aa, #6a1b9a);
+.tab:hover {
+  background: #00ffc3;
+  color: #000;
 }
 
-.color-btn:hover,
-.number-btn:hover {
-  transform: scale(1.05);
-}
-
-.number-btn {
+.number-tab {
+  background: linear-gradient(135deg, #ff9966, #ff5e62);
+  color: white;
+  border-radius: 50%;
   width: 50px;
   height: 50px;
-  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.number-tab:hover {
+  background: #00ffc3;
+  color: #000;
+}
+
+.popup {
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1c1c1c;
+  padding: 30px;
+  border-radius: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+  border: 2px solid #00ffc3;
+}
+
+.popup h3 {
+  margin: 0;
+}
+
+.amount-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.amount-options button {
+  padding: 10px 14px;
+  background: #00ffc3;
   border: none;
-  color: white;
-  background: linear-gradient(45deg, #4fc3f7, #0288d1);
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.popup-actions button {
+  background: crimson;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-#popup {
-  position: fixed;
-  top: 20%;
-  left: 50%;
-  transform: translate(-50%, -20%);
-  background: white;
-  border: 2px solid #3f51b5;
+button.confirm-btn {
+  background: #00ffc3;
+  color: #000;
+}
+
+.game-history,
+.recent-results {
+  margin: 30px auto;
+  max-width: 800px;
+  padding: 20px;
+  background: #111;
   border-radius: 12px;
-  padding: 20px;
-  width: 280px;
-  display: none;
-  z-index: 10;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px #00ffc3;
 }
 
-#popup h3 {
-  margin-top: 0;
-  color: #3f51b5;
-}
-
-#popup input,
-#popup select {
-  width: 100%;
-  padding: 8px;
-  margin-top: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-#popup button {
-  width: 100%;
-  padding: 10px;
-  background-color: #3f51b5;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-}
-
-#popup button:hover {
-  background-color: #303f9f;
-}
-
-.table-container {
-  padding: 20px;
-}
-
-table {
+.game-history table,
+.recent-results table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-}
-
-table th,
-table td {
-  border: 1px solid #ccc;
-  padding: 8px;
   text-align: center;
 }
 
-#how-to-play {
+th,
+td {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+
+th {
+  background: #00ffc3;
+  color: #000;
+}
+
+.how-to-play {
   padding: 20px;
-  background-color: #e8eaf6;
-  margin: 20px;
-  border-radius: 8px;
-}
-
-#how-to-play h3 {
-  margin-top: 0;
-  color: #3f51b5;
-}
-
-#overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
-  background: rgba(0, 0, 0, 0.3);
-  display: none;
-  z-index: 5;
+  background: #222;
+  margin: 30px auto;
+  max-width: 800px;
+  border-radius: 12px;
+  color: #ddd;
 }
