@@ -1,164 +1,109 @@
-/* Base styles */
 body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #f1f4f9, #dff1ff);
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(to bottom, #101010, #1a1a1a);
-  color: #fff;
   padding: 0;
 }
 
-header {
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #111;
-  padding: 15px 20px;
-  border-bottom: 1px solid #333;
+  margin-bottom: 20px;
 }
 
-header h1 {
-  font-size: 1.5rem;
-  margin: 0;
+.logo {
+  height: 50px;
 }
 
 .wallet {
-  font-weight: bold;
-  font-size: 1rem;
+  font-size: 18px;
 }
 
-main {
-  padding: 15px;
-}
-
-.timer-bar {
-  background-color: #222;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.section-title {
-  font-size: 1.1rem;
-  margin-top: 20px;
-  border-bottom: 1px solid #444;
-  padding-bottom: 5px;
-  margin-bottom: 10px;
-}
-
-/* Bet buttons */
-.color-buttons,
-.number-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.color-buttons button,
-.number-buttons button {
-  flex: 1 1 30%;
-  padding: 10px 0;
-  font-size: 1rem;
+button {
+  cursor: pointer;
+  padding: 8px 16px;
+  margin: 5px;
   border: none;
   border-radius: 12px;
-  cursor: pointer;
   font-weight: bold;
-  color: #fff;
-  transition: transform 0.2s ease-in-out;
+  transition: background 0.3s;
 }
 
-.color-buttons button:hover,
-.number-buttons button:hover {
-  transform: scale(1.05);
-}
-
-.color-buttons .green { background: linear-gradient(45deg, #1fc44f, #18a835); }
-.color-buttons .red { background: linear-gradient(45deg, #e74c3c, #c0392b); }
-.color-buttons .violet { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
-
-.number-buttons button {
-  background-color: #333;
-}
-
-.bet-btn {
-  background: linear-gradient(45deg, #ff512f, #dd2476);
-  padding: 10px;
+.bet-button.green {
+  background: #34c759;
   color: white;
-  font-weight: bold;
-  border-radius: 10px;
-  border: none;
-  margin: 20px auto;
-  display: block;
-  cursor: pointer;
-  width: 100%;
-  max-width: 250px;
 }
 
-/* Popup */
+.bet-button.red {
+  background: #ff3b30;
+  color: white;
+}
+
+.bet-button.violet {
+  background: #af52de;
+  color: white;
+}
+
+.number-button {
+  background: #ffffff;
+  border: 2px solid #ccc;
+  margin: 3px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.round-info {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.recent-results, .my-history {
+  margin-top: 30px;
+}
+
 .popup {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.8);
-  display: none;
-  align-items: center;
+  background: rgba(0,0,0,0.6);
+  display: flex;
   justify-content: center;
-  z-index: 1000;
+  align-items: center;
 }
 
 .popup-content {
-  background-color: #1e1e1e;
-  padding: 25px;
+  background: #fff;
+  padding: 30px;
   border-radius: 12px;
+  width: 300px;
   text-align: center;
-  width: 90%;
-  max-width: 350px;
 }
 
-.popup-content input {
-  padding: 10px;
-  width: 90%;
-  margin: 15px auto;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: none;
-  background-color: #2a2a2a;
-  color: white;
+.hidden {
+  display: none;
 }
-
-.popup-content .place-bet {
-  background: linear-gradient(to right, #00c6ff, #0072ff);
-  color: #fff;
-  border: none;
-  padding: 10px 25px;
-  font-size: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #222;
-  margin-bottom: 20px;
-}
-
-th, td {
-  padding: 10px;
-  text-align: center;
-  border: 1px solid #333;
-}
-
-th {
-  background-color: #333;
-}
-
-.result-cell.red { color: #ff4c4c; font-weight: bold; }
-.result-cell.green { color: #4cff4c; font-weight: bold; }
-.result-cell.violet { color: #c97fff; font-weight: bold; }
