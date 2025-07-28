@@ -2,77 +2,123 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WinGo Game</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h1 class="game-title">🎲 WinGo Game 🎲</h1>
-
-    <div class="wallet-section">
-      <span><strong>Wallet:</strong> ₹1000</span>
-    </div>
-
-    <div class="bet-section">
-      <input type="number" id="betAmount" placeholder="Enter Bet Amount" />
-      <div class="color-buttons">
-        <button class="red-btn">Red</button>
-        <button class="green-btn">Green</button>
-        <button class="violet-btn">Violet</button>
+  <header class="header">
+    <div class="logo">WinGo</div>
+    <div class="wallet-info">
+      <div class="wallet-label">Wallet</div>
+      <div id="walletBalance" class="wallet-amount">₹0</div>
+      <div class="wallet-actions">
+        <button class="withdraw-btn">Withdraw</button>
+        <button class="deposit-btn">Deposit</button>
       </div>
-      <div class="number-buttons">
-        <button class="number-btn">0</button>
-        <button class="number-btn">1</button>
-        <button class="number-btn">2</button>
-        <button class="number-btn">3</button>
-        <button class="number-btn">4</button>
-        <button class="number-btn">5</button>
-        <button class="number-btn">6</button>
-        <button class="number-btn">7</button>
-        <button class="number-btn">8</button>
-        <button class="number-btn">9</button>
+    </div>
+  </header>
+
+  <main class="game-container">
+    <div class="top-actions">
+      <button class="how-to-play" onclick="openHowToPlay()">How to Play</button>
+    </div>
+
+    <section class="color-bets">
+      <h2>Color Bets</h2>
+      <div class="color-options">
+        <button onclick="openColorBetPopup('Red')" class="color-btn red">Red</button>
+        <button onclick="openColorBetPopup('Green')" class="color-btn green">Green</button>
+        <button onclick="openColorBetPopup('Violet')" class="color-btn violet">Violet</button>
       </div>
-      <div class="timer-box">Next round in: <span id="timer">25</span>s</div>
+    </section>
+
+    <section class="number-bets">
+      <h2>Number Bets</h2>
+      <div class="number-options">
+        <!-- Dynamically generated via JS if needed -->
+        <button onclick="openNumberBetPopup(0)">0</button>
+        <button onclick="openNumberBetPopup(1)">1</button>
+        <button onclick="openNumberBetPopup(2)">2</button>
+        <button onclick="openNumberBetPopup(3)">3</button>
+        <button onclick="openNumberBetPopup(4)">4</button>
+        <button onclick="openNumberBetPopup(5)">5</button>
+        <button onclick="openNumberBetPopup(6)">6</button>
+        <button onclick="openNumberBetPopup(7)">7</button>
+        <button onclick="openNumberBetPopup(8)">8</button>
+        <button onclick="openNumberBetPopup(9)">9</button>
+      </div>
+    </section>
+
+    <section class="tabs">
+      <button onclick="showTab('gameHistory')">Game History</button>
+      <button onclick="showTab('myHistory')">My History</button>
+    </section>
+
+    <div id="gameHistory" class="history-section">
+      <h3>Game History</h3>
+      <table>
+        <thead>
+          <tr><th>Color</th><th>Number</th><th>Color</th></tr>
+        </thead>
+        <tbody id="gameHistoryBody">
+          <!-- JS populates this -->
+        </tbody>
+      </table>
     </div>
 
-    <div class="result-section">
-      <h3>🔔 Last Result: <span id="lastResult">--</span></h3>
+    <div id="myHistory" class="history-section" style="display:none">
+      <h3>My History</h3>
+      <table>
+        <thead>
+          <tr><th>Round</th><th>Date/Time</th><th>Result</th><th>+/−</th></tr>
+        </thead>
+        <tbody id="myHistoryBody">
+          <!-- JS populates this -->
+        </tbody>
+      </table>
     </div>
+  </main>
 
-    <div class="history-section">
-      <h3>📜 Game History</h3>
-      <ul id="historyList">
-        <li>Waiting for results...</li>
-      </ul>
-    </div>
-
-    <div class="logout-btn-section">
-      <button class="logout-btn" onclick="alert('Logout disabled in demo')">Logout</button>
+  <!-- How to Play Popup -->
+  <div id="howToPlayModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeHowToPlay()">&times;</span>
+      <h2>How to Play</h2>
+      <p>
+        1. Bet on a Color: Red, Green, or Violet. <br />
+        2. Or Bet on a Number (0-9).<br />
+        3. Each round is 30 seconds: 25s to bet, 5s for result.<br />
+        4. 2% service fee is deducted.<br />
+        5. Red/Green pays 2x, Violet pays 4.5x, Numbers pay 9x.<br />
+        6. Result determines win/loss. <br />
+        7. Withdraw anytime.
+      </p>
     </div>
   </div>
 
-  <script>
-    // Login check is DISABLED for design testing
-    // You can test UI freely without authentication
+  <!-- Bet Popup (used for both color and number) -->
+  <div id="betPopup" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeBetPopup()">&times;</span>
+      <h2 id="betTypeTitle">Place Your Bet</h2>
+      <div class="amount-options">
+        <button onclick="selectAmount(1)">₹1</button>
+        <button onclick="selectAmount(10)">₹10</button>
+        <button onclick="selectAmount(100)">₹100</button>
+        <button onclick="selectAmount(1000)">₹1000</button>
+      </div>
+      <div class="multiplier-options">
+        <button onclick="setMultiplier(1)">x1</button>
+        <button onclick="setMultiplier(5)">x5</button>
+        <button onclick="setMultiplier(20)">x20</button>
+        <button onclick="setMultiplier(50)">x50</button>
+        <button onclick="setMultiplier(100)">x100</button>
+      </div>
+      <button class="confirm-bet" onclick="confirmBet()">Confirm Bet</button>
+    </div>
+  </div>
 
-    document.querySelectorAll('.color-buttons button, .number-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const amount = document.getElementById('betAmount').value;
-        if (!amount || amount <= 0) {
-          alert("Enter a valid amount.");
-        } else {
-          alert(`Placed bet on ${btn.textContent} for ₹${amount}`);
-        }
-      });
-    });
-
-    // Fake timer
-    let time = 25;
-    setInterval(() => {
-      time--;
-      if (time <= 0) time = 25;
-      document.getElementById('timer').textContent = time;
-    }, 1000);
-  </script>
+  <script src="game.js"></script>
 </body>
 </html>
