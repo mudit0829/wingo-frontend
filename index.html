@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Color Prediction Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <h1>Color Prediction Game</h1>
+    <div>Wallet Balance: ₹<span id="balance">‑‑</span></div>
+    <div id="timer">Next round in: <span id="countdown">--</span></div>
+    <div id="colors">
+      <button data-color="red">Red</button>
+      <button data-color="green">Green</button>
+      <button data-color="violet">Violet</button>
+    </div>
+    <div id="numbers"></div>
+    <button id="placeBet">Place Bet</button>
+    <div id="message"></div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
