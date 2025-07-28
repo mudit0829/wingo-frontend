@@ -4,30 +4,58 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>🎯 WinGo Game</h1>
-    <div id="userInfo">
-      Logged in as: <span id="username">Unknown</span>
+  <h1>🎯 WinGo Game</h1>
+  
+  <div>
+    <p>Logged in as: <span id="username">Unknown</span>
       <button onclick="logout()">Logout</button>
-    </div>
+    </p>
+    <p>⏳ Time Left: <span id="timeLeft">--</span> seconds</p>
+  </div>
 
-    <div id="timer">
-      ⏳ Time Left: <span id="timeLeft">--</span> seconds
-    </div>
+  <h2>Place Your Bets</h2>
 
-    <h2>Place Your Bets</h2>
-    <label for="amount">Amount:</label>
-    <input type="number" id="amount" placeholder="Enter amount" />
+  <label for="amount">Amount:</label>
+  <input type="number" id="amount" placeholder="Enter amount">
 
-    <div>
-      <button onclick="placeBet('Red')">Red</button>
-      <button onclick="placeBet('Green')">Green</button>
-      <button onclick="placeBet('Violet')">Violet</button>
-    </div>
+  <div>
+    <button onclick="placeBet('Red')">Red</button>
+    <button onclick="placeBet('Green')">Green</button>
+    <button onclick="placeBet('Violet')">Violet</button>
+  </div>
 
-    <h3>Number Bets (0–9)</h3>
-    <div id="numberButtons">
-      <!-- Buttons for 0-
+  <h3>Number Bets (0–9)</h3>
+  <div id="numberButtons"></div>
+
+  <h3>Recent Rounds</h3>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Round ID</th>
+        <th>Result</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="roundsTable"></tbody>
+  </table>
+
+  <h3>My Game History</h3>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Round ID</th>
+        <th>Color Bet</th>
+        <th>Number Bet</th>
+        <th>Amount</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody id="historyTable"></tbody>
+  </table>
+
+  <script src="game.js"></script>
+</body>
+</html>
