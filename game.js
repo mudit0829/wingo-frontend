@@ -1,93 +1,121 @@
+// Dummy wallet balance
+let wallet = 1000;
+
+// Current round and timer
+let currentRound = 123;
+let timeLeft = 25;
+let timerInterval = null;
+
 document.addEventListener("DOMContentLoaded", () => {
-  const popup = document.getElementById("bet-popup");
-  const popupAmount = document.getElementById("bet-amount");
-  const popupType = document.getElementById("bet-type");
-  const confirmBtn = document.getElementById("confirm-bet");
-  const cancelBtn = document.getElementById("cancel-bet");
-  const popupRound = document.getElementById("popup-round");
+  document.getElementById("wallet-balance").innerText = `₹ ${wallet}`;
+  updateRoundAndTimer();
+  loadRecentResults();
+  loadMyGameHistory();
 
-  const roundDisplay = document.getElementById("round-number");
-  const timerDisplay = document.getElementById("timer");
-
-  let currentRound = 1001;
-  let countdown = 25;
-
-  const updateTimer = () => {
-    timerDisplay.textContent = countdown + "s";
-    if (countdown === 0) {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
       currentRound++;
-      countdown = 25;
-      roundDisplay.textContent = currentRound;
-      generateResult();
-    } else {
-      countdown--;
+      timeLeft = 30;
+      updateRoundAndTimer();
     }
-  };
-  setInterval(updateTimer, 1000);
-
-  roundDisplay.textContent = currentRound;
-
-  let selectedBet = null;
-  document.querySelectorAll(".color-button, .number-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      selectedBet = btn.textContent;
-      popupRound.textContent = currentRound;
-      popupType.innerHTML = `
-        <option value="${selectedBet}">${selectedBet}</option>
-        <option value="x2">x2</option>
-        <option value="x5">x5</option>
-        <option value="x10">x10</option>
-        <option value="x50">x50</option>
-        <option value="x100">x100</option>
-      `;
-      popup.style.display = "block";
-    });
-  });
-
-  cancelBtn.addEventListener("click", () => {
-    popup.style.display = "none";
-    selectedBet = null;
-  });
-
-  confirmBtn.addEventListener("click", () => {
-    const amount = popupAmount.value;
-    const type = popupType.value;
-    if (amount && selectedBet) {
-      addToHistory(currentRound, selectedBet, amount, type);
-      popup.style.display = "none";
-      popupAmount.value = "";
-      selectedBet = null;
-    }
-  });
-
-  function addToHistory(round, bet, amount, type) {
-    const historyTable = document.querySelector("#game-history tbody");
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${round}</td>
-      <td>${bet}</td>
-      <td>${amount}</td>
-      <td>${type}</td>
-    `;
-    historyTable.prepend(row);
-  }
-
-  function generateResult() {
-    const results = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-    const result = results[Math.floor(Math.random() * results.length)];
-
-    let color = "";
-    if (["1", "3", "7", "9"].includes(result)) color = "Green";
-    else if (["2", "4", "6", "8"].includes(result)) color = "Red";
-    else if (["0", "5"].includes(result)) color = "Violet";
-
-    const table = document.querySelector("#recent-results tbody");
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${currentRound}</td>
-      <td class="result-${color.toLowerCase()}">${color}</td>
-      <td>${result}</td>
-    `;
-    table.prepend(row);
-  }
+    document.getElementById("timer").innerText = `${timeLeft}s`;
+  }, 1000);
 });
+
+function updateRoundAndTimer() {
+  document.getElementById("round-number").innerText = `#${currentRound}`;
+}
+
+// Popup logic
+const popup = document.getElementById("popup");
+const popupTitle = document.getElementById("popup-title");
+const betAmountInput = document.getElementById("bet-amount");
+const multiplierText = document.getElementById("multiplier");
+
+let selectedType = '';
+let selectedValue = '';
+let selectedMultiplier = 0;
+
+function openPopup(type, value) {
+  selectedType = type;
+  selectedValue = value;
+  selectedMultiplier = getMultiplier(type, value);
+  popupTitle.innerText = `Place Bet on ${value}`;
+  multiplierText.innerText = `Payout: x${selectedMultiplier}`;
+  betAmountInput.value = '';
+  popup.style.display = "block";
+}
+
+function closePopup() {
+  popup.style.display = "none";
+}
+
+function placeBet() {
+  const amount = parseFloat(betAmountInput.value);
+  if (!amount || amount <= 0) {
+    alert("Enter valid amount");
+    return;
+  }
+
+  const serviceFee = 0.02 * amount;
+  const finalAmount = amount - serviceFee;
+  const potentialWin = finalAmount * selectedMultiplier;
+
+  wallet -= amount;
+  document.getElementById("wallet-balance").innerText = `₹ ${wallet}`;
+
+  addToGameHistory(currentRound, selectedType, selectedValue, amount, potentialWin);
+  closePopup();
+}
+
+function getMultiplier(type, value) {
+  if (type === 'color') {
+    if (value === 'Red' || value === 'Green') return 2;
+    if (value === 'Violet') return 4.5;
+  } else if (type === 'number') {
+    return 9;
+  }
+  return 0;
+}
+
+// Load dummy recent results
+function loadRecentResults() {
+  const resultsTable = document.getElementById("results-table");
+  const dummy = [
+    { round: 120, number: 5, color: 'Violet' },
+    { round: 121, number: 7, color: 'Red' },
+    { round: 122, number: 2, color: 'Green' }
+  ];
+
+  dummy.reverse().forEach(res => {
+    const row = resultsTable.insertRow(1);
+    row.innerHTML = `
+      <td>#${res.round}</td>
+      <td>${res.number}</td>
+      <td><div class="color-box color-${res.color.toLowerCase()}"></div> ${res.color}</td>
+    `;
+  });
+}
+
+function loadMyGameHistory() {
+  const historyTable = document.getElementById("history-table");
+  // Clear existing
+  historyTable.innerHTML = `
+    <tr>
+      <th>Round</th><th>Type</th><th>Value</th><th>Amount</th><th>Payout</th>
+    </tr>
+  `;
+}
+
+function addToGameHistory(round, type, value, amount, payout) {
+  const historyTable = document.getElementById("history-table");
+  const row = historyTable.insertRow(1);
+  row.innerHTML = `
+    <td>#${round}</td>
+    <td>${type}</td>
+    <td>${value}</td>
+    <td>₹${amount}</td>
+    <td>₹${payout.toFixed(2)}</td>
+  `;
+}
