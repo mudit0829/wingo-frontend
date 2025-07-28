@@ -1,98 +1,97 @@
-const roundSpan = document.getElementById('roundId');
-const timerEl = document.getElementById('timer');
-const walletBalance = document.getElementById('walletBalance');
+document.addEventListener('DOMContentLoaded', () => {
+  let roundNumber = 1;
+  let timer = 25;
+  let countdownInterval;
+  const timerDisplay = document.getElementById('timer');
+  const roundDisplay = document.getElementById('roundNumber');
+  const popup = document.getElementById('betPopup');
+  const amountInput = document.getElementById('betAmount');
+  const multiplierDisplay = document.getElementById('selectedMultiplier');
+  const historyTable = document.getElementById('myGameHistoryBody');
+  const recentResultsTable = document.getElementById('recentResultsBody');
 
-let roundNumber = 1012;
-let wallet = 1000;
-let betTarget = {};
-let timer = 25;
-let gameHistory = [];
-let results = [];
+  let selectedBet = {};
+  let selectedMultiplier = 2;
 
-// Update timer
-setInterval(() => {
-  timer--;
-  if (timer <= 0) {
-    generateResult();
-    timer = 25;
-    roundNumber++;
-    roundSpan.textContent = '#' + roundNumber;
+  function updateTimer() {
+    timerDisplay.textContent = `${timer}s`;
+    if (timer === 0) {
+      clearInterval(countdownInterval);
+      setTimeout(() => {
+        roundNumber++;
+        roundDisplay.textContent = roundNumber;
+        timer = 25;
+        startTimer();
+        generateResult();
+      }, 5000);
+    } else {
+      timer--;
+    }
   }
-  timerEl.textContent = timer;
-}, 1000);
 
-// Add bet listeners
-document.querySelectorAll('.btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const type = btn.dataset.betType;
-    const value = btn.dataset.value;
-    showPopup(type, value);
-  });
-});
+  function startTimer() {
+    timerDisplay.textContent = `${timer}s`;
+    countdownInterval = setInterval(updateTimer, 1000);
+  }
 
-function showPopup(type, value) {
-  betTarget = { type, value };
-  document.getElementById('popupTitle').textContent = `Bet on ${type}: ${value}`;
-  document.getElementById('popup').classList.remove('hidden');
-}
+  startTimer();
 
-document.getElementById('closePopup').onclick = () => {
-  document.getElementById('popup').classList.add('hidden');
-};
-
-document.getElementById('placeBetBtn').onclick = () => {
-  const amount = parseInt(document.getElementById('betAmount').value) || 0;
-  const multiplier = document.querySelector('.multiplier-btn.selected')?.dataset.multiplier || 1;
-
-  if (amount > 0 && amount <= wallet) {
-    wallet -= amount;
-    walletBalance.textContent = wallet;
-
-    gameHistory.unshift({
-      round: roundNumber,
-      type: betTarget.type,
-      value: betTarget.value,
-      amount,
-      multiplier
+  // Handle color and number clicks
+  document.querySelectorAll('.color-buttons button, .number-buttons button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedBet = {
+        type: btn.classList.contains('number') ? 'number' : 'color',
+        value: btn.textContent
+      };
+      document.getElementById('betPopup').style.display = 'block';
     });
+  });
 
-    updateHistory();
-    document.getElementById('popup').classList.add('hidden');
+  document.getElementById('placeBetBtn').addEventListener('click', () => {
+    const amount = parseFloat(amountInput.value);
+    if (!amount || amount <= 0) return alert("Enter valid amount");
+    
+    // Save to history
+    const newRow = historyTable.insertRow(0);
+    newRow.insertCell(0).textContent = roundNumber;
+    newRow.insertCell(1).textContent = selectedBet.type;
+    newRow.insertCell(2).textContent = selectedBet.value;
+    newRow.insertCell(3).textContent = amount;
+    newRow.insertCell(4).textContent = `x${selectedMultiplier}`;
+
+    popup.style.display = 'none';
+    amountInput.value = '';
+    selectedMultiplier = 2;
+    multiplierDisplay.textContent = 'x2';
+  });
+
+  document.getElementById('cancelBetBtn').addEventListener('click', () => {
+    popup.style.display = 'none';
+    amountInput.value = '';
+  });
+
+  document.querySelectorAll('.multiplier-buttons button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedMultiplier = btn.getAttribute('data-multiplier');
+      multiplierDisplay.textContent = `x${selectedMultiplier}`;
+    });
+  });
+
+  function generateResult() {
+    const result = Math.floor(Math.random() * 10);
+    let color = '';
+
+    if ([1, 3, 7, 9].includes(result)) color = 'green';
+    else if ([2, 4, 6, 8].includes(result)) color = 'red';
+    else color = 'violet';
+
+    const newRow = recentResultsTable.insertRow(0);
+    newRow.insertCell(0).textContent = roundNumber;
+    newRow.insertCell(1).textContent = result;
+    
+    const colorCell = newRow.insertCell(2);
+    const div = document.createElement('div');
+    div.classList.add('result-color-box', `result-${color}`);
+    colorCell.appendChild(div);
   }
-};
-
-document.querySelectorAll('.multiplier-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.multiplier-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-  });
 });
-
-function updateHistory() {
-  const body = document.getElementById('historyBody');
-  body.innerHTML = '';
-  gameHistory.slice(0, 5).forEach(bet => {
-    const row = `<tr><td>${bet.round}</td><td>${bet.type}</td><td>${bet.value}</td><td>₹${bet.amount} x${bet.multiplier}</td></tr>`;
-    body.innerHTML += row;
-  });
-}
-
-function generateResult() {
-  const number = Math.floor(Math.random() * 10);
-  let color = '';
-  if ([1, 3, 7, 9].includes(number)) color = 'Green';
-  else if ([2, 4, 6, 8].includes(number)) color = 'Red';
-  else if ([0, 5].includes(number)) color = 'Violet';
-
-  results.unshift({ round: roundNumber, number, color });
-  updateResults();
-}
-
-function updateResults() {
-  const body = document.getElementById('recentResultsBody');
-  body.innerHTML = '';
-  results.slice(0, 5).forEach(result => {
-    const row = `<tr><td>${result.round}</td><td>${result.number}</td><td>${result.color}</td></tr>`;
-    body.innerHTML += row;
-  });
-}
