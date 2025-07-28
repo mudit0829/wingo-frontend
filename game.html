@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WinGo Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <h2>Welcome, <span id="username"></span>!</h2>
+    <p>Wallet: ₹<span id="wallet"></span></p>
+
+    <div class="bet-section">
+      <h3>Place Your Bets</h3>
+      <label>Bet Amount (₹): <input type="number" id="betAmount" value="100" /></label><br/>
+      
+      <h4>Choose Color:</h4>
+      <button onclick="placeColorBet('Red')">🔴 Red</button>
+      <button onclick="placeColorBet('Green')">🟢 Green</button>
+      <button onclick="placeColorBet('Violet')">🟣 Violet</button>
+
+      <h4>Choose Number (0–9):</h4>
+      <input type="number" id="numberBet" min="0" max="9" />
+      <button onclick="placeNumberBet()">Bet on Number</button>
+    </div>
+
+    <h4>Current Round: <span id="currentRound"></span></h4>
+    <p>Time left: <span id="timer"></span>s</p>
+
+    <div id="status"></div>
+
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
