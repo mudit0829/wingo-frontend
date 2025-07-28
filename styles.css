@@ -1,168 +1,164 @@
-/* Reset & Base Styles */
+/* Base styles */
 body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: #f3f4f6;
-    color: #111;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom, #101010, #1a1a1a);
+  color: #fff;
+  padding: 0;
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1.5rem;
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #111;
+  padding: 15px 20px;
+  border-bottom: 1px solid #333;
 }
 
-h1, h2 {
-    text-align: center;
-    color: #2c3e50;
+header h1 {
+  font-size: 1.5rem;
+  margin: 0;
 }
 
-button {
-    cursor: pointer;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 16px;
-    transition: all 0.2s ease-in-out;
-    background-color: #4f46e5;
-    color: white;
+.wallet {
+  font-weight: bold;
+  font-size: 1rem;
 }
 
-button:hover {
-    background-color: #4338ca;
+main {
+  padding: 15px;
 }
 
-/* Bet Popup */
-#betPopup {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    padding: 1.5rem;
-    width: 90%;
-    max-width: 400px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.timer-bar {
+  background-color: #222;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.bet-options {
-    display: flex;
-    justify-content: space-around;
-    margin: 1rem 0;
-    flex-wrap: wrap;
-    gap: 10px;
+.section-title {
+  font-size: 1.1rem;
+  margin-top: 20px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
 }
 
-.bet-button {
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-weight: bold;
-    min-width: 80px;
-    font-size: 14px;
-    text-align: center;
+/* Bet buttons */
+.color-buttons,
+.number-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-.red { background: #e11d48; color: white; }
-.green { background: #10b981; color: white; }
-.violet { background: #8b5cf6; color: white; }
-.number { background: #f59e0b; color: white; }
-
-.multiplier {
-    display: block;
-    font-size: 12px;
-    margin-top: 5px;
-    color: #f1f5f9;
-    opacity: 0.8;
+.color-buttons button,
+.number-buttons button {
+  flex: 1 1 30%;
+  padding: 10px 0;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #fff;
+  transition: transform 0.2s ease-in-out;
 }
 
-/* Bet input */
-input[type="number"] {
-    padding: 8px;
-    font-size: 16px;
-    width: 100%;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+.color-buttons button:hover,
+.number-buttons button:hover {
+  transform: scale(1.05);
 }
 
-/* Popup Close Button */
-#closePopup {
-    background: #e11d48;
-    float: right;
-    font-size: 14px;
+.color-buttons .green { background: linear-gradient(45deg, #1fc44f, #18a835); }
+.color-buttons .red { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+.color-buttons .violet { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+
+.number-buttons button {
+  background-color: #333;
 }
 
-/* Timer Display */
-#timer {
-    font-size: 24px;
-    font-weight: bold;
-    color: #1f2937;
-    text-align: center;
-    margin-bottom: 10px;
+.bet-btn {
+  background: linear-gradient(45deg, #ff512f, #dd2476);
+  padding: 10px;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  border: none;
+  margin: 20px auto;
+  display: block;
+  cursor: pointer;
+  width: 100%;
+  max-width: 250px;
 }
 
-/* Result Section */
-#resultSection {
-    background: white;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-top: 20px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+/* Popup */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
-#resultTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+.popup-content {
+  background-color: #1e1e1e;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  width: 90%;
+  max-width: 350px;
 }
 
-#resultTable th, #resultTable td {
-    padding: 8px;
-    text-align: center;
-    border-bottom: 1px solid #ccc;
+.popup-content input {
+  padding: 10px;
+  width: 90%;
+  margin: 15px auto;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: #2a2a2a;
+  color: white;
 }
 
-.color-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    color: white;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: bold;
+.popup-content .place-bet {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  color: #fff;
+  border: none;
+  padding: 10px 25px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.red-badge { background: #e11d48; }
-.green-badge { background: #10b981; }
-.violet-badge { background: #8b5cf6; }
-
-/* History Section */
-#gameHistorySection {
-    margin-top: 30px;
-    background: white;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #222;
+  margin-bottom: 20px;
 }
 
-#historyTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+th, td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #333;
 }
 
-#historyTable th, #historyTable td {
-    padding: 8px;
-    text-align: center;
-    border-bottom: 1px solid #ccc;
+th {
+  background-color: #333;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-    .bet-options {
-        flex-direction: column;
-        align-items: center;
-    }
-}
+.result-cell.red { color: #ff4c4c; font-weight: bold; }
+.result-cell.green { color: #4cff4c; font-weight: bold; }
+.result-cell.violet { color: #c97fff; font-weight: bold; }
