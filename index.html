@@ -2,102 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <h1 class="title">WinGo Game</h1>
+    <h1 class="game-title">🎲 WinGo Game 🎲</h1>
 
-    <div class="top-bar">
-      <span id="user-email"></span>
-      <span id="user-balance">Balance: ₹0</span>
-      <button id="logout-btn">Logout</button>
-    </div>
-
-    <div class="timer-container">
-      <span>Next Round In:</span>
-      <span id="timer">00</span>s
+    <div class="wallet-section">
+      <span><strong>Wallet:</strong> ₹1000</span>
     </div>
 
     <div class="bet-section">
-      <input type="number" id="bet-amount" placeholder="Enter amount" min="1" />
-
+      <input type="number" id="betAmount" placeholder="Enter Bet Amount" />
       <div class="color-buttons">
-        <button class="bet-btn red" data-color="Red">Red</button>
-        <button class="bet-btn green" data-color="Green">Green</button>
-        <button class="bet-btn violet" data-color="Violet">Violet</button>
+        <button class="red-btn">Red</button>
+        <button class="green-btn">Green</button>
+        <button class="violet-btn">Violet</button>
       </div>
-
       <div class="number-buttons">
-        <p>Number Bet:</p>
-        <div class="number-grid">
-          <button class="num-btn" data-number="0">0</button>
-          <button class="num-btn" data-number="1">1</button>
-          <button class="num-btn" data-number="2">2</button>
-          <button class="num-btn" data-number="3">3</button>
-          <button class="num-btn" data-number="4">4</button>
-          <button class="num-btn" data-number="5">5</button>
-          <button class="num-btn" data-number="6">6</button>
-          <button class="num-btn" data-number="7">7</button>
-          <button class="num-btn" data-number="8">8</button>
-          <button class="num-btn" data-number="9">9</button>
-        </div>
+        <button class="number-btn">0</button>
+        <button class="number-btn">1</button>
+        <button class="number-btn">2</button>
+        <button class="number-btn">3</button>
+        <button class="number-btn">4</button>
+        <button class="number-btn">5</button>
+        <button class="number-btn">6</button>
+        <button class="number-btn">7</button>
+        <button class="number-btn">8</button>
+        <button class="number-btn">9</button>
       </div>
+      <div class="timer-box">Next round in: <span id="timer">25</span>s</div>
+    </div>
+
+    <div class="result-section">
+      <h3>🔔 Last Result: <span id="lastResult">--</span></h3>
     </div>
 
     <div class="history-section">
-      <h2>Last 10 Results</h2>
-      <div id="history"></div>
+      <h3>📜 Game History</h3>
+      <ul id="historyList">
+        <li>Waiting for results...</li>
+      </ul>
+    </div>
+
+    <div class="logout-btn-section">
+      <button class="logout-btn" onclick="alert('Logout disabled in demo')">Logout</button>
     </div>
   </div>
 
   <script>
-    const userData = JSON.parse(localStorage.getItem("user"));
-    if (!userData) {
-      window.location.href = "login.html";
-    } else {
-      document.getElementById("user-email").innerText = userData.email;
-    }
+    // Login check is DISABLED for design testing
+    // You can test UI freely without authentication
 
-    document.getElementById("logout-btn").addEventListener("click", () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "login.html";
+    document.querySelectorAll('.color-buttons button, .number-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const amount = document.getElementById('betAmount').value;
+        if (!amount || amount <= 0) {
+          alert("Enter a valid amount.");
+        } else {
+          alert(`Placed bet on ${btn.textContent} for ₹${amount}`);
+        }
+      });
     });
 
-    let timer = 25;
-    const timerElement = document.getElementById("timer");
+    // Fake timer
+    let time = 25;
     setInterval(() => {
-      timer--;
-      if (timer <= 0) {
-        timer = 30;
-      }
-      timerElement.innerText = timer < 10 ? "0" + timer : timer;
+      time--;
+      if (time <= 0) time = 25;
+      document.getElementById('timer').textContent = time;
     }, 1000);
-
-    // Demo balance for now
-    document.getElementById("user-balance").innerText = "Balance: ₹1000";
-
-    // Add logic to handle bet click and store with backend
-    document.querySelectorAll(".bet-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const color = btn.dataset.color;
-        const amount = document.getElementById("bet-amount").value;
-        alert(`Color Bet: ${color}, Amount: ₹${amount}`);
-        // POST to backend
-      });
-    });
-
-    document.querySelectorAll(".num-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const number = btn.dataset.number;
-        const amount = document.getElementById("bet-amount").value;
-        alert(`Number Bet: ${number}, Amount: ₹${amount}`);
-        // POST to backend
-      });
-    });
   </script>
 </body>
 </html>
