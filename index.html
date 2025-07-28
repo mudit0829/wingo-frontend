@@ -4,47 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    button { margin: 5px; padding: 10px 15px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    h1 { display: flex; align-items: center; gap: 10px; }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🎯 WinGo Game</h1>
-  <p>Logged in as: <span id="username">Loading...</span>
-    <button onclick="logout()">Logout</button>
-  </p>
-  <p>⏳ Time Left: <span id="timer">--</span> seconds</p>
+  <div class="container">
+    <h1>🎯 WinGo Game</h1>
+    <div id="userInfo">
+      Logged in as: <span id="username">Unknown</span>
+      <button onclick="logout()">Logout</button>
+    </div>
 
-  <h2>Place Your Bets</h2>
-  <label for="amount">Amount:</label>
-  <input type="number" id="amount" value="100" min="1" />
+    <div id="timer">
+      ⏳ Time Left: <span id="timeLeft">--</span> seconds
+    </div>
 
-  <div>
-    <button onclick="placeColorBet('Red')">Red</button>
-    <button onclick="placeColorBet('Green')">Green</button>
-    <button onclick="placeColorBet('Violet')">Violet</button>
-  </div>
+    <h2>Place Your Bets</h2>
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount" placeholder="Enter amount" />
 
-  <h3>Number Bets (0–9)</h3>
-  <div id="number-buttons"></div>
+    <div>
+      <button onclick="placeBet('Red')">Red</button>
+      <button onclick="placeBet('Green')">Green</button>
+      <button onclick="placeBet('Violet')">Violet</button>
+    </div>
 
-  <h3>Recent Rounds</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Round ID</th>
-        <th>Result</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-    <tbody id="round-table"></tbody>
-  </table>
-
-  <script src="game.js"></script>
-</body>
-</html>
+    <h3>Number Bets (0–9)</h3>
+    <div id="numberButtons">
+      <!-- Buttons for 0-
