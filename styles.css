@@ -1,138 +1,114 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f1f5f9;
   margin: 0;
-  padding: 0;
+  padding: 1rem;
+  background: #f2f2f2;
+  color: #333;
+}
+
+.wallet-section {
   text-align: center;
+  margin-bottom: 1rem;
 }
 
-header {
-  background-color: #1e293b;
-  color: white;
-  padding: 1rem;
-}
-
-h1 {
-  margin: 0.2rem 0;
-}
-
-#wallet {
-  font-size: 1.2rem;
-  margin-top: 0.5rem;
-}
-
-.wallet-buttons {
-  margin-top: 0.5rem;
-}
-
-.wallet-buttons button {
-  margin: 0.2rem;
-  padding: 0.4rem 1rem;
-  font-weight: bold;
-}
-
-#round-info {
-  margin-top: 0.8rem;
-  font-size: 1rem;
-}
-
-.bet-section {
-  padding: 1rem;
-}
-
-.bet-button {
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
+.wallet-section button {
   margin: 0.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  color: white;
-  cursor: pointer;
 }
 
-.bet-button.red { background-color: #ef4444; }
-.bet-button.green { background-color: #10b981; }
-.bet-button.violet { background-color: #8b5cf6; }
+.game-info {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
 
-.number-buttons {
+.color-buttons, .number-buttons {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.color-btn {
+  padding: 1rem;
+  margin: 0.5rem;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  width: 100px;
+}
+
+.red { background: #e74c3c; }
+.green { background: #27ae60; }
+.violet { background: #8e44ad; }
+
+.number-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.number-grid button {
+  margin: 0.5rem;
+  width: 60px;
+  height: 60px;
+  font-size: 1.2rem;
+}
+
+.tabs {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.tabs button {
+  margin: 0.5rem;
+  padding: 0.6rem 1rem;
+}
+
+.tab-content {
+  display: none;
   margin-top: 1rem;
 }
 
-.numbers button {
-  margin: 0.3rem;
-  padding: 0.8rem;
-  font-size: 1rem;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  background-color: #e2e8f0;
-  border: none;
-  cursor: pointer;
+.tab-content.active {
+  display: block;
 }
 
-.recent-results {
-  margin-top: 2rem;
-  background-color: white;
-  padding: 1rem;
-  box-shadow: 0 0 10px #ccc;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
 }
 
-.how-to-play {
-  background-color: #fef3c7;
-  padding: 1rem;
-  margin-top: 2rem;
-}
-
-.how-to-play ul {
-  text-align: left;
-  padding-left: 1rem;
+th, td {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  text-align: center;
 }
 
 .popup {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.6);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99;
 }
 
 .popup-content {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 1rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
   text-align: center;
-  width: 80%;
-  max-width: 300px;
 }
 
-.popup input {
-  width: 90%;
-  padding: 0.6rem;
-  margin: 1rem 0;
-  font-size: 1rem;
-}
-
-.popup button {
-  padding: 0.6rem 1.5rem;
-  background-color: #1d4ed8;
-  color: white;
-  border: none;
-  border-radius: 0.4rem;
-  font-size: 1rem;
-}
-
-.close {
-  float: right;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: red;
-}
-
-.hidden {
+.popup.hidden {
   display: none;
+}
+
+.bet-amounts button {
+  margin: 0.5rem;
+  padding: 0.6rem 1rem;
+}
+
+.close-btn {
+  margin-top: 1rem;
 }
