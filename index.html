@@ -7,85 +7,91 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="logo-section">
-    <img src="logo.png" alt="WingGo Logo" class="logo"/>
-  </div>
+  <div class="container">
+    <img src="logo.png" alt="WinGo Logo" class="logo" />
 
-  <div class="top-bar">
-    <div class="round-info">Round: <span id="roundId">#0000</span></div>
-    <div class="timer" id="timer">00</div>
-  </div>
-
-  <div class="wallet">Wallet: ₹<span id="walletBalance">1000</span></div>
-
-  <div class="section">
-    <h3>Choose Color</h3>
-    <div class="color-buttons">
-      <button class="btn color-red" data-bet-type="color" data-value="Red">Red</button>
-      <button class="btn color-green" data-bet-type="color" data-value="Green">Green</button>
-      <button class="btn color-violet" data-bet-type="color" data-value="Violet">Violet</button>
+    <div class="info-bar">
+      <div id="round-number">Round: --</div>
+      <div id="timer">00:25</div>
     </div>
-  </div>
 
-  <div class="section">
-    <h3>Choose Number</h3>
-    <div class="number-buttons">
-      <!-- 0 to 9 buttons -->
-      <script>
-        for (let i = 0; i <= 9; i++) {
-          document.write(`<button class="btn number-btn" data-bet-type="number" data-value="${i}">${i}</button>`);
-        }
-      </script>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>Recent Results</h3>
-    <table id="recentResultsTable">
-      <thead>
-        <tr>
-          <th>Round</th>
-          <th>Number</th>
-          <th>Color</th>
-        </tr>
-      </thead>
-      <tbody id="recentResultsBody">
-        <!-- Populated dynamically -->
-      </tbody>
-    </table>
-  </div>
-
-  <div class="section">
-    <h3>My Game History</h3>
-    <table id="historyTable">
-      <thead>
-        <tr>
-          <th>Round</th>
-          <th>Bet Type</th>
-          <th>Value</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
-      <tbody id="historyBody">
-        <!-- Populated dynamically -->
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Popup Modal -->
-  <div id="popup" class="popup hidden">
-    <div class="popup-content">
-      <h3 id="popupTitle">Place Your Bet</h3>
-      <input type="number" id="betAmount" placeholder="Enter Amount" />
-      <div class="multipliers">
-        <button class="multiplier-btn" data-multiplier="2">x2</button>
-        <button class="multiplier-btn" data-multiplier="5">x5</button>
-        <button class="multiplier-btn" data-multiplier="10">x10</button>
-        <button class="multiplier-btn" data-multiplier="50">x50</button>
-        <button class="multiplier-btn" data-multiplier="100">x100</button>
+    <div class="section">
+      <h2>Select a Color</h2>
+      <div class="color-buttons">
+        <button class="color-btn red" data-color="Red">Red</button>
+        <button class="color-btn green" data-color="Green">Green</button>
+        <button class="color-btn violet" data-color="Violet">Violet</button>
       </div>
-      <button id="placeBetBtn">Place Bet</button>
-      <button id="closePopup">Cancel</button>
+    </div>
+
+    <div class="section">
+      <h2>Select a Number</h2>
+      <div class="number-buttons">
+        <!-- Numbers 0-9 -->
+        <button class="number-btn" data-number="0">0</button>
+        <button class="number-btn" data-number="1">1</button>
+        <button class="number-btn" data-number="2">2</button>
+        <button class="number-btn" data-number="3">3</button>
+        <button class="number-btn" data-number="4">4</button>
+        <button class="number-btn" data-number="5">5</button>
+        <button class="number-btn" data-number="6">6</button>
+        <button class="number-btn" data-number="7">7</button>
+        <button class="number-btn" data-number="8">8</button>
+        <button class="number-btn" data-number="9">9</button>
+      </div>
+    </div>
+
+    <div class="wallet">
+      Wallet: ₹<span id="wallet-balance">0</span>
+    </div>
+
+    <div class="section">
+      <h2>Recent Results</h2>
+      <table class="history-table" id="recent-results">
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th>Color</th>
+            <th>Number</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>My Game History</h2>
+      <table class="history-table" id="my-history">
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th>Bet Type</th>
+            <th>Choice</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Bet Popup -->
+  <div class="popup" id="bet-popup">
+    <div class="popup-content">
+      <span class="close-popup" id="close-popup">&times;</span>
+      <h2>Place Your Bet</h2>
+      <p id="selected-choice"></p>
+      <label for="bet-amount">Amount:</label>
+      <input type="number" id="bet-amount" min="1" value="10" />
+      <label for="multiplier">Select Multiplier:</label>
+      <select id="multiplier">
+        <option value="2">x2</option>
+        <option value="5">x5</option>
+        <option value="10">x10</option>
+        <option value="50">x50</option>
+        <option value="100">x100</option>
+      </select>
+      <button id="submit-bet">Submit Bet</button>
     </div>
   </div>
 
