@@ -1,72 +1,112 @@
-const apiBase = 'https://wingo-backend-nqk5.onrender.com';
+const API_BASE = 'https://wingo-backend-nqk5.onrender.com';
+
+// Get token and username from localStorage
 const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
-const role = localStorage.getItem('role');
 
-document.getElementById('usernameDisplay').textContent = username || 'Unknown';
+// DOM elements
+const userSpan = document.getElementById('user');
+const timerSpan = document.getElementById('timer');
+const amountInput = document.getElementById('amount');
+const roundTable = document.getElementById('roundTable');
+const logoutBtn = document.getElementById('logoutBtn');
+const numberBetsContainer = document.getElementById('numberBets');
 
-document.getElementById('logoutBtn').addEventListener('click', () => {
+// Redirect to login if not logged in
+if (!token || !username) {
+  window.location.href = 'login.html';
+}
+
+// Show username
+userSpan.textContent = username;
+
+// Logout
+logoutBtn.addEventListener('click', () => {
   localStorage.clear();
   window.location.href = 'login.html';
 });
 
-async function placeBet(type, value) {
-  const amount = parseFloat(document.getElementById('betAmount').value);
-  if (!amount || amount < 1) return alert('Enter valid amount');
+// Timer countdown
+let secondsLeft = 30;
+function updateTimer() {
+  timerSpan.textContent = `${secondsLeft} seconds`;
+  secondsLeft--;
+  if (secondsLeft < 0) {
+    secondsLeft = 30;
+  }
+}
+setInterval(updateTimer, 1000);
+updateTimer();
+
+// Bet handler
+async function placeBet(color, number) {
+  const amount = parseFloat(amountInput.value);
+  if (!amount || amount <= 0) {
+    alert('Enter valid amount');
+    return;
+  }
+
+  const betData = {
+    username,
+    amount,
+    color: color || null,
+    number: number ?? null
+  };
 
   try {
-    const res = await fetch(`${apiBase}/api/bets`, {
+    const res = await fetch(`${API_BASE}/api/bets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({
-        username,
-        amount,
-        [type]: value
-      })
+      body: JSON.stringify(betData)
     });
-
     const data = await res.json();
-    if (res.ok) {
-      alert(`Bet placed on ${type === 'color' ? 'Color' : 'Number'}: ${value}`);
-    } else {
-      alert(data.message || 'Failed to place bet');
-    }
+    if (!res.ok) throw new Error(data.message || 'Bet failed');
+    alert('Bet placed!');
   } catch (err) {
-    console.error(err);
-    alert('Error placing bet');
+    alert('Error: ' + err.message);
   }
 }
 
-function updateCountdown() {
-  const now = new Date();
-  const seconds = now.getSeconds();
-  const remaining = 30 - (seconds % 30);
-  document.getElementById('countdown').textContent = remaining;
+// Attach color button events
+document.getElementById('redBtn').addEventListener('click', () => placeBet('Red'));
+document.getElementById('greenBtn').addEventListener('click', () => placeBet('Green'));
+document.getElementById('violetBtn').addEventListener('click', () => placeBet('Violet'));
+
+// Generate number bet buttons
+for (let i = 0; i < 10; i++) {
+  const btn = document.createElement('button');
+  btn.textContent = i;
+  btn.onclick = () => placeBet(null, i);
+  numberBetsContainer.appendChild(btn);
 }
 
-setInterval(updateCountdown, 1000);
-
-async function loadGameHistory() {
+// Load recent rounds
+async function loadRounds() {
   try {
-    const res = await fetch(`${apiBase}/api/rounds`);
-    const data = await res.json();
-
-    const rows = data.slice(-10).reverse().map(round => `
-      <tr>
-        <td>${round.roundId || '-'}</td>
-        <td>${round.result ?? '-'}</td>
-        <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
-      </tr>
-    `).join('');
-
-    document.querySelector('#historyTable tbody').innerHTML = rows;
+    const res = await fetch(`${API_BASE}/api/rounds`);
+    const rounds = await res.json();
+    roundTable.innerHTML = `
+      <tr><th>Round ID</th><th>Result</th><th>Time</th></tr>
+      ${rounds
+        .slice(-5)
+        .reverse()
+        .map(
+          (r) => `
+        <tr>
+          <td>${r.roundId}</td>
+          <td>${r.result || 'Pending'}</td>
+          <td>${new Date(r.timestamp).toLocaleTimeString()}</td>
+        </tr>
+      `
+        )
+        .join('')}
+    `;
   } catch (err) {
-    console.error('Failed to load history', err);
+    roundTable.innerHTML = '<tr><td colspan="3">Error loading rounds</td></tr>';
   }
 }
-
-loadGameHistory();
-setInterval(loadGameHistory, 10000);
+setInterval(loadRounds, 3000);
+loadRounds();
