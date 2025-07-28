@@ -1,92 +1,74 @@
-let wallet = 1000;
-let currentBet = {};
-let round = 1;
-let timer = 30;
+document.addEventListener("DOMContentLoaded", () => {
+  const colorBtns = document.querySelectorAll(".color-btn");
+  const numberBtns = document.querySelectorAll(".number-btn");
+  const popup = document.getElementById("popup");
+  const popupClose = document.getElementById("popup-close");
+  const confirmBet = document.getElementById("confirm-bet");
+  const betAmountInput = document.getElementById("bet-amount");
+  const historyBody = document.getElementById("history-body");
 
-const walletAmount = document.getElementById("walletAmount");
-const popup = document.getElementById("popup");
-const betAmountInput = document.getElementById("betAmount");
-const popupTitle = document.getElementById("popupTitle");
-const gameHistory = document.getElementById("gameHistory");
-const timerSpan = document.getElementById("timer");
-const roundSpan = document.getElementById("roundNumber");
+  let selectedBet = null;
+  let roundNumber = 1001;
 
-function updateWallet() {
-  walletAmount.textContent = wallet;
-}
-
-function deposit() {
-  wallet += 500;
-  updateWallet();
-}
-
-function withdraw() {
-  wallet = Math.max(0, wallet - 500);
-  updateWallet();
-}
-
-function selectAmount(amount) {
-  betAmountInput.value = amount;
-}
-
-function showPopup(title, type, value) {
-  currentBet = { type, value };
-  popupTitle.textContent = `${title}`;
-  popup.classList.remove("hidden");
-}
-
-function closePopup() {
-  popup.classList.add("hidden");
-  currentBet = {};
-  betAmountInput.value = "";
-}
-
-function confirmBet() {
-  const amount = parseInt(betAmountInput.value);
-  if (isNaN(amount) || amount <= 0 || amount > wallet) {
-    alert("Invalid amount");
-    return;
-  }
-  const finalAmount = Math.floor(amount * 0.98);
-  wallet -= amount;
-  updateWallet();
-
-  // Store bet temporarily (to simulate real backend later)
-  alert(`Bet placed on ${currentBet.type}: ${currentBet.value} for ₹${finalAmount}`);
-  closePopup();
-}
-
-document.querySelectorAll(".bet-btn.red, .bet-btn.green, .bet-btn.violet").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const color = btn.dataset.color;
-    showPopup(`Bet on ${color}`, "color", color);
+  // Show popup when color or number clicked
+  [...colorBtns, ...numberBtns].forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedBet = {
+        value: btn.innerText,
+        type: btn.classList.contains("color-btn") ? "Color" : "Number",
+      };
+      popup.classList.remove("hidden");
+    });
   });
-});
 
-document.querySelectorAll(".bet-btn.number").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const number = btn.dataset.number;
-    showPopup(`Bet on Number ${number}`, "number", number);
+  // Close popup
+  popupClose.addEventListener("click", () => {
+    popup.classList.add("hidden");
   });
-});
 
-// Round Timer
-setInterval(() => {
-  timer--;
-  if (timer <= 0) {
-    timer = 30;
-    round++;
-    roundSpan.textContent = round;
+  // Confirm Bet
+  confirmBet.addEventListener("click", () => {
+    const amount = parseInt(betAmountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Enter a valid amount");
+      return;
+    }
 
-    const result = Math.floor(Math.random() * 10);
-    const colorResult = [1,3,7,9].includes(result) ? 'Red' : [2,4,6,8].includes(result) ? 'Green' : 'Violet';
+    addToHistory(roundNumber, amount, selectedBet);
+    popup.classList.add("hidden");
+    betAmountInput.value = "";
+  });
 
-    const row = `<tr>
-      <td>${round}</td>
-      <td>${result} (${colorResult})</td>
-      <td>${new Date().toLocaleTimeString()}</td>
-    </tr>`;
-    gameHistory.innerHTML = row + gameHistory.innerHTML;
+  function addToHistory(round, amount, bet) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>#${round}</td>
+      <td>₹${amount}</td>
+      <td>${bet.type}: ${bet.value}</td>
+      <td>--</td>
+      <td>Pending</td>
+    `;
+    historyBody.prepend(row);
   }
-  timerSpan.textContent = timer;
-}, 1000);
+
+  // Recent Results - Simulated
+  const recentResults = [2, 5, 0, 8, 1];
+  const recentList = document.getElementById("recent-results-list");
+  recentResults.forEach((num) => {
+    const li = document.createElement("li");
+    li.innerText = `Round ${roundNumber++}: Result ${num}`;
+    recentList.appendChild(li);
+  });
+
+  // Simulate timer
+  let timerSec = 25;
+  setInterval(() => {
+    timerSec--;
+    if (timerSec < 0) {
+      timerSec = 25;
+      roundNumber++;
+      document.getElementById("round-number").innerText = `Round #${roundNumber}`;
+    }
+    document.getElementById("timer").innerText = `00:${timerSec.toString().padStart(2, "0")}`;
+  }, 1000);
+});
