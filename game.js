@@ -1,69 +1,72 @@
+const apiBase = 'https://wingo-backend-nqk5.onrender.com';
+const token = localStorage.getItem('token');
+const username = localStorage.getItem('username');
+const role = localStorage.getItem('role');
 
-const backendURL = "https://wingo-backend-nqk5.onrender.com";
-let token = "";
+document.getElementById('usernameDisplay').textContent = username || 'Unknown';
 
-async function getToken() {
-  const response = await fetch(`${backendURL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: "test2@example.com", password: "123456" })
-  });
-  const data = await response.json();
-  token = data.token;
-}
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.clear();
+  window.location.href = 'login.html';
+});
 
-async function fetchCurrentRound() {
-  const res = await fetch(`${backendURL}/api/rounds/latest`);
-  const data = await res.json();
-  document.getElementById("round-id").innerText = data.roundId || "Unknown";
-}
+async function placeBet(type, value) {
+  const amount = parseFloat(document.getElementById('betAmount').value);
+  if (!amount || amount < 1) return alert('Enter valid amount');
 
-function placeBet() {
-  const amount = parseFloat(document.getElementById("bet-amount").value);
-  const color = document.getElementById("color-choice").value;
-  const number = document.getElementById("number-choice").value;
-
-  if (!amount || amount < 1) {
-    alert("Enter valid amount");
-    return;
-  }
-
-  const payload = {
-    roundId: document.getElementById("round-id").innerText,
-    amount,
-    color,
-    number: number !== "" ? parseInt(number) : null,
-  };
-
-  fetch(`${backendURL}/api/bets`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("message").innerText = "Bet placed!";
-    })
-    .catch(err => {
-      document.getElementById("message").innerText = "Error placing bet.";
+  try {
+    const res = await fetch(`${apiBase}/api/bets`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        username,
+        amount,
+        [type]: value
+      })
     });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert(`Bet placed on ${type === 'color' ? 'Color' : 'Number'}: ${value}`);
+    } else {
+      alert(data.message || 'Failed to place bet');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error placing bet');
+  }
 }
 
-function startTimer(seconds) {
-  let counter = seconds;
-  const timerElement = document.getElementById("timer");
-  const interval = setInterval(() => {
-    counter--;
-    timerElement.innerText = counter;
-    if (counter <= 0) clearInterval(interval);
-  }, 1000);
+function updateCountdown() {
+  const now = new Date();
+  const seconds = now.getSeconds();
+  const remaining = 30 - (seconds % 30);
+  document.getElementById('countdown').textContent = remaining;
 }
 
-window.onload = async () => {
-  await getToken();
-  await fetchCurrentRound();
-  startTimer(30);
-};
+setInterval(updateCountdown, 1000);
+
+async function loadGameHistory() {
+  try {
+    const res = await fetch(`${apiBase}/api/rounds`);
+    const data = await res.json();
+
+    const rows = data.slice(-10).reverse().map(round => `
+      <tr>
+        <td>${round.roundId || '-'}</td>
+        <td>${round.result ?? '-'}</td>
+        <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
+      </tr>
+    `).join('');
+
+    document.querySelector('#historyTable tbody').innerHTML = rows;
+  } catch (err) {
+    console.error('Failed to load history', err);
+  }
+}
+
+loadGameHistory();
+setInterval(loadGameHistory, 10000);
