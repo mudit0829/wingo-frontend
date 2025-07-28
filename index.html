@@ -7,73 +7,90 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>🎯 WinGo Game</h1>
-    <div id="wallet">Wallet: ₹<span id="wallet-amount">1000</span></div>
-    <div class="wallet-buttons">
-      <button onclick="deposit()">Deposit</button>
-      <button onclick="withdraw()">Withdraw</button>
-    </div>
-    <div id="round-info">Round: <span id="round-number">--</span> | Timer: <span id="timer">--</span></div>
-  </header>
+  <div class="wallet-section">
+    <h2>Wallet: ₹<span id="wallet">0</span></h2>
+    <button onclick="deposit()">Deposit</button>
+    <button onclick="withdraw()">Withdraw</button>
+  </div>
 
-  <main>
-    <div class="bet-section">
-      <button class="bet-button red" onclick="openColorPopup('Red')">Red</button>
-      <button class="bet-button green" onclick="openColorPopup('Green')">Green</button>
-      <button class="bet-button violet" onclick="openColorPopup('Violet')">Violet</button>
-      <div class="number-buttons">
-        <span>Select Number:</span>
-        <div class="numbers">
-          <button onclick="openNumberPopup(0)">0</button>
-          <button onclick="openNumberPopup(1)">1</button>
-          <button onclick="openNumberPopup(2)">2</button>
-          <button onclick="openNumberPopup(3)">3</button>
-          <button onclick="openNumberPopup(4)">4</button>
-          <button onclick="openNumberPopup(5)">5</button>
-          <button onclick="openNumberPopup(6)">6</button>
-          <button onclick="openNumberPopup(7)">7</button>
-          <button onclick="openNumberPopup(8)">8</button>
-          <button onclick="openNumberPopup(9)">9</button>
-        </div>
-      </div>
-    </div>
+  <div class="game-info">
+    <div>Round #: <span id="roundNumber">0000</span></div>
+    <div>Timer: <span id="timer">25</span>s</div>
+  </div>
 
-    <section class="recent-results">
-      <h2>Recent Results</h2>
-      <div id="recent-results">Loading...</div>
-    </section>
+  <div class="color-buttons">
+    <button class="color-btn red" onclick="openColorPopup('Red')">Red (x2)</button>
+    <button class="color-btn green" onclick="openColorPopup('Green')">Green (x2)</button>
+    <button class="color-btn violet" onclick="openColorPopup('Violet')">Violet (x4.5)</button>
+  </div>
 
-    <section class="how-to-play">
-      <h2>How to Play</h2>
-      <ul>
-        <li>🔴 <strong>Red</strong>: Win 2x for numbers 1, 3, 7, 9. Win 1.5x for 0.</li>
-        <li>🟢 <strong>Green</strong>: Win 2x for numbers 2, 4, 6, 8. Win 1.5x for 5.</li>
-        <li>🟣 <strong>Violet</strong>: Win 4.5x for 0 or 5.</li>
-        <li>🔢 <strong>Number</strong>: Exact match wins 9x.</li>
-        <li>2% service fee deducted on every bet.</li>
-      </ul>
-    </section>
-  </main>
-
-  <!-- Color Bet Popup -->
-  <div id="color-popup" class="popup hidden">
-    <div class="popup-content">
-      <span class="close" onclick="closePopup()">×</span>
-      <h3>Place Color Bet on <span id="selected-color"></span></h3>
-      <input type="number" id="color-bet-amount" placeholder="Enter amount" />
-      <button onclick="placeColorBet()">Place Bet</button>
+  <div class="number-buttons">
+    <h3>Select Number (x9)</h3>
+    <div class="number-grid">
+      <button onclick="openNumberPopup(0)">0</button>
+      <button onclick="openNumberPopup(1)">1</button>
+      <button onclick="openNumberPopup(2)">2</button>
+      <button onclick="openNumberPopup(3)">3</button>
+      <button onclick="openNumberPopup(4)">4</button>
+      <button onclick="openNumberPopup(5)">5</button>
+      <button onclick="openNumberPopup(6)">6</button>
+      <button onclick="openNumberPopup(7)">7</button>
+      <button onclick="openNumberPopup(8)">8</button>
+      <button onclick="openNumberPopup(9)">9</button>
     </div>
   </div>
 
-  <!-- Number Bet Popup -->
-  <div id="number-popup" class="popup hidden">
+  <!-- Bet Popup -->
+  <div id="popup" class="popup hidden">
     <div class="popup-content">
-      <span class="close" onclick="closePopup()">×</span>
-      <h3>Place Number Bet on <span id="selected-number"></span></h3>
-      <input type="number" id="number-bet-amount" placeholder="Enter amount" />
-      <button onclick="placeNumberBet()">Place Bet</button>
+      <span id="betInfo"></span>
+      <p>Select Bet Amount:</p>
+      <div class="bet-amounts">
+        <button onclick="placeBet(10)">₹10</button>
+        <button onclick="placeBet(50)">₹50</button>
+        <button onclick="placeBet(100)">₹100</button>
+        <button onclick="placeBet(500)">₹500</button>
+        <button onclick="placeBet(1000)">₹1000</button>
+      </div>
+      <button class="close-btn" onclick="closePopup()">Close</button>
     </div>
+  </div>
+
+  <div class="tabs">
+    <button onclick="showTab('history')">Game History</button>
+    <button onclick="showTab('results')">Recent Results</button>
+    <button onclick="showTab('how')">How to Play</button>
+  </div>
+
+  <div id="history" class="tab-content hidden">
+    <h3>Game History</h3>
+    <table>
+      <thead>
+        <tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>
+      </thead>
+      <tbody id="historyTable"></tbody>
+    </table>
+  </div>
+
+  <div id="results" class="tab-content hidden">
+    <h3>Recent Results</h3>
+    <table>
+      <thead>
+        <tr><th>Round</th><th>Color</th><th>Number</th></tr>
+      </thead>
+      <tbody id="resultTable"></tbody>
+    </table>
+  </div>
+
+  <div id="how" class="tab-content hidden">
+    <h3>How to Play</h3>
+    <ul>
+      <li>Red wins on: 1, 3, 7, 9 → 2x</li>
+      <li>Green wins on: 0, 2, 4, 6, 8 → 2x</li>
+      <li>Violet wins on: 0 or 5 → 4.5x</li>
+      <li>Exact number match → 9x</li>
+      <li>2% service fee applies on each bet</li>
+    </ul>
   </div>
 
   <script src="game.js"></script>
