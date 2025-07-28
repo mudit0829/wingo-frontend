@@ -1,71 +1,71 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const timerEl = document.getElementById('timer');
-  const roundEl = document.getElementById('roundNumber');
-  const popup = document.getElementById('popup');
-  const popupTitle = document.getElementById('popupTitle');
-  const selectedAmountInput = document.getElementById('selectedAmount');
-  const selectedOptionInput = document.getElementById('selectedOption');
-  const submitBetBtn = document.getElementById('submitBet');
-  const historyBody = document.getElementById('historyBody');
+let wallet = 1000;
+let currentRound = 12345;
+let popup = document.getElementById('bet-popup');
+let selectedOption = '';
+let selectedType = '';
+let selectedMultiplier = 1;
 
-  let round = 1;
+document.getElementById('wallet-amount').innerText = wallet;
+document.getElementById('round-number').innerText = currentRound;
+document.getElementById('timer').innerText = '25s';
+
+function openPopup(type, value) {
+  selectedType = type;
+  selectedOption = value;
+  document.getElementById('selected-info').innerText = `Placing Bet for: ${value}`;
+  document.getElementById('bet-amount').value = '';
+  selectedMultiplier = 1;
+  popup.style.display = 'block';
+}
+
+function closePopup() {
+  popup.style.display = 'none';
+}
+
+function selectMultiplier(x) {
+  selectedMultiplier = x;
+}
+
+function placeBet() {
+  let amount = parseInt(document.getElementById('bet-amount').value);
+  if (isNaN(amount) || amount <= 0) {
+    alert('Enter valid amount!');
+    return;
+  }
+  let finalAmount = amount * selectedMultiplier;
+  if (wallet < finalAmount) {
+    alert('Insufficient balance');
+    return;
+  }
+  wallet -= finalAmount;
+  document.getElementById('wallet-amount').innerText = wallet;
+  addToHistory(currentRound, selectedOption);
+  closePopup();
+}
+
+function addToHistory(round, result) {
+  let row = `<tr><td>${round}</td><td>${result}</td></tr>`;
+  document.getElementById('history-body').innerHTML = row + document.getElementById('history-body').innerHTML;
+}
+
+// Simulate round every 30s
+setInterval(() => {
+  currentRound++;
+  document.getElementById('round-number').innerText = currentRound;
   let timer = 25;
+  let interval = setInterval(() => {
+    if (timer <= 0) clearInterval(interval);
+    document.getElementById('timer').innerText = `${timer--}s`;
+  }, 1000);
+}, 30000);
 
-  function updateTimer() {
-    timerEl.textContent = timer;
-    roundEl.textContent = round;
-    if (timer > 0) {
-      timer--;
-    } else {
-      timer = 25;
-      round++;
-      addHistoryRow(round);
-    }
-  }
-
-  function addHistoryRow(roundNumber) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${roundNumber - 1}</td>
-      <td>Red</td>
-      <td>5</td>
-      <td>x2</td>
-    `;
-    historyBody.prepend(tr);
-  }
-
-  setInterval(updateTimer, 1000);
-
-  // Attach event to color and number buttons
-  document.querySelectorAll('.color-btn, .number-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const selected = btn.textContent.trim();
-      popupTitle.textContent = `Place bet on ${selected}`;
-      selectedOptionInput.value = selected;
-      selectedAmountInput.value = '';
-      popup.style.display = 'block';
-    });
-  });
-
-  // Amount selection
-  document.querySelectorAll('.amount-options button').forEach(button => {
-    button.addEventListener('click', () => {
-      selectedAmountInput.value = button.textContent.replace('₹', '');
-    });
-  });
-
-  // Submit bet (placeholder functionality)
-  submitBetBtn.addEventListener('click', () => {
-    const option = selectedOptionInput.value;
-    const amount = selectedAmountInput.value;
-    alert(`Bet placed on ${option} for ₹${amount}`);
-    popup.style.display = 'none';
-  });
-
-  // Close popup if clicked outside
-  window.addEventListener('click', (e) => {
-    if (e.target == popup) {
-      popup.style.display = 'none';
-    }
-  });
+// Attach button events
+document.querySelectorAll('.bet-btn').forEach(btn => {
+  btn.onclick = () => openPopup('color', btn.dataset.value);
+});
+document.querySelectorAll('.number-btn').forEach(btn => {
+  btn.onclick = () => openPopup('number', btn.dataset.value);
+});
+document.querySelectorAll('.multiplier-btn').forEach(btn => {
+  btn.onclick = () => selectMultiplier(parseInt(btn.innerText.replace('x','')));
 });
