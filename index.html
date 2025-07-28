@@ -5,49 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    button { margin: 5px; padding: 10px 15px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    h1 { display: flex; align-items: center; gap: 10px; }
+  </style>
 </head>
 <body>
-  <div class="game-header">
-    <h1>🎯 WinGo Game</h1>
-    <div id="userInfo">
-      Logged in as: <span id="usernameDisplay"></span>
-      <button id="logoutBtn">Logout</button>
-    </div>
+  <h1>🎯 WinGo Game</h1>
+  <p>Logged in as: <span id="username">Loading...</span>
+    <button onclick="logout()">Logout</button>
+  </p>
+  <p>⏳ Time Left: <span id="timer">--</span> seconds</p>
+
+  <h2>Place Your Bets</h2>
+  <label for="amount">Amount:</label>
+  <input type="number" id="amount" value="100" min="1" />
+
+  <div>
+    <button onclick="placeColorBet('Red')">Red</button>
+    <button onclick="placeColorBet('Green')">Green</button>
+    <button onclick="placeColorBet('Violet')">Violet</button>
   </div>
 
-  <div class="timer">
-    ⏳ Time Left: <span id="countdown">--</span> seconds
-  </div>
+  <h3>Number Bets (0–9)</h3>
+  <div id="number-buttons"></div>
 
-  <div class="bet-section">
-    <h2>Place Your Bets</h2>
-    <label>Amount: <input type="number" id="betAmount" value="100" /></label>
-
-    <div class="color-buttons">
-      <button onclick="placeBet('color', 'Red')">Red</button>
-      <button onclick="placeBet('color', 'Green')">Green</button>
-      <button onclick="placeBet('color', 'Violet')">Violet</button>
-    </div>
-
-    <div class="number-buttons">
-      <h3>Number Bets (0–9)</h3>
-      <div class="number-grid">
-        ${[...Array(10).keys()].map(i => `<button onclick="placeBet('number', ${i})">${i}</button>`).join('')}
-      </div>
-    </div>
-  </div>
-
-  <div id="resultDisplay"></div>
-
-  <div class="history-section">
-    <h3>Recent Rounds</h3>
-    <table id="historyTable">
-      <thead>
-        <tr><th>Round ID</th><th>Result</th><th>Time</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <h3>Recent Rounds</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Round ID</th>
+        <th>Result</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="round-table"></tbody>
+  </table>
 
   <script src="game.js"></script>
 </body>
