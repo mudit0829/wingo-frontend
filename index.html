@@ -7,82 +7,86 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
+  <div class="logo-section">
+    <img src="logo.png" alt="WingGo Logo" class="logo"/>
+  </div>
 
-    <img src="logo.png" alt="WinGo Logo" class="logo" />
+  <div class="top-bar">
+    <div class="round-info">Round: <span id="roundId">#0000</span></div>
+    <div class="timer" id="timer">00</div>
+  </div>
 
-    <div class="info-bar">
-      <div id="round-number">Round #0001</div>
-      <div id="timer">00:25</div>
-      <div id="wallet">Wallet: ₹1000</div>
+  <div class="wallet">Wallet: ₹<span id="walletBalance">1000</span></div>
+
+  <div class="section">
+    <h3>Choose Color</h3>
+    <div class="color-buttons">
+      <button class="btn color-red" data-bet-type="color" data-value="Red">Red</button>
+      <button class="btn color-green" data-bet-type="color" data-value="Green">Green</button>
+      <button class="btn color-violet" data-bet-type="color" data-value="Violet">Violet</button>
     </div>
+  </div>
 
-    <!-- Color Selection -->
-    <div class="color-tabs">
-      <button class="color-btn red" data-color="Red">Red</button>
-      <button class="color-btn green" data-color="Green">Green</button>
-      <button class="color-btn violet" data-color="Violet">Violet</button>
+  <div class="section">
+    <h3>Choose Number</h3>
+    <div class="number-buttons">
+      <!-- 0 to 9 buttons -->
+      <script>
+        for (let i = 0; i <= 9; i++) {
+          document.write(`<button class="btn number-btn" data-bet-type="number" data-value="${i}">${i}</button>`);
+        }
+      </script>
     </div>
+  </div>
 
-    <!-- Number Selection -->
-    <div class="number-tabs">
-      <button class="number-btn">0</button>
-      <button class="number-btn">1</button>
-      <button class="number-btn">2</button>
-      <button class="number-btn">3</button>
-      <button class="number-btn">4</button>
-      <button class="number-btn">5</button>
-      <button class="number-btn">6</button>
-      <button class="number-btn">7</button>
-      <button class="number-btn">8</button>
-      <button class="number-btn">9</button>
-    </div>
+  <div class="section">
+    <h3>Recent Results</h3>
+    <table id="recentResultsTable">
+      <thead>
+        <tr>
+          <th>Round</th>
+          <th>Number</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody id="recentResultsBody">
+        <!-- Populated dynamically -->
+      </tbody>
+    </table>
+  </div>
 
-    <!-- Multiplier Section -->
-    <div class="multiplier-section">
-      <span>Choose Multiplier:</span>
-      <button class="multiplier-btn" data-multiplier="2">x2</button>
-      <button class="multiplier-btn" data-multiplier="5">x5</button>
-      <button class="multiplier-btn" data-multiplier="10">x10</button>
-      <button class="multiplier-btn" data-multiplier="50">x50</button>
-      <button class="multiplier-btn" data-multiplier="100">x100</button>
-    </div>
+  <div class="section">
+    <h3>My Game History</h3>
+    <table id="historyTable">
+      <thead>
+        <tr>
+          <th>Round</th>
+          <th>Bet Type</th>
+          <th>Value</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+        <!-- Populated dynamically -->
+      </tbody>
+    </table>
+  </div>
 
-    <!-- Recent Results -->
-    <div class="recent-results">
-      <h3>Recent Results</h3>
-      <ul id="recent-results-list"></ul>
-    </div>
-
-    <!-- My Game History -->
-    <div class="my-history">
-      <h3>My Game History</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Round</th>
-            <th>Bet</th>
-            <th>Type</th>
-            <th>Result</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="history-body">
-          <!-- History will be added here -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Popup for Bet -->
-    <div id="popup" class="popup hidden">
-      <div class="popup-content">
-        <span id="popup-close" class="close">&times;</span>
-        <h2>Place Your Bet</h2>
-        <input type="number" id="bet-amount" placeholder="Enter Amount" />
-        <button id="confirm-bet">Confirm Bet</button>
+  <!-- Popup Modal -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <h3 id="popupTitle">Place Your Bet</h3>
+      <input type="number" id="betAmount" placeholder="Enter Amount" />
+      <div class="multipliers">
+        <button class="multiplier-btn" data-multiplier="2">x2</button>
+        <button class="multiplier-btn" data-multiplier="5">x5</button>
+        <button class="multiplier-btn" data-multiplier="10">x10</button>
+        <button class="multiplier-btn" data-multiplier="50">x50</button>
+        <button class="multiplier-btn" data-multiplier="100">x100</button>
       </div>
+      <button id="placeBetBtn">Place Bet</button>
+      <button id="closePopup">Cancel</button>
     </div>
-
   </div>
 
   <script src="game.js"></script>
