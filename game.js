@@ -1,100 +1,114 @@
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3ODA0NTd9.TZfHqzweHCK42Dii3gHFwn7FoQf0sIqRJjpMm-3SdbA";
+const API_BASE = "https://wingo-backend-nqk5.onrender.com/api";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3ODA0NTd9.TZfHqzweHCK42Dii3gHFwn7FoQf0sIqRJjpMm-3SdbA";
 
-let selectedBet = '';
-let baseAmount = 0;
-let multiplier = 1;
+let chosen = null;
+let baseAmt = 0;
+let mult = 1;
 
 async function fetchWallet() {
-  const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/users/me", {
-    headers: { Authorization: `Bearer ${token}` }
+  const res = await fetch(`${API_BASE}/users/me`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
   });
-  const data = await res.json();
-  document.getElementById("wallet").innerText = data.wallet.toFixed(2);
+  if (res.ok) {
+    const { wallet } = await res.json();
+    document.getElementById("wallet").innerText = wallet.toFixed(2);
+  }
 }
 
 async function fetchRound() {
-  const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds/current");
+  const res = await fetch(`${API_BASE}/rounds/current`);
+  if (!res.ok) return;
   const data = await res.json();
-  document.getElementById("roundId").innerText = data.roundId || '--';
+  document.getElementById("roundId").innerText = data.roundId;
+  document.getElementById("lastResult").innerText = data.result || "Pending";
+
+  const start = new Date(data.timestamp).getTime();
+  const end = start + 30000; // 30s window
+  startTimer(end);
+
+  updateHistory([data]);
 }
 
-async function fetchHistory() {
-  const history = [
-    { round: "20250729100051174", number: 5, color: "Green" },
-    { round: "20250729100051173", number: 7, color: "Red" }
-  ];
-  const list = document.getElementById("historyList");
-  list.innerHTML = '';
-  history.forEach(item => {
+function startTimer(endTime) {
+  function tick() {
+    const left = Math.floor((endTime - Date.now()) / 1000);
+    document.getElementById("timer").innerText = left >= 0 ? left : 0;
+    if (left >= 0) setTimeout(tick, 1000);
+  }
+  tick();
+}
+
+function updateHistory(arr) {
+  const ul = document.getElementById("historyList");
+  ul.innerHTML = "";
+  arr.forEach(r => {
     const li = document.createElement("li");
-    li.textContent = `${item.round} - ${item.number} - ${item.color}`;
-    list.appendChild(li);
+    li.innerText = `Round ${r.roundId}: ${r.result || "-"} (${r.bets?.length || 0} bets)`;
+    ul.appendChild(li);
   });
 }
 
-function openBetPopup(bet) {
-  selectedBet = bet;
-  baseAmount = 0;
-  multiplier = 1;
-  document.getElementById("popup").style.display = "flex";
-  document.getElementById("betTypeLabel").innerText = `Your Bet: ${bet}`;
-  updateTotal();
-}
+document.querySelectorAll(".choice-btn").forEach(btn => {
+  btn.onclick = () => {
+    chosen = btn.dataset.choice;
+    document.getElementById("selectedChoice").innerText = chosen;
+  };
+});
 
-function closePopup() {
-  document.getElementById("popup").style.display = "none";
-}
+document.getElementById("baseAmount").onchange = e => {
+  baseAmt = parseInt(e.target.value);
+};
+document.getElementById("multiplier").onchange = e => {
+  mult = parseInt(e.target.value);
+};
 
-function setAmount(amount) {
-  baseAmount = amount;
-  updateTotal();
-}
+document.getElementById("placeBetBtn").onclick = () => {
+  if (!chosen) return alert("Select choice first");
+  const total = baseAmt * mult;
+  document.getElementById("popupText").innerText =
+    `Bet: ${chosen} × ₹${baseAmt} ×${mult} = ₹${total}`;
+  document.getElementById("betPopup").classList.remove("hidden");
+};
 
-function setMultiplier(multi) {
-  multiplier = multi;
-  updateTotal();
-}
+document.getElementById("confirmBtn").onclick = async () => {
+  const totalAmt = baseAmt * mult;
+  const roundRes = await fetch(`${API_BASE}/rounds/current`);
+  const { roundId } = await roundRes.json();
 
-function updateTotal() {
-  document.getElementById("totalAmount").innerText = (baseAmount * multiplier).toFixed(2);
-}
+  const payload = { roundId, amount: totalAmt };
+  if (!isNaN(Number(chosen))) payload.number = Number(chosen);
+  else payload.color = chosen;
 
-async function submitBet() {
-  const total = baseAmount * multiplier;
-  const roundId = document.getElementById("roundId").innerText;
-
-  const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets", {
+  const res = await fetch(`${API_BASE}/bets`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${TOKEN}`
     },
-    body: JSON.stringify({
-      roundId: roundId,
-      choice: selectedBet,
-      amount: total
-    })
+    body: JSON.stringify(payload)
   });
-
-  const data = await res.json();
+  const json = await res.json();
   if (res.ok) {
-    alert("Bet Placed!");
+    alert("Bet placed ₹" + totalAmt);
     fetchWallet();
     closePopup();
   } else {
-    alert("Error placing bet: " + data.message);
+    alert(json.error || "Bet error");
   }
+};
+
+function closePopup() {
+  document.getElementById("betPopup").classList.add("hidden");
 }
 
 function showSection(id) {
   document.querySelectorAll(".info-section").forEach(div => {
-    div.style.display = "none";
+    div.classList.add("hidden");
   });
-  document.getElementById(id).style.display = "block";
+  document.getElementById(id).classList.remove("hidden");
 }
 
 window.onload = () => {
   fetchWallet();
   fetchRound();
-  fetchHistory();
 };
