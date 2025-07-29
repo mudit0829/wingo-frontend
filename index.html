@@ -7,70 +7,73 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>🎯 WinGo Game</h1>
+    <div id="wallet">Wallet: ₹0</div>
+  </header>
 
-    <div class="wallet">Wallet: ₹<span id="walletAmount">0</span></div>
+  <main>
+    <section class="game-board">
+      <h2>Place Your Bet</h2>
 
-    <div class="round-info">
-      <div>Current Round: <span id="roundId">-</span></div>
-      <div>Timer: <span id="timer">--</span></div>
-      <div>Last Result: <span id="lastResult">--</span></div>
-    </div>
+      <div class="bet-options">
+        <div class="bet-group">
+          <h3>Choose Color</h3>
+          <button class="bet-button" data-choice="Red">🔴 Red</button>
+          <button class="bet-button" data-choice="Green">🟢 Green</button>
+          <button class="bet-button" data-choice="Violet">🟣 Violet</button>
+        </div>
 
-    <h2>Choose Your Bet</h2>
-
-    <div class="bet-section">
-      <div class="color-bets">
-        <button class="bet-btn" onclick="selectBet('Red')">🔴 Red</button>
-        <button class="bet-btn" onclick="selectBet('Green')">🟢 Green</button>
-        <button class="bet-btn" onclick="selectBet('Violet')">🟣 Violet</button>
-      </div>
-
-      <div class="number-bets">
-        <h3>Numbers (0-9)</h3>
-        <div class="number-grid">
-          ${[...Array(10).keys()].map(i => `<button onclick="selectBet(${i})">${i}</button>`).join('')}
+        <div class="bet-group">
+          <h3>Choose Number</h3>
+          <div class="number-buttons">
+            <button class="bet-button" data-choice="0">0</button>
+            <button class="bet-button" data-choice="1">1</button>
+            <button class="bet-button" data-choice="2">2</button>
+            <button class="bet-button" data-choice="3">3</button>
+            <button class="bet-button" data-choice="4">4</button>
+            <button class="bet-button" data-choice="5">5</button>
+            <button class="bet-button" data-choice="6">6</button>
+            <button class="bet-button" data-choice="7">7</button>
+            <button class="bet-button" data-choice="8">8</button>
+            <button class="bet-button" data-choice="9">9</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="amount-selection">
-      <h3>Select Bet Amount</h3>
-      <div class="amount-buttons">
-        <button onclick="setAmount(1)">₹1</button>
-        <button onclick="setAmount(2)">₹2</button>
-        <button onclick="setAmount(5)">₹5</button>
-        <button onclick="setAmount(10)">₹10</button>
-        <button onclick="setAmount(50)">₹50</button>
-        <button onclick="setAmount(100)">₹100</button>
+      <div class="amount-selection">
+        <h3>Select Amount</h3>
+        <select id="amount-select">
+          <option value="1">₹1</option>
+          <option value="2">₹2</option>
+          <option value="5">₹5</option>
+          <option value="10">₹10</option>
+          <option value="50">₹50</option>
+          <option value="100">₹100</option>
+        </select>
+
+        <div class="multiplier-buttons">
+          <button class="multiplier-button" data-multiplier="1">x1</button>
+          <button class="multiplier-button" data-multiplier="2">x2</button>
+          <button class="multiplier-button" data-multiplier="5">x5</button>
+          <button class="multiplier-button" data-multiplier="10">x10</button>
+          <button class="multiplier-button" data-multiplier="50">x50</button>
+          <button class="multiplier-button" data-multiplier="100">x100</button>
+        </div>
       </div>
 
-      <h3>Select Multiplier</h3>
-      <div class="multiplier-buttons">
-        <button onclick="setMultiplier(1)">x1</button>
-        <button onclick="setMultiplier(2)">x2</button>
-        <button onclick="setMultiplier(5)">x5</button>
-        <button onclick="setMultiplier(10)">x10</button>
-        <button onclick="setMultiplier(50)">x50</button>
-        <button onclick="setMultiplier(100)">x100</button>
-      </div>
-    </div>
+      <button id="place-bet">Place Bet</button>
 
-    <button class="place-bet-btn" onclick="confirmBet()">Place Bet</button>
-
-    <div id="betPopup" class="popup">
-      <div class="popup-content">
-        <h3>Confirm Your Bet</h3>
-        <p><strong>Your Bet:</strong> <span id="betChoiceText"></span></p>
-        <p><strong>Base Amount:</strong> ₹<span id="baseAmountText"></span></p>
-        <p><strong>Multiplier:</strong> x<span id="multiplierText"></span></p>
-        <p><strong>Total Bet:</strong> ₹<span id="totalAmountText"></span></p>
-        <button onclick="placeBet()">Confirm</button>
-        <button onclick="closePopup()">Cancel</button>
+      <div id="bet-popup" class="popup hidden">
+        <p id="bet-info"></p>
+        <button onclick="closePopup()">OK</button>
       </div>
-    </div>
-  </div>
+
+      <div id="latest-result">
+        <h3>Latest Result: <span id="result-value">Loading...</span></h3>
+      </div>
+    </section>
+  </main>
 
   <script src="game.js"></script>
 </body>
