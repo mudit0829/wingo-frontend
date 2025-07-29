@@ -4,218 +4,71 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #101820;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #1a1a2e;
-      padding: 15px;
-      text-align: center;
-      font-size: 1.5em;
-    }
-    .wallet-info {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: #16213e;
-      font-size: 1.1em;
-    }
-    .game-container {
-      padding: 20px;
-      text-align: center;
-    }
-    .timer {
-      font-size: 2em;
-      margin: 10px 0;
-    }
-    .bets {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    .bet-section {
-      margin: 15px;
-      padding: 15px;
-      background-color: #0f3460;
-      border-radius: 10px;
-    }
-    input[type="number"] {
-      padding: 8px;
-      margin: 5px 0;
-      width: 80%;
-    }
-    button {
-      padding: 10px;
-      margin-top: 5px;
-      width: 100%;
-      background-color: #e94560;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background-color: #ff2e63;
-    }
-    .result-display {
-      font-size: 1.5em;
-      margin-top: 15px;
-    }
-    .history {
-      margin-top: 25px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #1b1b2f;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-    th {
-      background-color: #0f3460;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>🎮 WinGo Game</h1>
+      <div class="wallet">
+        Wallet: ₹<span id="wallet">0</span>
+      </div>
+    </header>
 
-<header>WinGo Game</header>
+    <section id="current-round">
+      <h2>Current Round: <span id="round-id">--</span></h2>
+      <p>Time Left: <span id="timer">25</span> sec</p>
+      <p>Last Result: <span id="last-result">--</span></p>
+    </section>
 
-<div class="wallet-info">
-  <div>User: <span id="username">test2@example.com</span></div>
-  <div>Wallet: ₹<span id="wallet">0</span></div>
-</div>
+    <section class="bet-section">
+      <h3>Choose Your Bet</h3>
+      <div class="bet-buttons">
+        <button class="bet-color" data-color="Red">🔴 Red</button>
+        <button class="bet-color" data-color="Green">🟢 Green</button>
+        <button class="bet-color" data-color="Violet">🟣 Violet</button>
+      </div>
+      <div class="number-buttons">
+        <h4>Or Select Number:</h4>
+        <div class="number-grid">
+          <button class="bet-number" data-number="0">0</button>
+          <button class="bet-number" data-number="1">1</button>
+          <button class="bet-number" data-number="2">2</button>
+          <button class="bet-number" data-number="3">3</button>
+          <button class="bet-number" data-number="4">4</button>
+          <button class="bet-number" data-number="5">5</button>
+          <button class="bet-number" data-number="6">6</button>
+          <button class="bet-number" data-number="7">7</button>
+          <button class="bet-number" data-number="8">8</button>
+          <button class="bet-number" data-number="9">9</button>
+        </div>
+      </div>
+    </section>
 
-<div class="game-container">
-  <div>Round ID: <span id="roundId">Loading...</span></div>
-  <div class="timer">Time Left: <span id="countdown">--</span></div>
+    <section class="game-history">
+      <h3>Game History</h3>
+      <ul id="history-list">
+        <!-- recent rounds -->
+      </ul>
+    </section>
+  </div>
 
-  <div class="bets">
-    <div class="bet-section">
-      <h3>Color Bet</h3>
-      <input type="number" id="colorAmount" placeholder="Amount (₹)">
-      <button onclick="placeColorBet('Red')">Red</button>
-      <button onclick="placeColorBet('Green')">Green</button>
-      <button onclick="placeColorBet('Violet')">Violet</button>
-    </div>
-
-    <div class="bet-section">
-      <h3>Number Bet</h3>
-      <input type="number" id="numberAmount" placeholder="Amount (₹)">
-      <input type="number" id="numberValue" placeholder="Choose 0–9" min="0" max="9">
-      <button onclick="placeNumberBet()">Place Number Bet</button>
+  <!-- BET POPUP -->
+  <div id="bet-popup" class="popup hidden">
+    <div class="popup-content">
+      <h3>Place Your Bet</h3>
+      <p id="selected-bet-info"></p>
+      <div class="amount-options">
+        <button data-amount="10">₹10</button>
+        <button data-amount="50">₹50</button>
+        <button data-amount="100">₹100</button>
+        <button data-amount="500">₹500</button>
+      </div>
+      <button id="confirm-bet" class="confirm-btn">Confirm Bet</button>
+      <button id="cancel-bet" class="cancel-btn">Cancel</button>
     </div>
   </div>
 
-  <div class="result-display" id="resultDisplay">Waiting for result...</div>
-
-  <div class="history">
-    <h3>Game History (Last 5)</h3>
-    <table id="historyTable">
-      <thead>
-        <tr>
-          <th>Round ID</th>
-          <th>Result</th>
-          <th>Timestamp</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-<script>
-const API_BASE = "https://wingo-backend-nqk5.onrender.com/api";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3NjczOTV9.9LOI9UD0Fjic6SmWREqe08A1gqImyO_nFwOLLpnxZIc";
-const headers = { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" };
-let currentRound = null;
-let countdownInterval = null;
-
-async function fetchRound() {
-  const res = await fetch(`${API_BASE}/rounds/current`);
-  const data = await res.json();
-  currentRound = data;
-  document.getElementById("roundId").innerText = data.roundId || "N/A";
-  startCountdown(new Date(data.endTime).getTime());
-  fetchWallet();
-  fetchHistory();
-}
-
-function startCountdown(endTime) {
-  clearInterval(countdownInterval);
-  countdownInterval = setInterval(() => {
-    const now = Date.now();
-    const diff = Math.max(0, Math.floor((endTime - now) / 1000));
-    document.getElementById("countdown").innerText = `${diff}s`;
-    if (diff <= 0) {
-      clearInterval(countdownInterval);
-      document.getElementById("resultDisplay").innerText = "Waiting for next round...";
-      setTimeout(fetchRound, 5000);
-    }
-  }, 1000);
-}
-
-async function fetchWallet() {
-  const res = await fetch(`${API_BASE}/users/me`, { headers });
-  const data = await res.json();
-  document.getElementById("wallet").innerText = data.wallet || 0;
-}
-
-async function placeColorBet(color) {
-  const amount = parseFloat(document.getElementById("colorAmount").value);
-  if (!amount || amount <= 0 || !currentRound) return alert("Enter valid amount");
-  await fetch(`${API_BASE}/bets`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      roundId: currentRound.roundId,
-      color,
-      amount
-    })
-  });
-  alert("Color bet placed!");
-  fetchWallet();
-}
-
-async function placeNumberBet() {
-  const amount = parseFloat(document.getElementById("numberAmount").value);
-  const number = parseInt(document.getElementById("numberValue").value);
-  if (!amount || amount <= 0 || number < 0 || number > 9 || !currentRound) return alert("Enter valid number and amount");
-  await fetch(`${API_BASE}/bets`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      roundId: currentRound.roundId,
-      number,
-      amount
-    })
-  });
-  alert("Number bet placed!");
-  fetchWallet();
-}
-
-async function fetchHistory() {
-  const res = await fetch(`${API_BASE}/rounds`);
-  const rounds = await res.json();
-  const table = document.getElementById("historyTable").querySelector("tbody");
-  table.innerHTML = "";
-  rounds.slice(-5).reverse().forEach(r => {
-    const row = `<tr><td>${r.roundId}</td><td>${r.result ?? '---'}</td><td>${new Date(r.timestamp).toLocaleTimeString()}</td></tr>`;
-    table.innerHTML += row;
-  });
-}
-
-fetchRound();
-</script>
-
+  <script src="game.js"></script>
 </body>
 </html>
