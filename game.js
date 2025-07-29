@@ -1,114 +1,108 @@
-const API_BASE = "https://wingo-backend-nqk5.onrender.com/api";
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3ODA0NTd9.TZfHqzweHCK42Dii3gHFwn7FoQf0sIqRJjpMm-3SdbA";
+let wallet = 1000;
+let roundId = 1;
+let history = [];
+let interval;
+let currentResult = null;
+let timeLeft = 30;
 
-let chosen = null;
-let baseAmt = 0;
-let mult = 1;
+function startGameLoop() {
+  interval = setInterval(() => {
+    if (timeLeft > 0) {
+      document.getElementById("timer").innerText = timeLeft;
+      timeLeft--;
+    } else {
+      drawResult();
+      setTimeout(() => {
+        roundId++;
+        timeLeft = 30;
+        document.getElementById("roundId").innerText = roundId;
+        document.getElementById("result").innerText = "Waiting...";
+        document.getElementById("betAmount").value = "";
+        document.getElementById("betNumber").value = "";
+      }, 2000);
+    }
+  }, 1000);
+}
 
-async function fetchWallet() {
-  const res = await fetch(`${API_BASE}/users/me`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-  if (res.ok) {
-    const { wallet } = await res.json();
-    document.getElementById("wallet").innerText = wallet.toFixed(2);
+function drawResult() {
+  const colorOptions = ["red", "green", "violet"];
+  const resultColor = colorOptions[Math.floor(Math.random() * 3)];
+  const resultNumber = Math.floor(Math.random() * 10);
+  currentResult = { color: resultColor, number: resultNumber };
+
+  document.getElementById("result").innerText = `${resultColor.toUpperCase()}-${resultNumber}`;
+
+  // Check bet outcome
+  checkWin(currentResult);
+
+  // Add to history
+  history.unshift(`${roundId}: ${resultColor}-${resultNumber}`);
+  updateHistory();
+}
+
+function placeBet() {
+  const amount = parseInt(document.getElementById("betAmount").value);
+  const color = document.getElementById("betColor").value;
+  const number = parseInt(document.getElementById("betNumber").value);
+
+  if (isNaN(amount) || amount < 10 || amount > wallet) {
+    alert("Invalid bet amount");
+    return;
   }
-}
 
-async function fetchRound() {
-  const res = await fetch(`${API_BASE}/rounds/current`);
-  if (!res.ok) return;
-  const data = await res.json();
-  document.getElementById("roundId").innerText = data.roundId;
-  document.getElementById("lastResult").innerText = data.result || "Pending";
+  wallet -= amount;
+  document.getElementById("wallet").innerText = wallet;
 
-  const start = new Date(data.timestamp).getTime();
-  const end = start + 30000; // 30s window
-  startTimer(end);
-
-  updateHistory([data]);
-}
-
-function startTimer(endTime) {
-  function tick() {
-    const left = Math.floor((endTime - Date.now()) / 1000);
-    document.getElementById("timer").innerText = left >= 0 ? left : 0;
-    if (left >= 0) setTimeout(tick, 1000);
-  }
-  tick();
-}
-
-function updateHistory(arr) {
-  const ul = document.getElementById("historyList");
-  ul.innerHTML = "";
-  arr.forEach(r => {
-    const li = document.createElement("li");
-    li.innerText = `Round ${r.roundId}: ${r.result || "-"} (${r.bets?.length || 0} bets)`;
-    ul.appendChild(li);
-  });
-}
-
-document.querySelectorAll(".choice-btn").forEach(btn => {
-  btn.onclick = () => {
-    chosen = btn.dataset.choice;
-    document.getElementById("selectedChoice").innerText = chosen;
+  const bet = {
+    roundId,
+    amount,
+    color,
+    number,
+    walletBefore: wallet + amount,
   };
-});
 
-document.getElementById("baseAmount").onchange = e => {
-  baseAmt = parseInt(e.target.value);
-};
-document.getElementById("multiplier").onchange = e => {
-  mult = parseInt(e.target.value);
-};
-
-document.getElementById("placeBetBtn").onclick = () => {
-  if (!chosen) return alert("Select choice first");
-  const total = baseAmt * mult;
-  document.getElementById("popupText").innerText =
-    `Bet: ${chosen} × ₹${baseAmt} ×${mult} = ₹${total}`;
-  document.getElementById("betPopup").classList.remove("hidden");
-};
-
-document.getElementById("confirmBtn").onclick = async () => {
-  const totalAmt = baseAmt * mult;
-  const roundRes = await fetch(`${API_BASE}/rounds/current`);
-  const { roundId } = await roundRes.json();
-
-  const payload = { roundId, amount: totalAmt };
-  if (!isNaN(Number(chosen))) payload.number = Number(chosen);
-  else payload.color = chosen;
-
-  const res = await fetch(`${API_BASE}/bets`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${TOKEN}`
-    },
-    body: JSON.stringify(payload)
-  });
-  const json = await res.json();
-  if (res.ok) {
-    alert("Bet placed ₹" + totalAmt);
-    fetchWallet();
-    closePopup();
-  } else {
-    alert(json.error || "Bet error");
-  }
-};
-
-function closePopup() {
-  document.getElementById("betPopup").classList.add("hidden");
+  localStorage.setItem("lastBet", JSON.stringify(bet));
+  alert("Bet placed!");
 }
 
-function showSection(id) {
-  document.querySelectorAll(".info-section").forEach(div => {
-    div.classList.add("hidden");
+function checkWin(result) {
+  const bet = JSON.parse(localStorage.getItem("lastBet"));
+  if (!bet || bet.roundId !== roundId) return;
+
+  let winAmount = 0;
+  const effectiveAmount = bet.amount * 0.98;
+
+  if (bet.color === result.color) {
+    if (result.color === "violet") winAmount += effectiveAmount * 4.5;
+    else winAmount += effectiveAmount * 2;
+  }
+
+  if (bet.number === result.number) {
+    winAmount += effectiveAmount * 9;
+  }
+
+  if (winAmount > 0) {
+    alert(`You won Rs. ${Math.round(winAmount)}`);
+    wallet += Math.round(winAmount);
+    document.getElementById("wallet").innerText = wallet;
+  } else {
+    alert("You lost the bet");
+  }
+
+  localStorage.removeItem("lastBet");
+}
+
+function updateHistory() {
+  const historyList = document.getElementById("history");
+  historyList.innerHTML = "";
+  history.slice(0, 10).forEach((item) => {
+    const li = document.createElement("li");
+    li.innerText = item;
+    historyList.appendChild(li);
   });
-  document.getElementById(id).classList.remove("hidden");
 }
 
 window.onload = () => {
-  fetchWallet();
-  fetchRound();
+  document.getElementById("roundId").innerText = roundId;
+  startGameLoop();
 };
