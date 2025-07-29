@@ -8,41 +8,64 @@
 </head>
 <body>
   <div class="game-container">
-    <div class="wallet-section">
-      Wallet: ₹<span id="wallet">0</span>
-    </div>
-    <div class="timer" id="timer">00:25</div>
-    
-    <div class="betting-grid">
-      <div class="color-option red" data-color="Red">Red</div>
-      <div class="color-option green" data-color="Green">Green</div>
-      <div class="color-option violet" data-color="Violet">Violet</div>
+    <header>
+      <h1>WinGo Game</h1>
+      <div class="wallet">Wallet: ₹<span id="wallet-balance">0</span></div>
+    </header>
+
+    <div class="round-info">
+      <span>Round ID: <span id="round-id">--</span></span>
+      <span>Time Left: <span id="timer">00</span>s</span>
     </div>
 
-    <div class="number-grid">
-      <div class="number" data-number="0">0</div>
-      <div class="number" data-number="1">1</div>
-      <div class="number" data-number="2">2</div>
-      <div class="number" data-number="3">3</div>
-      <div class="number" data-number="4">4</div>
-      <div class="number" data-number="5">5</div>
-      <div class="number" data-number="6">6</div>
-      <div class="number" data-number="7">7</div>
-      <div class="number" data-number="8">8</div>
-      <div class="number" data-number="9">9</div>
+    <div class="result-box">
+      <span>Result: <span id="last-result">--</span></span>
     </div>
 
-    <div id="result-display">Result: <span id="last-result">--</span></div>
+    <div class="betting-options">
+      <button class="color-btn red" data-color="Red">Red</button>
+      <button class="color-btn green" data-color="Green">Green</button>
+      <button class="color-btn violet" data-color="Violet">Violet</button>
+    </div>
+
+    <div class="number-options">
+      <button class="number-btn" data-number="0">0</button>
+      <button class="number-btn" data-number="1">1</button>
+      <button class="number-btn" data-number="2">2</button>
+      <button class="number-btn" data-number="3">3</button>
+      <button class="number-btn" data-number="4">4</button>
+      <button class="number-btn" data-number="5">5</button>
+      <button class="number-btn" data-number="6">6</button>
+      <button class="number-btn" data-number="7">7</button>
+      <button class="number-btn" data-number="8">8</button>
+      <button class="number-btn" data-number="9">9</button>
+    </div>
+
+    <button class="bet-btn" id="open-bet-modal">Place Bet</button>
   </div>
 
-  <!-- Bet Modal -->
-  <div id="betModal" class="modal">
+  <!-- ✅ Popup Modal -->
+  <div class="modal" id="bet-modal">
     <div class="modal-content">
-      <span class="close-button" id="closeModal">&times;</span>
+      <span class="close-btn" id="close-bet-modal">&times;</span>
       <h2>Place Your Bet</h2>
-      <p id="bet-choice"></p>
-      <input type="number" id="betAmount" placeholder="Enter amount" min="1" />
-      <button id="confirmBet">Place Bet</button>
+      <form id="bet-form">
+        <label for="bet-amount">Amount (₹):</label>
+        <input type="number" id="bet-amount" required min="1" />
+
+        <label for="bet-type">Type:</label>
+        <select id="bet-type">
+          <option value="Red">Red</option>
+          <option value="Green">Green</option>
+          <option value="Violet">Violet</option>
+          <option value="Number">Number (0–9)</option>
+        </select>
+
+        <label for="bet-value">Value:</label>
+        <input type="text" id="bet-value" placeholder="e.g. 5" required />
+
+        <button type="submit">Submit Bet</button>
+      </form>
     </div>
   </div>
 
