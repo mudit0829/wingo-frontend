@@ -4,65 +4,204 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4f4;
+      color: #333;
+    }
+    header {
+      background: #222;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    .wallet {
+      background: #eee;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+      margin: 1rem;
+      border-radius: 10px;
+    }
+    .round-info {
+      text-align: center;
+      margin: 1rem;
+    }
+    .bets {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .bet-box {
+      background: #fff;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+      width: 150px;
+    }
+    .bet-box button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: #008080;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .bet-box input {
+      width: 80px;
+      margin-top: 5px;
+      padding: 4px;
+      border-radius: 4px;
+      border: 1px solid #aaa;
+    }
+    #result-display {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>WinGo Color & Number Game</h1>
+  <header>🎯 WinGo Game Demo</header>
 
-    <div class="wallet-section">
-      <strong>Wallet:</strong> ₹<span id="wallet">0</span>
+  <div class="wallet">Wallet Balance: ₹<span id="walletBalance">Loading...</span></div>
+
+  <div class="round-info">
+    <div>Current Round: <span id="roundId">--</span></div>
+    <div>Timer: <span id="timer">--</span></div>
+  </div>
+
+  <div class="bets">
+    <div class="bet-box">
+      <div>🟥 RED</div>
+      <input type="number" id="redAmount" placeholder="₹ amount"/>
+      <button onclick="placeColorBet('Red')">Bet Red</button>
     </div>
-
-    <div class="timer">
-      <strong>Round:</strong> <span id="roundId">0000</span> | 
-      <strong>Time Left:</strong> <span id="timer">25</span>s
+    <div class="bet-box">
+      <div>🟩 GREEN</div>
+      <input type="number" id="greenAmount" placeholder="₹ amount"/>
+      <button onclick="placeColorBet('Green')">Bet Green</button>
     </div>
-
-    <div class="bet-section">
-      <h3>Place Your Bets</h3>
-      <input type="number" id="betAmount" placeholder="Enter Amount" min="1" />
-      <div class="buttons">
-        <button class="color red" onclick="placeBet('Red')">Red</button>
-        <button class="color green" onclick="placeBet('Green')">Green</button>
-        <button class="color violet" onclick="placeBet('Violet')">Violet</button>
-        <input type="number" id="numberBet" placeholder="Number (0-9)" min="0" max="9"/>
-        <button class="number" onclick="placeNumberBet()">Bet Number</button>
-      </div>
+    <div class="bet-box">
+      <div>🟪 VIOLET</div>
+      <input type="number" id="violetAmount" placeholder="₹ amount"/>
+      <button onclick="placeColorBet('Violet')">Bet Violet</button>
     </div>
-
-    <div class="section">
-      <h3>Recent Results</h3>
-      <div id="results"></div>
-    </div>
-
-    <div class="section">
-      <h3>My Game History</h3>
-      <table>
-        <thead>
-          <tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Win</th></tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-    </div>
-
-    <div class="section">
-      <h3>How to Play</h3>
-      <ul>
-        <li>Each round is 30 seconds (25s betting + 5s draw).</li>
-        <li>Bet on Red, Green, Violet, or Number (0–9).</li>
-        <li>Service Fee: 2% on each bet.</li>
-        <li>Payouts:
-          <ul>
-            <li>Red/Green: 2x (except 0 or 5 → 1.5x)</li>
-            <li>Violet: 4.5x on 0 or 5</li>
-            <li>Number Match: 9x</li>
-          </ul>
-        </li>
-      </ul>
+    <div class="bet-box">
+      <div>🎯 Number (0-9)</div>
+      <input type="number" id="number" min="0" max="9" placeholder="Number"/>
+      <input type="number" id="numberAmount" placeholder="₹ amount"/>
+      <button onclick="placeNumberBet()">Bet Number</button>
     </div>
   </div>
 
-  <script src="game.js"></script>
+  <div id="result-display">Waiting for result...</div>
+
+  <script>
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3NjczOTV9.9LOI9UD0Fjic6SmWREqe08A1gqImyO_nFwOLLpnxZIc";
+    const api = "https://wingo-backend-nqk5.onrender.com";
+
+    let currentRoundId = null;
+
+    async function fetchRound() {
+      try {
+        const res = await fetch(`${api}/rounds/current`);
+        const data = await res.json();
+        currentRoundId = data.roundId;
+        document.getElementById('roundId').textContent = currentRoundId;
+        startTimer(data.remainingTime || 25);
+        document.getElementById('result-display').textContent = `Result: ${data.result || 'Pending'}`;
+      } catch (err) {
+        console.error("Error fetching round:", err);
+      }
+    }
+
+    async function fetchWallet() {
+      try {
+        const res = await fetch(`${api}/api/users/wallet`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        document.getElementById("walletBalance").textContent = data.wallet.toFixed(2);
+      } catch (err) {
+        console.error("Wallet fetch failed", err);
+        document.getElementById("walletBalance").textContent = "Error";
+      }
+    }
+
+    async function placeColorBet(color) {
+      const amount = parseFloat(document.getElementById(`${color.toLowerCase()}Amount`).value);
+      if (!amount || amount <= 0) return alert("Enter valid amount");
+
+      try {
+        const res = await fetch(`${api}/api/bets`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ roundId: currentRoundId, color, amount })
+        });
+        const data = await res.json();
+        alert(data.message || "Bet placed");
+        fetchWallet();
+      } catch (err) {
+        console.error("Bet failed", err);
+        alert("Bet failed");
+      }
+    }
+
+    async function placeNumberBet() {
+      const number = parseInt(document.getElementById("number").value);
+      const amount = parseFloat(document.getElementById("numberAmount").value);
+      if (isNaN(number) || number < 0 || number > 9 || !amount || amount <= 0) {
+        return alert("Enter valid number and amount");
+      }
+
+      try {
+        const res = await fetch(`${api}/api/bets`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ roundId: currentRoundId, number, amount })
+        });
+        const data = await res.json();
+        alert(data.message || "Number bet placed");
+        fetchWallet();
+      } catch (err) {
+        console.error("Number bet failed", err);
+        alert("Number bet failed");
+      }
+    }
+
+    function startTimer(seconds) {
+      let timer = seconds;
+      const timerEl = document.getElementById("timer");
+      const interval = setInterval(() => {
+        timerEl.textContent = timer + "s";
+        timer--;
+        if (timer < 0) {
+          clearInterval(interval);
+          fetchRound(); // refresh round
+        }
+      }, 1000);
+    }
+
+    // Initial fetch
+    fetchRound();
+    fetchWallet();
+    setInterval(fetchRound, 10000); // refresh every 10s
+  </script>
 </body>
 </html>
