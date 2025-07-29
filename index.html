@@ -7,63 +7,68 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>🎮 WinGo Color Game</h1>
-    <div class="wallet">Wallet: ₹<span id="wallet-balance">0</span></div>
+  <div class="header">
+    <h1>WinGo Game</h1>
+    <div class="wallet">Wallet: ₹<span id="walletBalance">0</span></div>
+    <button id="logoutBtn">Logout</button>
+  </div>
 
-    <div class="timer-section">
-      <p>⏳ Time Left: <span id="timer">--</span> sec</p>
-      <p>🔁 Round ID: <span id="round-id">Loading...</span></p>
+  <div class="game-section">
+    <h2>Place Your Bet</h2>
+    <input type="number" id="betAmount" placeholder="Enter Bet Amount" min="1" />
+    
+    <div class="color-buttons">
+      <button onclick="placeBet('Red')">Red</button>
+      <button onclick="placeBet('Green')">Green</button>
+      <button onclick="placeBet('Violet')">Violet</button>
     </div>
 
-    <div class="betting-section">
-      <label>Bet Amount: ₹<input type="number" id="bet-amount" min="1" value="100" /></label>
-
-      <div class="bet-buttons">
-        <h3>🎨 Color Bet</h3>
-        <button onclick="placeBet('Red')">Red</button>
-        <button onclick="placeBet('Green')">Green</button>
-        <button onclick="placeBet('Violet')">Violet</button>
-      </div>
-
-      <div class="number-bet">
-        <h3>#️⃣ Number Bet</h3>
-        <div class="number-buttons">
-          ${[...Array(10).keys()].map(i => `<button onclick="placeBet(${i})">${i}</button>`).join('')}
-        </div>
-      </div>
+    <div class="number-buttons">
+      <h3>Number Bet (0-9)</h3>
+      <div id="numberButtons"></div>
     </div>
+  </div>
 
-    <div class="history-section">
-      <h3>🎯 Recent Results</h3>
-      <div id="recent-results">Loading...</div>
+  <div class="timer-box">
+    <h3>Time Left: <span id="timer">--</span> seconds</h3>
+  </div>
 
-      <h3>📜 Your Bet History</h3>
-      <table id="history-table">
-        <thead>
-          <tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <div class="result-section">
+    <h3>Recent Results</h3>
+    <div id="recentResults"></div>
+  </div>
 
-    <div class="how-to-play">
-      <h3>📘 How to Play</h3>
-      <ul>
-        <li>🔸 Place bets on Color (Red, Green, Violet) or Number (0-9)</li>
-        <li>🔸 Each round is 30 sec: 25s bet + 5s wait</li>
-        <li>🔸 2% fee deducted. Example: ₹100 → ₹98 used</li>
-        <li>🔸 Payouts:
-          <ul>
-            <li>Red/Green: 2x</li>
-            <li>Violet: 4.5x</li>
-            <li>Exact Number: 9x</li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+  <div class="history-section">
+    <h3>My Bet History</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Round</th>
+          <th>Color</th>
+          <th>Number</th>
+          <th>Result</th>
+          <th>Amount</th>
+          <th>Payout</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableBody"></tbody>
+    </table>
+  </div>
 
-    <button onclick="logout()" class="logout-btn">🚪 Logout</button>
+  <div class="rules-section">
+    <h3>How to Play</h3>
+    <ul>
+      <li>Each round is 30 seconds: 25s for betting, 5s draw time.</li>
+      <li>2% service fee is deducted from each bet.</li>
+      <li>You can place both color and number bets in same round.</li>
+      <li>Payouts:
+        <ul>
+          <li>Red/Green: 2x (1,3,7,9 for Red, 2,4,6,8 for Green)</li>
+          <li>Violet: 4.5x (if result is 0 or 5)</li>
+          <li>Exact number: 9x</li>
+        </ul>
+      </li>
+    </ul>
   </div>
 
   <script src="game.js"></script>
