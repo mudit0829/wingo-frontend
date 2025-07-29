@@ -1,4 +1,4 @@
-const backendUrl = 'https://wingo-backend-nqk5.onrender.com'; // Update if needed
+const backendUrl = 'https://wingo-backend-nqk5.onrender.com';
 let roundId = null;
 let interval;
 
@@ -31,7 +31,7 @@ async function placeBet() {
 
   if (!token || !username) {
     alert("Please login again.");
-    return;
+    return window.location.href = "login.html";
   }
 
   if (!amount || amount < 1) {
@@ -59,6 +59,7 @@ async function placeBet() {
     if (res.ok) {
       document.getElementById("betMsg").textContent = "✅ Bet placed successfully!";
       fetchUserBets();
+      fetchWalletBalance();
     } else {
       document.getElementById("betMsg").textContent = "❌ " + (data.message || "Error placing bet.");
     }
@@ -69,12 +70,20 @@ async function placeBet() {
 
 async function fetchUserBets() {
   const username = localStorage.getItem("username");
+  if (!username) return;
+
   try {
     const res = await fetch(`${backendUrl}/api/bets/user/${username}`);
-    const bets = await res.json();
+    const data = await res.json();
     const tbody = document.getElementById("betHistory");
     tbody.innerHTML = "";
-    bets.reverse().slice(0, 20).forEach(bet => {
+
+    if (!Array.isArray(data)) {
+      console.warn("Expected array, got:", data);
+      return;
+    }
+
+    data.reverse().slice(0, 20).forEach(bet => {
       const row = `<tr>
         <td>${bet.roundId}</td>
         <td>${bet.colorBet || "-"}</td>
@@ -89,6 +98,26 @@ async function fetchUserBets() {
   }
 }
 
+async function fetchWalletBalance() {
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
+  if (!token || !username) return;
+
+  try {
+    const res = await fetch(`${backendUrl}/api/users/${username}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const user = await res.json();
+    if (res.ok && user.wallet !== undefined) {
+      document.getElementById("wallet").textContent = `💰 Wallet: ₹${user.wallet.toFixed(2)}`;
+    }
+  } catch (err) {
+    console.error("Wallet fetch error:", err);
+  }
+}
+
 function startTimer() {
   let timeLeft = 25;
   clearInterval(interval);
@@ -98,7 +127,7 @@ function startTimer() {
       clearInterval(interval);
       document.getElementById("timer").textContent = "Draw Time...";
       fetchLatestRound();
-      setTimeout(startTimer, 5000); // Wait 5s before restarting
+      setTimeout(startTimer, 5000); // Restart after 5s
     }
     timeLeft--;
   }, 1000);
@@ -106,8 +135,13 @@ function startTimer() {
 
 window.onload = () => {
   const token = localStorage.getItem("token");
-  if (!token) return window.location.href = "login.html";
+  const username = localStorage.getItem("username");
 
+  if (!token || !username) {
+    return window.location.href = "login.html";
+  }
+
+  fetchWalletBalance();
   fetchLatestRound();
   fetchUserBets();
   startTimer();
