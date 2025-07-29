@@ -1,69 +1,79 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 20px;
+  background: #f8f8f8;
+  color: #333;
 }
 
 .container {
   max-width: 800px;
   margin: auto;
-  padding: 20px;
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
+  color: #222;
 }
 
-.wallet-box {
-  text-align: right;
-  font-weight: bold;
-  margin-bottom: 10px;
+.wallet-section, .timer, .section, .bet-section {
+  margin: 20px 0;
 }
 
-.game-box {
-  margin-bottom: 30px;
+input[type="number"] {
+  padding: 10px;
+  width: 120px;
+  margin: 8px 5px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
-.bet-options {
-  margin: 15px 0;
-}
-
-.bet-options button {
+button {
+  padding: 10px 20px;
   margin: 5px;
-  padding: 10px 15px;
+  font-size: 15px;
+  border-radius: 8px;
   border: none;
-  background-color: #3f51b5;
-  color: white;
-  border-radius: 5px;
   cursor: pointer;
 }
 
-.bet-options button:hover {
-  background-color: #303f9f;
+.color.red { background: #ff4d4d; color: white; }
+.color.green { background: #4CAF50; color: white; }
+.color.violet { background: #8e44ad; color: white; }
+.number { background: #3498db; color: white; }
+
+button:hover {
+  opacity: 0.85;
 }
 
-.bet-amount {
-  margin-top: 10px;
+#results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.bet-amount input {
-  padding: 8px;
-  width: 100%;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.section {
-  margin-top: 30px;
-}
-
-#recentResults, #myHistory {
+.result-box {
   background: #eee;
-  padding: 10px;
-  border-radius: 5px;
+  padding: 8px 14px;
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background: #f2f2f2;
 }
