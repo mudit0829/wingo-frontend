@@ -1,83 +1,77 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f5f5f5;
+  background: #f4f4f4;
   margin: 0;
   padding: 0;
+  color: #333;
 }
 
-.container {
-  max-width: 720px;
-  margin: auto;
-  padding: 20px;
-  background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  border-radius: 12px;
-}
-
-h1, h3 {
-  text-align: center;
-  margin-bottom: 10px;
+.header {
+  background: #111;
+  color: #fff;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .wallet {
-  text-align: center;
-  margin-bottom: 10px;
-  font-size: 1.2em;
-  color: green;
-}
-
-.timer-section, .betting-section, .history-section, .how-to-play {
-  margin: 15px 0;
-}
-
-.bet-buttons button, .number-buttons button {
-  margin: 5px;
-  padding: 10px 15px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-}
-
-.bet-buttons button:hover, .number-buttons button:hover {
-  background: #e0e0e0;
-}
-
-.result {
-  margin: 4px;
-  padding: 6px 10px;
-  border-radius: 5px;
-  display: inline-block;
   font-weight: bold;
-  color: white;
 }
-.result-red { background-color: red; }
-.result-green { background-color: green; }
-.result-violet { background-color: purple; }
+
+button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.color-buttons button {
+  background-color: #ff6666;
+}
+
+.color-buttons button:nth-child(2) {
+  background-color: #66cc66;
+}
+
+.color-buttons button:nth-child(3) {
+  background-color: #cc66ff;
+}
+
+.number-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.number-buttons button {
+  background-color: #ddd;
+}
+
+.game-section, .result-section, .history-section, .rules-section {
+  background: #fff;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.timer-box {
+  text-align: center;
+  background: #222;
+  color: #fff;
+  padding: 10px;
+  font-size: 20px;
+}
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 th, td {
-  padding: 6px;
+  padding: 10px;
   border: 1px solid #ccc;
-  text-align: center;
-}
-
-.logout-btn {
-  display: block;
-  margin: 20px auto 0;
-  background: crimson;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.logout-btn:hover {
-  background: darkred;
 }
