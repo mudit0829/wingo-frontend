@@ -1,121 +1,92 @@
-const API = "https://wingo-backend-nqk5.onrender.com";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3NjczOTV9.9LOI9UD0Fjic6SmWREqe08A1gqImyO_nFwOLLpnxZIc";
+// game.js
 
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3NjczOTV9.9LOI9UD0Fjic6SmWREqe08A1gqImyO_nFwOLLpnxZIc";
+const apiBase = "https://wingo-backend-nqk5.onrender.com/api";
 let currentRound = null;
 
+// Fetch wallet
 async function fetchWallet() {
-  const res = await fetch(`${API}/api/users/profile`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const res = await fetch(`${apiBase}/users/wallet`, {
+    headers: { Authorization: `Bearer ${token}` }
   });
   const data = await res.json();
-  document.getElementById("wallet").textContent = data.wallet.toFixed(2);
+  document.getElementById("wallet").innerText = `Wallet: ₹${data.wallet}`;
 }
 
-async function fetchRound() {
-  const res = await fetch(`${API}/api/rounds`);
-  const rounds = await res.json();
-  currentRound = rounds[rounds.length - 1];
-  document.getElementById("roundId").textContent = currentRound.roundId;
+// Fetch current round
+async function fetchCurrentRound() {
+  const res = await fetch(`${apiBase}/rounds/current`);
+  const round = await res.json();
+  currentRound = round;
+  startTimer(new Date(round.timestamp));
 }
 
-async function fetchResults() {
-  const res = await fetch(`${API}/api/rounds`);
-  const rounds = await res.json();
-  const recent = rounds.slice(-10).reverse();
-  const resultBox = document.getElementById("results");
-  resultBox.innerHTML = recent.map(r => `
-    <div class="result-box">
-      <strong>${r.roundId}</strong>: ${r.result || "Pending"}
-    </div>
-  `).join("");
-}
-
-async function fetchHistory() {
-  const res = await fetch(`${API}/api/bets/user/test2@example.com`);
-  const bets = await res.json();
-  const tbody = document.getElementById("historyBody");
-  tbody.innerHTML = bets.reverse().slice(0, 10).map(b => `
-    <tr>
-      <td>${b.roundId}</td>
-      <td>${b.colorBet || '-'}</td>
-      <td>${b.numberBet || '-'}</td>
-      <td>₹${b.betAmount}</td>
-      <td>${b.winAmount ? `₹${b.winAmount}` : '-'}</td>
-    </tr>
-  `).join("");
-}
-
-async function placeBet(color) {
-  const betAmount = document.getElementById("betAmount").value;
-  if (!betAmount || betAmount <= 0) return alert("Enter valid amount");
-
-  await fetch(`${API}/api/bets`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      roundId: currentRound.roundId,
-      betAmount,
-      colorBet: color
-    }),
-  });
-
-  alert(`Color bet on ${color} placed!`);
-  fetchWallet();
-  fetchHistory();
-}
-
-async function placeNumberBet() {
-  const betAmount = document.getElementById("betAmount").value;
-  const number = document.getElementById("numberBet").value;
-  if (!betAmount || betAmount <= 0 || number === "") return alert("Invalid input");
-
-  await fetch(`${API}/api/bets`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      roundId: currentRound.roundId,
-      betAmount,
-      numberBet: number
-    }),
-  });
-
-  alert(`Number bet on ${number} placed!`);
-  fetchWallet();
-  fetchHistory();
-}
-
-function startTimer() {
-  let time = 25;
-  const timerElem = document.getElementById("timer");
-  timerElem.textContent = time;
-
+// Start timer till round ends (30 sec cycle)
+function startTimer(startTime) {
   const interval = setInterval(() => {
-    time--;
-    timerElem.textContent = time;
-    if (time <= 0) {
+    const now = new Date();
+    const diff = 30 - Math.floor((now - new Date(startTime)) / 1000);
+    if (diff <= 0) {
       clearInterval(interval);
-      timerElem.textContent = "Draw...";
-
+      document.getElementById("timer").innerText = "Waiting for result...";
       setTimeout(() => {
-        loadAll();
-        startTimer();
-      }, 5000);
+        fetchResult();
+        fetchWallet();
+        fetchCurrentRound();
+      }, 5000); // Wait for draw
+    } else {
+      document.getElementById("timer").innerText = `Next result in ${diff}s`;
     }
   }, 1000);
 }
 
-function loadAll() {
+// Place bet
+async function placeBet(type, value) {
+  const amount = prompt(`Enter amount for ${type.toUpperCase()} ${value}`);
+  if (!amount || isNaN(amount)) return;
+
+  const res = await fetch(`${apiBase}/bets`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      roundId: currentRound.roundId,
+      timestamp: currentRound.timestamp,
+      color: type === "color" ? value : null,
+      number: type === "number" ? value : null,
+      amount
+    })
+  });
+
+  const data = await res.json();
+  alert(data.message || "Bet placed");
   fetchWallet();
-  fetchRound();
-  fetchResults();
-  fetchHistory();
 }
 
-loadAll();
-startTimer();
+// Get latest result
+async function fetchResult() {
+  const res = await fetch(`${apiBase}/rounds/history`);
+  const rounds = await res.json();
+  if (rounds.length > 0) {
+    const r = rounds[0];
+    document.getElementById("result").innerText =
+      `Result: ${r.resultNumber} (${r.resultColor})`;
+  }
+}
+
+// Load UI
+window.onload = () => {
+  fetchWallet();
+  fetchCurrentRound();
+  fetchResult();
+
+  // Add event listeners
+  document.querySelectorAll(".color-btn").forEach(btn => {
+    btn.onclick = () => placeBet("color", btn.dataset.color);
+  });
+  document.querySelectorAll(".number-btn").forEach(btn => {
+    btn.onclick = () => placeBet("number", btn.dataset.number);
+  });
+};
