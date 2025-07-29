@@ -7,65 +7,46 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>🎮 WinGo Game</h1>
-      <div class="wallet">
-        Wallet: ₹<span id="wallet">0</span>
+  <header>
+    <h1>WinGo Game</h1>
+    <div class="wallet">Wallet: ₹<span id="wallet-balance">0</span></div>
+  </header>
+
+  <section id="game-section">
+    <div id="round-info">
+      <div>Round: <span id="round-id">Loading...</span></div>
+      <div>Timer: <span id="countdown">--</span> sec</div>
+    </div>
+
+    <div class="bet-buttons">
+      <button onclick="openBetPopup('red')">Red</button>
+      <button onclick="openBetPopup('green')">Green</button>
+      <button onclick="openBetPopup('violet')">Violet</button>
+      <div class="number-bets">
+        <span>Number:</span>
+        <div id="number-buttons"></div>
       </div>
-    </header>
+    </div>
 
-    <section id="current-round">
-      <h2>Current Round: <span id="round-id">--</span></h2>
-      <p>Time Left: <span id="timer">25</span> sec</p>
-      <p>Last Result: <span id="last-result">--</span></p>
-    </section>
+    <div id="result-display">
+      Result: <span id="last-result">--</span>
+    </div>
+  </section>
 
-    <section class="bet-section">
-      <h3>Choose Your Bet</h3>
-      <div class="bet-buttons">
-        <button class="bet-color" data-color="Red">🔴 Red</button>
-        <button class="bet-color" data-color="Green">🟢 Green</button>
-        <button class="bet-color" data-color="Violet">🟣 Violet</button>
-      </div>
-      <div class="number-buttons">
-        <h4>Or Select Number:</h4>
-        <div class="number-grid">
-          <button class="bet-number" data-number="0">0</button>
-          <button class="bet-number" data-number="1">1</button>
-          <button class="bet-number" data-number="2">2</button>
-          <button class="bet-number" data-number="3">3</button>
-          <button class="bet-number" data-number="4">4</button>
-          <button class="bet-number" data-number="5">5</button>
-          <button class="bet-number" data-number="6">6</button>
-          <button class="bet-number" data-number="7">7</button>
-          <button class="bet-number" data-number="8">8</button>
-          <button class="bet-number" data-number="9">9</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="game-history">
-      <h3>Game History</h3>
-      <ul id="history-list">
-        <!-- recent rounds -->
-      </ul>
-    </section>
-  </div>
-
-  <!-- BET POPUP -->
+  <!-- Bet popup -->
   <div id="bet-popup" class="popup hidden">
     <div class="popup-content">
-      <h3>Place Your Bet</h3>
-      <p id="selected-bet-info"></p>
+      <h3>Place Bet (<span id="popup-bet-type"></span>)</h3>
+      <label>Amount:</label>
       <div class="amount-options">
-        <button data-amount="10">₹10</button>
-        <button data-amount="50">₹50</button>
-        <button data-amount="100">₹100</button>
-        <button data-amount="500">₹500</button>
+        <button onclick="selectAmount(10)">₹10</button>
+        <button onclick="selectAmount(50)">₹50</button>
+        <button onclick="selectAmount(100)">₹100</button>
+        <button onclick="selectAmount(500)">₹500</button>
       </div>
-      <button id="confirm-bet" class="confirm-btn">Confirm Bet</button>
-      <button id="cancel-bet" class="cancel-btn">Cancel</button>
+      <input type="number" id="bet-amount" placeholder="Custom Amount" />
+      <button onclick="placeBet()">Confirm Bet</button>
+      <button onclick="closePopup()">Cancel</button>
     </div>
   </div>
 
