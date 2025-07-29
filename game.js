@@ -1,92 +1,89 @@
-// game.js
-
 const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3NjczOTV9.9LOI9UD0Fjic6SmWREqe08A1gqImyO_nFwOLLpnxZIc";
-const apiBase = "https://wingo-backend-nqk5.onrender.com/api";
-let currentRound = null;
+const backendURL = "https://wingo-backend-nqk5.onrender.com";
 
-// Fetch wallet
-async function fetchWallet() {
-  const res = await fetch(`${apiBase}/users/wallet`, {
+let currentRoundId = null;
+let walletBalance = 0;
+let selectedBet = {};
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchWallet();
+  fetchCurrentRound();
+  fetchHistory();
+  setInterval(() => {
+    fetchCurrentRound();
+    fetchWallet();
+    fetchHistory();
+  }, 5000);
+});
+
+function fetchWallet() {
+  fetch(`${backendURL}/api/users/wallet`, {
     headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  document.getElementById("wallet").innerText = `Wallet: ₹${data.wallet}`;
+  })
+    .then(res => res.json())
+    .then(data => {
+      walletBalance = data.wallet || 0;
+      document.getElementById("wallet").innerText = `₹${walletBalance.toFixed(2)}`;
+    });
 }
 
-// Fetch current round
-async function fetchCurrentRound() {
-  const res = await fetch(`${apiBase}/rounds/current`);
-  const round = await res.json();
-  currentRound = round;
-  startTimer(new Date(round.timestamp));
+function fetchCurrentRound() {
+  fetch(`${backendURL}/api/rounds/current`)
+    .then(res => res.json())
+    .then(round => {
+      currentRoundId = round.roundId;
+      document.getElementById("round-id").innerText = round.roundId;
+      document.getElementById("timer").innerText = `${round.secondsLeft}s`;
+      document.getElementById("result").innerText = round.result || "--";
+    });
 }
 
-// Start timer till round ends (30 sec cycle)
-function startTimer(startTime) {
-  const interval = setInterval(() => {
-    const now = new Date();
-    const diff = 30 - Math.floor((now - new Date(startTime)) / 1000);
-    if (diff <= 0) {
-      clearInterval(interval);
-      document.getElementById("timer").innerText = "Waiting for result...";
-      setTimeout(() => {
-        fetchResult();
-        fetchWallet();
-        fetchCurrentRound();
-      }, 5000); // Wait for draw
-    } else {
-      document.getElementById("timer").innerText = `Next result in ${diff}s`;
-    }
-  }, 1000);
+function fetchHistory() {
+  fetch(`${backendURL}/api/rounds`)
+    .then(res => res.json())
+    .then(rounds => {
+      const latest = rounds.slice(0, 5);
+      const html = latest.map(r => `<div>🕑 ${r.roundId} ➜ 🎯 ${r.result || "--"}</div>`).join("");
+      document.getElementById("history").innerHTML = html;
+    });
 }
 
-// Place bet
-async function placeBet(type, value) {
-  const amount = prompt(`Enter amount for ${type.toUpperCase()} ${value}`);
-  if (!amount || isNaN(amount)) return;
+function showPopup(type, value) {
+  selectedBet = { type, value };
+  document.getElementById("popup-title").innerText = `Bet on ${type} - ${value}`;
+  document.getElementById("overlay").style.display = "block";
+  document.getElementById("popup").style.display = "block";
+}
 
-  const res = await fetch(`${apiBase}/bets`, {
+function hidePopup() {
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("popup").style.display = "none";
+}
+
+function placeBet(amount) {
+  const effectiveAmount = amount * 0.98;
+  const body = {
+    roundId: currentRoundId,
+    amount: effectiveAmount,
+    [selectedBet.type === "color" ? "color" : "number"]: selectedBet.value
+  };
+
+  fetch(`${backendURL}/api/bets`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify({
-      roundId: currentRound.roundId,
-      timestamp: currentRound.timestamp,
-      color: type === "color" ? value : null,
-      number: type === "number" ? value : null,
-      amount
+    body: JSON.stringify(body)
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert("Bet placed!");
+      hidePopup();
+      fetchWallet();
     })
-  });
-
-  const data = await res.json();
-  alert(data.message || "Bet placed");
-  fetchWallet();
+    .catch(err => {
+      console.error(err);
+      alert("Failed to place bet");
+    });
 }
-
-// Get latest result
-async function fetchResult() {
-  const res = await fetch(`${apiBase}/rounds/history`);
-  const rounds = await res.json();
-  if (rounds.length > 0) {
-    const r = rounds[0];
-    document.getElementById("result").innerText =
-      `Result: ${r.resultNumber} (${r.resultColor})`;
-  }
-}
-
-// Load UI
-window.onload = () => {
-  fetchWallet();
-  fetchCurrentRound();
-  fetchResult();
-
-  // Add event listeners
-  document.querySelectorAll(".color-btn").forEach(btn => {
-    btn.onclick = () => placeBet("color", btn.dataset.color);
-  });
-  document.querySelectorAll(".number-btn").forEach(btn => {
-    btn.onclick = () => placeBet("number", btn.dataset.number);
-  });
-};
