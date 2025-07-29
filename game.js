@@ -1,20 +1,9 @@
 const API_BASE = "https://wingo-backend-nqk5.onrender.com";
-const token = localStorage.getItem("token");
-const username = localStorage.getItem("username");
-
-if (!token || !username) {
-  alert("Please login again.");
-  window.location.href = "login.html";
-}
+const token = "guest";  // no auth
+const username = "demo_user";  // fake user
 
 async function fetchWallet() {
-  try {
-    const res = await fetch(`${API_BASE}/api/users/${username}`);
-    const data = await res.json();
-    document.getElementById("wallet-balance").innerText = data.wallet || 0;
-  } catch {
-    alert("Wallet fetch failed");
-  }
+  document.getElementById("wallet-balance").innerText = "5000 (demo)";
 }
 
 async function fetchTimerAndRound() {
@@ -44,14 +33,13 @@ async function placeBet(betType) {
       ...(typeof betType === "number" ? { number: betType } : { color: betType })
     };
 
-    const betRes = await fetch(`${API_BASE}/api/bets`, {
+    await fetch(`${API_BASE}/api/bets`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json" }, // no Authorization
       body: JSON.stringify(body),
     });
 
-    const result = await betRes.json();
-    alert(result.message || "Bet placed");
+    alert(`Bet placed on ${betType}`);
     fetchUserBets();
     fetchWallet();
   } catch (err) {
@@ -62,14 +50,12 @@ async function placeBet(betType) {
 
 async function fetchUserBets() {
   try {
-    const res = await fetch(`${API_BASE}/api/bets/user/${username}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await fetch(`${API_BASE}/api/bets/user/${username}`);
     const bets = await res.json();
 
     const tbody = document.querySelector("#history-table tbody");
     tbody.innerHTML = "";
-    bets.reverse().forEach(bet => {
+    (bets.reverse() || []).forEach(bet => {
       const row = `<tr>
         <td>${bet.roundId}</td>
         <td>${bet.color || "-"}</td>
@@ -81,6 +67,8 @@ async function fetchUserBets() {
     });
   } catch (err) {
     console.error("Bet fetch error:", err);
+    document.querySelector("#history-table tbody").innerHTML =
+      `<tr><td colspan="5">Demo: No bets loaded</td></tr>`;
   }
 }
 
@@ -99,8 +87,7 @@ async function fetchRecentResults() {
 }
 
 function logout() {
-  localStorage.clear();
-  window.location.href = "login.html";
+  alert("Logout disabled in demo.");
 }
 
 window.onload = () => {
