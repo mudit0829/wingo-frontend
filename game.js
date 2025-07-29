@@ -1,110 +1,110 @@
-const API_URL = 'https://wingo-backend-nqk5.onrender.com';
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3NjczOTV9.9LOI9UD0Fjic6SmWREqe08A1gqImyO_nFwOLLpnxZIc';
-
-let currentRoundId = '';
-let selectedBetType = '';
-let selectedNumber = null;
-let selectedAmount = 0;
+let selectedBet = null;
+let selectedAmount = 1;
+let selectedMultiplier = 1;
+let currentRoundId = null;
 
 function fetchWallet() {
-  fetch(`${API_URL}/api/users/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  })
+  fetch('https://wingo-backend-nqk5.onrender.com/api/users/me')
     .then(res => res.json())
     .then(data => {
-      document.getElementById('wallet-balance').innerText = data.wallet || 0;
-    });
+      document.getElementById('walletAmount').textContent = data.wallet || 0;
+    })
+    .catch(() => console.error('Wallet fetch failed'));
 }
 
 function fetchRound() {
-  fetch(`${API_URL}/api/rounds/latest`)
+  fetch('https://wingo-backend-nqk5.onrender.com/api/rounds/current')
     .then(res => res.json())
     .then(data => {
       currentRoundId = data.roundId;
-      document.getElementById('round-id').innerText = currentRoundId;
-    });
+      document.getElementById('roundId').textContent = currentRoundId;
+      startTimer(data.remainingTime || 25);
+    })
+    .catch(() => console.error('Round fetch failed'));
 }
 
 function fetchResult() {
-  fetch(`${API_URL}/api/rounds/last-result`)
+  fetch('https://wingo-backend-nqk5.onrender.com/api/rounds/last-result')
     .then(res => res.json())
     .then(data => {
-      document.getElementById('last-result').innerText = `${data.color} - ${data.number}`;
-    });
+      document.getElementById('lastResult').textContent = data.result || '-';
+    })
+    .catch(() => console.error('Result fetch failed'));
 }
 
-function startTimer(seconds = 25) {
-  let countdown = seconds;
-  const timer = setInterval(() => {
-    document.getElementById('countdown').innerText = countdown;
-    countdown--;
-    if (countdown < 0) clearInterval(timer);
+function startTimer(duration) {
+  let timer = duration;
+  const timerDisplay = document.getElementById('timer');
+  const interval = setInterval(() => {
+    timerDisplay.textContent = timer;
+    if (--timer < 0) clearInterval(interval);
   }, 1000);
 }
 
-function openBetPopup(typeOrNumber) {
-  selectedBetType = ['red', 'green', 'violet'].includes(typeOrNumber) ? typeOrNumber : 'number';
-  selectedNumber = selectedBetType === 'number' ? parseInt(typeOrNumber) : null;
-  document.getElementById('popup-bet-type').innerText = selectedBetType === 'number' ? `Number ${selectedNumber}` : typeOrNumber;
-  document.getElementById('bet-popup').classList.remove('hidden');
+function setAmount(amount) {
+  selectedAmount = amount;
 }
 
-function selectAmount(amt) {
-  document.getElementById('bet-amount').value = amt;
+function setMultiplier(mult) {
+  selectedMultiplier = mult;
+}
+
+function selectBet(choice) {
+  selectedBet = choice;
+}
+
+function confirmBet() {
+  if (!selectedBet || !selectedAmount || !selectedMultiplier) {
+    alert('Select a bet, amount, and multiplier first.');
+    return;
+  }
+
+  const totalAmount = selectedAmount * selectedMultiplier;
+
+  document.getElementById('betChoiceText').textContent = selectedBet;
+  document.getElementById('baseAmountText').textContent = selectedAmount;
+  document.getElementById('multiplierText').textContent = selectedMultiplier;
+  document.getElementById('totalAmountText').textContent = totalAmount;
+
+  document.getElementById('betPopup').style.display = 'block';
 }
 
 function closePopup() {
-  document.getElementById('bet-popup').classList.add('hidden');
-  document.getElementById('bet-amount').value = '';
-  selectedAmount = 0;
-  selectedNumber = null;
+  document.getElementById('betPopup').style.display = 'none';
 }
 
 function placeBet() {
-  const amount = parseFloat(document.getElementById('bet-amount').value);
-  if (!amount || amount <= 0) return alert('Enter a valid amount.');
-
-  const body = {
+  const finalAmount = selectedAmount * selectedMultiplier;
+  const payload = {
     roundId: currentRoundId,
-    amount,
-    ...(selectedBetType === 'number' ? { number: selectedNumber } : { color: selectedBetType })
+    amount: finalAmount,
   };
 
-  fetch(`${API_URL}/api/bets`, {
+  if (typeof selectedBet === 'number') {
+    payload.number = selectedBet;
+  } else {
+    payload.color = selectedBet;
+  }
+
+  fetch('https://wingo-backend-nqk5.onrender.com/api/bets', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(body)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   })
     .then(res => res.json())
     .then(data => {
-      alert('Bet placed successfully!');
+      alert('Bet placed!');
       closePopup();
       fetchWallet();
+    })
+    .catch(err => {
+      console.error('Bet error:', err);
+      alert('Failed to place bet');
     });
 }
 
-function generateNumberButtons() {
-  const container = document.getElementById('number-buttons');
-  for (let i = 0; i <= 9; i++) {
-    const btn = document.createElement('button');
-    btn.innerText = i;
-    btn.onclick = () => openBetPopup(i);
-    container.appendChild(btn);
-  }
-}
-
-window.onload = function () {
+window.onload = () => {
   fetchWallet();
   fetchRound();
   fetchResult();
-  startTimer();
-  generateNumberButtons();
-  setInterval(fetchRound, 30000);
-  setInterval(fetchResult, 30000);
-  setInterval(fetchWallet, 60000);
 };
