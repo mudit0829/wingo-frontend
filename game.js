@@ -1,77 +1,121 @@
-const API_BASE = "https://wingo-backend-nqk5.onrender.com";
-const demoUser = "demo_user";
+const API = "https://wingo-backend-nqk5.onrender.com";
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3NjczOTV9.9LOI9UD0Fjic6SmWREqe08A1gqImyO_nFwOLLpnxZIc";
 
-function placeBet(type, value) {
-  const amount = parseFloat(document.getElementById("betAmount").value);
-  if (!amount || amount < 1) {
-    alert("Please enter a valid bet amount");
-    return;
-  }
+let currentRound = null;
 
-  const payload = {
-    username: demoUser,
-    roundId: "demo", // use real roundId if available
-    betType: type,
-    betValue: value,
-    amount
-  };
+async function fetchWallet() {
+  const res = await fetch(`${API}/api/users/profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  document.getElementById("wallet").textContent = data.wallet.toFixed(2);
+}
 
-  fetch(`${API_BASE}/api/bets`, {
+async function fetchRound() {
+  const res = await fetch(`${API}/api/rounds`);
+  const rounds = await res.json();
+  currentRound = rounds[rounds.length - 1];
+  document.getElementById("roundId").textContent = currentRound.roundId;
+}
+
+async function fetchResults() {
+  const res = await fetch(`${API}/api/rounds`);
+  const rounds = await res.json();
+  const recent = rounds.slice(-10).reverse();
+  const resultBox = document.getElementById("results");
+  resultBox.innerHTML = recent.map(r => `
+    <div class="result-box">
+      <strong>${r.roundId}</strong>: ${r.result || "Pending"}
+    </div>
+  `).join("");
+}
+
+async function fetchHistory() {
+  const res = await fetch(`${API}/api/bets/user/test2@example.com`);
+  const bets = await res.json();
+  const tbody = document.getElementById("historyBody");
+  tbody.innerHTML = bets.reverse().slice(0, 10).map(b => `
+    <tr>
+      <td>${b.roundId}</td>
+      <td>${b.colorBet || '-'}</td>
+      <td>${b.numberBet || '-'}</td>
+      <td>₹${b.betAmount}</td>
+      <td>${b.winAmount ? `₹${b.winAmount}` : '-'}</td>
+    </tr>
+  `).join("");
+}
+
+async function placeBet(color) {
+  const betAmount = document.getElementById("betAmount").value;
+  if (!betAmount || betAmount <= 0) return alert("Enter valid amount");
+
+  await fetch(`${API}/api/bets`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-    .then(res => res.json())
-    .then(data => {
-      alert(`Bet placed on ${value} (${type})`);
-      fetchUserHistory();
-    })
-    .catch(err => console.error("Bet error", err));
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      roundId: currentRound.roundId,
+      betAmount,
+      colorBet: color
+    }),
+  });
+
+  alert(`Color bet on ${color} placed!`);
+  fetchWallet();
+  fetchHistory();
 }
 
-function fetchUserHistory() {
-  fetch(`${API_BASE}/api/bets/user/${demoUser}`)
-    .then(res => res.json())
-    .then(bets => {
-      const historyDiv = document.getElementById("myHistory");
-      if (!Array.isArray(bets)) return historyDiv.innerHTML = "No history.";
-      historyDiv.innerHTML = bets
-        .slice(-10)
-        .reverse()
-        .map(b => `<div>${b.betType} on ${b.betValue} – ₹${b.amount}</div>`)
-        .join("");
-    })
-    .catch(err => console.error("History error", err));
+async function placeNumberBet() {
+  const betAmount = document.getElementById("betAmount").value;
+  const number = document.getElementById("numberBet").value;
+  if (!betAmount || betAmount <= 0 || number === "") return alert("Invalid input");
+
+  await fetch(`${API}/api/bets`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      roundId: currentRound.roundId,
+      betAmount,
+      numberBet: number
+    }),
+  });
+
+  alert(`Number bet on ${number} placed!`);
+  fetchWallet();
+  fetchHistory();
 }
 
-function fetchRecentResults() {
-  fetch(`${API_BASE}/api/rounds`)
-    .then(res => res.json())
-    .then(rounds => {
-      const resultDiv = document.getElementById("recentResults");
-      if (!Array.isArray(rounds)) return;
-      resultDiv.innerHTML = rounds
-        .slice(-5)
-        .reverse()
-        .map(r => `<div>Round ${r.roundId}: ${r.result}</div>`)
-        .join("");
-    })
-    .catch(err => console.error("Results error", err));
+function startTimer() {
+  let time = 25;
+  const timerElem = document.getElementById("timer");
+  timerElem.textContent = time;
+
+  const interval = setInterval(() => {
+    time--;
+    timerElem.textContent = time;
+    if (time <= 0) {
+      clearInterval(interval);
+      timerElem.textContent = "Draw...";
+
+      setTimeout(() => {
+        loadAll();
+        startTimer();
+      }, 5000);
+    }
+  }, 1000);
 }
 
-function renderNumberButtons() {
-  const numberDiv = document.getElementById("number-buttons");
-  numberDiv.innerHTML = '';
-  for (let i = 0; i <= 9; i++) {
-    const btn = document.createElement("button");
-    btn.innerText = i;
-    btn.onclick = () => placeBet('number', i.toString());
-    numberDiv.appendChild(btn);
-  }
+function loadAll() {
+  fetchWallet();
+  fetchRound();
+  fetchResults();
+  fetchHistory();
 }
 
-window.onload = () => {
-  renderNumberButtons();
-  fetchRecentResults();
-  fetchUserHistory();
-};
+loadAll();
+startTimer();
