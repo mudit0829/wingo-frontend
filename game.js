@@ -1,98 +1,85 @@
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3ODA0NTd9.TZfHqzweHCK42Dii3gHFwn7FoQf0sIqRJjpMm-3SdbA';
-let selectedChoice = '';
-let selectedAmount = 1;
-let selectedMultiplier = 1;
+const API="https://wingo-backend-nqk5.onrender.com/api";
+const TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg1MjY0MTUyYTI1ZjQwNGI4YzU5N2QiLCJpYXQiOjE3NTM3ODA0NTd9.TZfHqzweHCK42Dii3gHFwn7FoQf0sIqRJjpMm-3SdbA";
 
-document.querySelectorAll('.bet-button').forEach(button => {
-  button.addEventListener('click', () => {
-    selectedChoice = button.dataset.choice;
-  });
-});
-
-document.getElementById('amount-select').addEventListener('change', (e) => {
-  selectedAmount = parseInt(e.target.value);
-});
-
-document.querySelectorAll('.multiplier-button').forEach(button => {
-  button.addEventListener('click', () => {
-    selectedMultiplier = parseInt(button.dataset.multiplier);
-  });
-});
-
-document.getElementById('place-bet').addEventListener('click', async () => {
-  const totalBetAmount = selectedAmount * selectedMultiplier;
-  if (!selectedChoice || totalBetAmount <= 0) {
-    alert('Please select a bet choice and valid amount.');
-    return;
-  }
-
-  try {
-    const roundRes = await fetch('https://wingo-backend-nqk5.onrender.com/api/rounds/current');
-    const roundData = await roundRes.json();
-    const roundId = roundData.roundId;
-
-    const betPayload = {
-      roundId,
-      amount: totalBetAmount,
-    };
-
-    if (!isNaN(Number(selectedChoice))) {
-      betPayload.number = selectedChoice;
-    } else {
-      betPayload.color = selectedChoice;
-    }
-
-    const response = await fetch('https://wingo-backend-nqk5.onrender.com/api/bets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(betPayload)
-    });
-
-    const result = await response.json();
-    if (response.ok) {
-      document.getElementById('bet-info').innerText = `Your bet: ${selectedChoice}, ₹${totalBetAmount}`;
-      document.getElementById('bet-popup').classList.remove('hidden');
-      fetchWallet();
-    } else {
-      alert(result.error || 'Failed to place bet.');
-    }
-  } catch (err) {
-    alert('Error placing bet.');
-  }
-});
-
-function closePopup() {
-  document.getElementById('bet-popup').classList.add('hidden');
-}
+let chosen = null;
 
 async function fetchWallet() {
-  try {
-    const res = await fetch('https://wingo-backend-nqk5.onrender.com/api/users/me', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    const data = await res.json();
-    document.getElementById('wallet').innerText = `Wallet: ₹${data.wallet}`;
-  } catch (err) {
-    console.error('Wallet fetch error');
+  const res = await fetch(`${API}/users/me`, { headers: {Authorization:`Bearer ${TOKEN}`} });
+  if(res.ok){
+    const {wallet}=await res.json();
+    document.getElementById("wallet").innerText=`Wallet: ₹${wallet}`;
   }
 }
 
-async function fetchResult() {
-  try {
-    const res = await fetch('https://wingo-backend-nqk5.onrender.com/api/rounds/current');
+async function fetchRound() {
+  const res = await fetch(`${API}/rounds/current`);
+  if(res.ok){
     const data = await res.json();
-    document.getElementById('result-value').innerText = data.result || 'Pending...';
-  } catch (err) {
-    console.error('Result fetch error');
+    document.getElementById("roundId").innerText = data.roundId;
+    updateTimer(data.timestamp);
+    document.getElementById("lastResult").innerText = data.result || 'Pending';
+    updateHistory([data]); // for demo, only current
   }
 }
 
-window.onload = () => {
+function updateTimer(ts){
+  let left = Math.max(0, 30 - Math.floor((Date.now() - new Date(ts))/1000));
+  const timer = document.getElementById("timer");
+  timer.innerText = left;
+  setTimeout(fetchRound, (left+1)*1000+500);
+}
+
+function updateHistory(arr){
+  const ul = document.getElementById("historyList");
+  ul.innerHTML = arr.map(r=>`<li>Round ${r.roundId}: ${r.result||'-'}</li>`).join('');
+}
+
+document.querySelectorAll('.choice-btn').forEach(b=>{
+  b.onclick = ()=> {
+    chosen = b.dataset.choice;
+    document.getElementById("selectedChoice").innerText = chosen;
+  };
+});
+
+document.getElementById("placeBetBtn").onclick =()=>{
+  const base = parseInt(document.getElementById("baseAmount").value);
+  const mult = parseInt(document.getElementById("multiplier").value);
+  if(!chosen) return alert("Select Red/Green/Violet or number");
+  const total = base * mult;
+  document.getElementById("popupText").innerText =
+    `Your Bet: ${chosen} × ₹${base} ×${mult} = ₹${total}`;
+  document.getElementById("popup").classList.remove("hidden");
+};
+
+document.getElementById("confirmBetBtn").onclick = async()=>{
+  const base=parseInt(document.getElementById("baseAmount").value);
+  const mult=parseInt(document.getElementById("multiplier").value);
+  const amount = base*mult;
+  const r = await fetch(`${API}/rounds/current`);
+  const {roundId} = await r.json();
+  const payload = { roundId, amount };
+  if(!isNaN(Number(chosen))) payload.number = Number(chosen);
+  else payload.color = chosen;
+  const res = await fetch(`${API}/bets`, {
+    method:'POST',
+    headers: {'Content-Type':'application/json', Authorization:`Bearer ${TOKEN}`},
+    body: JSON.stringify(payload)
+  });
+  if(res.ok){
+    alert("Bet placed for ₹"+amount);
+    fetchWallet();
+    closePopup();
+  } else {
+    const err = (await res.json()).error || "Bet failed";
+    alert(err);
+  }
+};
+
+function closePopup() {
+  document.getElementById("popup").classList.add("hidden");
+}
+
+window.onload = ()=>{
   fetchWallet();
-  fetchResult();
+  fetchRound();
 };
