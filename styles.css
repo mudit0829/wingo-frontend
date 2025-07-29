@@ -1,83 +1,78 @@
 body {
   font-family: Arial, sans-serif;
+  background: #f7f7f7;
   margin: 0;
-  background: #f0f0f5;
-  color: #333;
+  padding: 20px;
   text-align: center;
 }
 
-header {
-  background: #2e3a59;
-  color: white;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.container {
+  max-width: 600px;
+  margin: auto;
+}
+
+h1 {
+  color: #333;
 }
 
 .wallet {
-  font-size: 18px;
-  margin-right: 20px;
+  font-size: 1.2em;
+  margin-bottom: 10px;
 }
 
-#game-section {
-  padding: 30px;
+.round-info {
+  margin-bottom: 20px;
+  font-weight: bold;
 }
 
-.bet-buttons button {
+.bet-section {
+  margin-bottom: 20px;
+}
+
+.bet-btn {
+  margin: 5px;
   padding: 10px 20px;
-  margin: 10px;
-  font-size: 16px;
-  border-radius: 6px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.number-grid button {
+  margin: 4px;
+  padding: 8px 12px;
+}
+
+.amount-buttons button,
+.multiplier-buttons button {
+  margin: 5px;
+  padding: 10px 15px;
+}
+
+.place-bet-btn {
+  margin-top: 20px;
+  padding: 12px 25px;
+  font-size: 1.1em;
+  background: #28a745;
+  color: white;
   border: none;
   cursor: pointer;
 }
 
-button:hover {
-  opacity: 0.85;
-}
-
-#result-display {
-  font-size: 20px;
-  margin-top: 20px;
-}
-
-.number-bets {
-  margin-top: 15px;
-}
-
-#number-buttons button {
-  margin: 5px;
-  padding: 8px 14px;
-  font-size: 14px;
-}
-
 .popup {
+  display: none;
   position: fixed;
-  top: 0;
+  z-index: 99;
   left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: rgba(0,0,0,0.6);
 }
 
 .popup-content {
   background: white;
-  padding: 30px;
+  padding: 25px;
   border-radius: 10px;
-  text-align: center;
-  width: 300px;
-}
-
-.amount-options button {
-  margin: 5px;
-  padding: 6px 12px;
-  font-size: 14px;
-}
-
-.hidden {
-  display: none;
+  max-width: 400px;
+  margin: 100px auto;
+  text-align: left;
 }
