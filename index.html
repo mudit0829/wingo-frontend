@@ -4,52 +4,61 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>WinGo Game</h1>
-    
-    <div class="wallet-box">
-      Wallet: <span id="wallet">₹10,000</span> (Demo Mode)
+    <h1>WinGo Color & Number Game</h1>
+
+    <div class="wallet-section">
+      <strong>Wallet:</strong> ₹<span id="wallet">0</span>
     </div>
 
-    <div class="game-box">
-      <div class="bet-options">
-        <h3>Choose Color</h3>
-        <button onclick="placeBet('color', 'Red')">Red</button>
-        <button onclick="placeBet('color', 'Green')">Green</button>
-        <button onclick="placeBet('color', 'Violet')">Violet</button>
-      </div>
+    <div class="timer">
+      <strong>Round:</strong> <span id="roundId">0000</span> | 
+      <strong>Time Left:</strong> <span id="timer">25</span>s
+    </div>
 
-      <div class="bet-options">
-        <h3>Choose Number</h3>
-        <div id="number-buttons"></div>
-      </div>
-
-      <div class="bet-amount">
-        <input type="number" id="betAmount" placeholder="Enter Bet Amount" />
+    <div class="bet-section">
+      <h3>Place Your Bets</h3>
+      <input type="number" id="betAmount" placeholder="Enter Amount" min="1" />
+      <div class="buttons">
+        <button class="color red" onclick="placeBet('Red')">Red</button>
+        <button class="color green" onclick="placeBet('Green')">Green</button>
+        <button class="color violet" onclick="placeBet('Violet')">Violet</button>
+        <input type="number" id="numberBet" placeholder="Number (0-9)" min="0" max="9"/>
+        <button class="number" onclick="placeNumberBet()">Bet Number</button>
       </div>
     </div>
 
     <div class="section">
-      <h2>Recent Results</h2>
-      <div id="recentResults"></div>
+      <h3>Recent Results</h3>
+      <div id="results"></div>
     </div>
 
     <div class="section">
-      <h2>My Game History (demo_user)</h2>
-      <div id="myHistory"></div>
+      <h3>My Game History</h3>
+      <table>
+        <thead>
+          <tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Win</th></tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
     </div>
 
     <div class="section">
-      <h2>How to Play</h2>
+      <h3>How to Play</h3>
       <ul>
-        <li>Each round is 30 seconds: 25s for betting, 5s for result.</li>
-        <li>Bet Red/Green/Violet or Number (0–9).</li>
-        <li>2% service fee is applied to each bet.</li>
-        <li>Payouts: Red/Green = 2x, Violet = 4.5x, Number = 9x.</li>
-        <li>Violet wins if result is 0 or 5.</li>
+        <li>Each round is 30 seconds (25s betting + 5s draw).</li>
+        <li>Bet on Red, Green, Violet, or Number (0–9).</li>
+        <li>Service Fee: 2% on each bet.</li>
+        <li>Payouts:
+          <ul>
+            <li>Red/Green: 2x (except 0 or 5 → 1.5x)</li>
+            <li>Violet: 4.5x on 0 or 5</li>
+            <li>Number Match: 9x</li>
+          </ul>
+        </li>
       </ul>
     </div>
   </div>
