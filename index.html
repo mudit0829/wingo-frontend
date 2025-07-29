@@ -4,49 +4,71 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>WinGo Game</h1>
-    <div class="wallet">Wallet: ₹<span id="wallet-balance">0</span></div>
-  </header>
+  <div class="container">
+    <h1>🎯 WinGo Game</h1>
 
-  <section id="game-section">
-    <div id="round-info">
-      <div>Round: <span id="round-id">Loading...</span></div>
-      <div>Timer: <span id="countdown">--</span> sec</div>
+    <div class="wallet">Wallet: ₹<span id="walletAmount">0</span></div>
+
+    <div class="round-info">
+      <div>Current Round: <span id="roundId">-</span></div>
+      <div>Timer: <span id="timer">--</span></div>
+      <div>Last Result: <span id="lastResult">--</span></div>
     </div>
 
-    <div class="bet-buttons">
-      <button onclick="openBetPopup('red')">Red</button>
-      <button onclick="openBetPopup('green')">Green</button>
-      <button onclick="openBetPopup('violet')">Violet</button>
+    <h2>Choose Your Bet</h2>
+
+    <div class="bet-section">
+      <div class="color-bets">
+        <button class="bet-btn" onclick="selectBet('Red')">🔴 Red</button>
+        <button class="bet-btn" onclick="selectBet('Green')">🟢 Green</button>
+        <button class="bet-btn" onclick="selectBet('Violet')">🟣 Violet</button>
+      </div>
+
       <div class="number-bets">
-        <span>Number:</span>
-        <div id="number-buttons"></div>
+        <h3>Numbers (0-9)</h3>
+        <div class="number-grid">
+          ${[...Array(10).keys()].map(i => `<button onclick="selectBet(${i})">${i}</button>`).join('')}
+        </div>
       </div>
     </div>
 
-    <div id="result-display">
-      Result: <span id="last-result">--</span>
-    </div>
-  </section>
-
-  <!-- Bet popup -->
-  <div id="bet-popup" class="popup hidden">
-    <div class="popup-content">
-      <h3>Place Bet (<span id="popup-bet-type"></span>)</h3>
-      <label>Amount:</label>
-      <div class="amount-options">
-        <button onclick="selectAmount(10)">₹10</button>
-        <button onclick="selectAmount(50)">₹50</button>
-        <button onclick="selectAmount(100)">₹100</button>
-        <button onclick="selectAmount(500)">₹500</button>
+    <div class="amount-selection">
+      <h3>Select Bet Amount</h3>
+      <div class="amount-buttons">
+        <button onclick="setAmount(1)">₹1</button>
+        <button onclick="setAmount(2)">₹2</button>
+        <button onclick="setAmount(5)">₹5</button>
+        <button onclick="setAmount(10)">₹10</button>
+        <button onclick="setAmount(50)">₹50</button>
+        <button onclick="setAmount(100)">₹100</button>
       </div>
-      <input type="number" id="bet-amount" placeholder="Custom Amount" />
-      <button onclick="placeBet()">Confirm Bet</button>
-      <button onclick="closePopup()">Cancel</button>
+
+      <h3>Select Multiplier</h3>
+      <div class="multiplier-buttons">
+        <button onclick="setMultiplier(1)">x1</button>
+        <button onclick="setMultiplier(2)">x2</button>
+        <button onclick="setMultiplier(5)">x5</button>
+        <button onclick="setMultiplier(10)">x10</button>
+        <button onclick="setMultiplier(50)">x50</button>
+        <button onclick="setMultiplier(100)">x100</button>
+      </div>
+    </div>
+
+    <button class="place-bet-btn" onclick="confirmBet()">Place Bet</button>
+
+    <div id="betPopup" class="popup">
+      <div class="popup-content">
+        <h3>Confirm Your Bet</h3>
+        <p><strong>Your Bet:</strong> <span id="betChoiceText"></span></p>
+        <p><strong>Base Amount:</strong> ₹<span id="baseAmountText"></span></p>
+        <p><strong>Multiplier:</strong> x<span id="multiplierText"></span></p>
+        <p><strong>Total Bet:</strong> ₹<span id="totalAmountText"></span></p>
+        <button onclick="placeBet()">Confirm</button>
+        <button onclick="closePopup()">Cancel</button>
+      </div>
     </div>
   </div>
 
