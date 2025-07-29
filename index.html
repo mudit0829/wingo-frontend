@@ -3,96 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Winzo Game</title>
+  <title>WinGo Game</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="top-bar">
-    <h1 class="title">Winzo</h1>
-    <div class="wallet">
-      <span>₹ <span id="wallet-balance">1000</span></span>
-      <button class="btn deposit">Deposit</button>
-      <button class="btn withdraw">Withdraw</button>
+  <div class="game-container">
+    <header>
+      <h1>WinGo Game</h1>
+      <div class="wallet">Wallet: ₹<span id="wallet-balance">0</span></div>
+    </header>
+
+    <div class="round-info">
+      <span>Round ID: <span id="round-id">--</span></span>
+      <span>Time Left: <span id="timer">00</span>s</span>
     </div>
-  </div>
 
-  <div class="info-row">
-    <button class="btn detail">Detail</button>
-    <div class="game-box">
-      <div class="game-type">WinGo 30sec</div>
-      <div class="timer" id="countdown">00:30</div>
-      <div class="round-id">Round: <span id="round-id">12345</span></div>
-      <div class="last-results">
-        <div class="ball red">1</div>
-        <div class="ball green">2</div>
-        <div class="ball violet">5</div>
-        <div class="ball red">7</div>
-        <div class="ball green">0</div>
-      </div>
+    <div class="result-box">
+      <span>Result: <span id="last-result">--</span></span>
     </div>
-  </div>
 
-  <div class="bet-section">
-    <button class="bet-btn green" onclick="openPopup('Green')">Green</button>
-    <button class="bet-btn violet" onclick="openPopup('Violet')">Violet</button>
-    <button class="bet-btn red" onclick="openPopup('Red')">Red</button>
-    <div class="number-grid">
-      <button class="num-btn green" onclick="openPopup(1)">1</button>
-      <button class="num-btn red" onclick="openPopup(2)">2</button>
-      <button class="num-btn green" onclick="openPopup(3)">3</button>
-      <button class="num-btn red" onclick="openPopup(4)">4</button>
-      <button class="num-btn violet" onclick="openPopup(5)">5</button>
-      <button class="num-btn red" onclick="openPopup(6)">6</button>
-      <button class="num-btn green" onclick="openPopup(7)">7</button>
-      <button class="num-btn red" onclick="openPopup(8)">8</button>
-      <button class="num-btn green" onclick="openPopup(9)">9</button>
-      <button class="num-btn violet" onclick="openPopup(0)">0</button>
+    <div class="betting-options">
+      <button class="color-btn red" data-color="Red">Red</button>
+      <button class="color-btn green" data-color="Green">Green</button>
+      <button class="color-btn violet" data-color="Violet">Violet</button>
     </div>
+
+    <div class="number-options">
+      <button class="number-btn" data-number="0">0</button>
+      <button class="number-btn" data-number="1">1</button>
+      <button class="number-btn" data-number="2">2</button>
+      <button class="number-btn" data-number="3">3</button>
+      <button class="number-btn" data-number="4">4</button>
+      <button class="number-btn" data-number="5">5</button>
+      <button class="number-btn" data-number="6">6</button>
+      <button class="number-btn" data-number="7">7</button>
+      <button class="number-btn" data-number="8">8</button>
+      <button class="number-btn" data-number="9">9</button>
+    </div>
+
+    <button class="bet-btn" id="open-bet-modal">Place Bet</button>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn">Game History</button>
-    <button class="tab-btn">Chart</button>
-    <button class="tab-btn">My History</button>
-  </div>
-
-  <table class="result-table">
-    <thead>
-      <tr>
-        <th>Round</th>
-        <th>Number</th>
-        <th>Color</th>
-      </tr>
-    </thead>
-    <tbody id="result-rows">
-      <!-- Results will appear here -->
-    </tbody>
-  </table>
-
-  <!-- PopUp Modal -->
-  <div class="modal" id="betModal">
+  <!-- ✅ Popup Modal -->
+  <div class="modal" id="bet-modal">
     <div class="modal-content">
-      <span class="close" onclick="closePopup()">&times;</span>
-      <h2>Place Bet on <span id="betTarget"></span></h2>
-      <input type="number" id="betAmount" placeholder="Enter Amount"/>
-      <button class="btn place" onclick="placeBet()">Place Bet</button>
+      <span class="close-btn" id="close-bet-modal">&times;</span>
+      <h2>Place Your Bet</h2>
+      <form id="bet-form">
+        <label for="bet-amount">Amount (₹):</label>
+        <input type="number" id="bet-amount" required min="1" />
+
+        <label for="bet-type">Type:</label>
+        <select id="bet-type">
+          <option value="Red">Red</option>
+          <option value="Green">Green</option>
+          <option value="Violet">Violet</option>
+          <option value="Number">Number (0–9)</option>
+        </select>
+
+        <label for="bet-value">Value:</label>
+        <input type="text" id="bet-value" placeholder="e.g. 5" required />
+
+        <button type="submit">Submit Bet</button>
+      </form>
     </div>
   </div>
 
-  <script>
-    function openPopup(target) {
-      document.getElementById("betModal").style.display = "flex";
-      document.getElementById("betTarget").innerText = target;
-    }
-    function closePopup() {
-      document.getElementById("betModal").style.display = "none";
-    }
-    function placeBet() {
-      const amount = document.getElementById("betAmount").value;
-      const target = document.getElementById("betTarget").innerText;
-      alert("Bet placed on " + target + " with ₹" + amount);
-      closePopup();
-    }
-  </script>
+  <script src="game.js"></script>
 </body>
 </html>
