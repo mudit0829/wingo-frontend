@@ -1,41 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WinGo Demo Game</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WinGo Game</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <h1>WinGo Demo Game</h1>
+    <h1 class="logo">WinGo Game</h1>
 
-    <div class="wallet">
-      Wallet: Rs. <span id="wallet">1000</span>
+    <div class="wallet-section">
+      Wallet Balance: <span id="wallet-balance">Rs. 1000</span>
     </div>
 
-    <div class="round-info">
-      Round ID: <span id="roundId">Loading...</span>
-      <br>
-      Time Left: <span id="timer">30</span>s
-      <br>
-      Result: <span id="result">Waiting...</span>
+    <div class="action-tabs">
+      <button class="withdraw">Withdraw</button>
+      <button class="deposit">Deposit</button>
     </div>
 
-    <div class="bet-form">
-      <input type="number" id="betAmount" placeholder="Bet Amount" min="10" max="1000" />
-      <select id="betColor">
-        <option value="red">Red</option>
-        <option value="green">Green</option>
-        <option value="violet">Violet</option>
-      </select>
-      <input type="number" id="betNumber" placeholder="Number (0-9)" min="0" max="9" />
-      <button onclick="placeBet()">Place Bet</button>
+    <div class="bet-section">
+      <div class="color-bets">
+        <button class="color-btn red" data-color="Red">Red</button>
+        <button class="color-btn green" data-color="Green">Green</button>
+        <button class="color-btn violet" data-color="Violet">Violet</button>
+      </div>
+      <div class="number-bets">
+        <button class="number-btn" data-number="0">0</button>
+        <button class="number-btn" data-number="1">1</button>
+        <button class="number-btn" data-number="2">2</button>
+        <button class="number-btn" data-number="3">3</button>
+        <button class="number-btn" data-number="4">4</button>
+        <button class="number-btn" data-number="5">5</button>
+        <button class="number-btn" data-number="6">6</button>
+        <button class="number-btn" data-number="7">7</button>
+        <button class="number-btn" data-number="8">8</button>
+        <button class="number-btn" data-number="9">9</button>
+      </div>
     </div>
 
-    <div class="history">
-      <h3>Game History</h3>
-      <ul id="history"></ul>
+    <div class="bet-amount-section">
+      <label for="bet-amount">Bet Amount:</label>
+      <input type="number" id="bet-amount" placeholder="Enter amount" />
+    </div>
+
+    <button id="place-bet">Place Bet</button>
+
+    <div class="timer">Next Result In: <span id="timer">25</span> seconds</div>
+    <div class="current-result">Current Result: <span id="current-result">--</span></div>
+    <div class="current-round">Round ID: <span id="round-id">--</span></div>
+
+    <div class="game-history">
+      <h3>My Game History</h3>
+      <ul id="history-list"></ul>
+    </div>
+
+    <div class="recent-results">
+      <h3>Recent Results</h3>
+      <ul id="recent-results-list"></ul>
     </div>
   </div>
 
