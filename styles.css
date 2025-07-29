@@ -1,46 +1,72 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background:#f0f0f5; margin:0; color:#333;
+  background: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 .container {
-  max-width:600px; margin:auto; padding:20px;
+  max-width: 400px;
+  margin: auto;
+  padding: 10px;
 }
 header {
-  display:flex; justify-content:space-between; align-items:center;
-  background:#333;color:#fff;padding:10px;border-radius:6px;
+  text-align: center;
+  padding: 10px 0;
 }
-.round-info {
-  background:#fff;padding:15px;margin:15px 0;border-radius:6px;
-  text-align:center; font-size:1rem;
+.wallet-section {
+  text-align: center;
 }
-.bet-area, .selection-info {
-  background:#fff;padding:15px;border-radius:6px; margin-bottom:15px;
-  text-align:center;
+.buttons button {
+  margin: 5px;
+  padding: 10px 20px;
+  border: none;
+  color: white;
+  border-radius: 5px;
 }
-.choice-btn {
-  padding:12px 18px; margin:6px; font-size:1.1rem;
-  border:none; border-radius:6px; cursor:pointer; background:#ddd;
+.withdraw { background-color: red; }
+.deposit { background-color: green; }
+
+.round-info, .bet-section, .tabs, .info-section {
+  margin: 15px 0;
 }
-.choice-btn:hover { background:#ccc; }
-.number-grid { display:flex; flex-wrap:wrap; justify-content:center; }
-.number-grid .choice-btn { width:45px; }
-.selection-info select {
-  margin:0 5px; padding:6px; font-size:1rem;
+.color-buttons button,
+.number-buttons button {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 5px;
 }
-#placeBetBtn { padding:8px 20px; font-size:1rem; margin-left:10px; }
+.color-buttons button {
+  width: 30%;
+}
+.number-buttons button {
+  width: 18%;
+}
+.tabs button {
+  width: 32%;
+  margin: 2px;
+  padding: 5px;
+}
+
 .popup {
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,0,0.5); display:flex; justify-content:center;
-  align-items:center; z-index:100;
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
 }
 .popup-content {
-  background:#fff; padding:20px; border-radius:8px; text-align:center;
+  background: #222;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
 }
-.hidden { display:none; }
-.history-section {
-  background:#fff;padding:15px;border-radius:6px;
-}
-.history-section ul { list-style:none; padding:0; }
-.history-section li {
-  padding:8px; border-bottom:1px solid #ddd;
+.amounts button, .multipliers button {
+  margin: 5px;
+  padding: 5px 10px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
 }
