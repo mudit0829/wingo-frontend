@@ -2,78 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WinGo Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WinGo Demo Game</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>🎮 WinGo Game</h1>
-    </header>
+    <h1>WinGo Demo Game</h1>
 
-    <div class="wallet-section">
-      <div class="wallet">₹<span id="wallet">0.00</span></div>
-      <div class="wallet-buttons">
-        <button class="withdraw">Withdraw</button>
-        <button class="deposit">Deposit</button>
-      </div>
+    <div class="wallet">
+      Wallet: Rs. <span id="wallet">1000</span>
     </div>
 
     <div class="round-info">
-      <div>🆔 Round ID: <span id="roundId">--</span></div>
-      <div>⏳ Time Left: <span id="timer">--</span>s</div>
-      <div>🎯 Last Result: <span id="lastResult">--</span></div>
+      Round ID: <span id="roundId">Loading...</span>
+      <br>
+      Time Left: <span id="timer">30</span>s
+      <br>
+      Result: <span id="result">Waiting...</span>
     </div>
 
-    <div class="bet-section">
-      <h2>Place Your Bet</h2>
-      <div class="color-buttons">
-        <button class="choice-btn" data-choice="Red">Red</button>
-        <button class="choice-btn" data-choice="Green">Green</button>
-        <button class="choice-btn" data-choice="Violet">Violet</button>
-      </div>
-      <div class="number-buttons">
-        ${[...Array(10).keys()].map(i => `<button class="choice-btn" data-choice="${i}">${i}</button>`).join('')}
-      </div>
+    <div class="bet-form">
+      <input type="number" id="betAmount" placeholder="Bet Amount" min="10" max="1000" />
+      <select id="betColor">
+        <option value="red">Red</option>
+        <option value="green">Green</option>
+        <option value="violet">Violet</option>
+      </select>
+      <input type="number" id="betNumber" placeholder="Number (0-9)" min="0" max="9" />
+      <button onclick="placeBet()">Place Bet</button>
     </div>
 
-    <div class="selection-row">
-      <div>Your Bet: <span id="selectedChoice">None</span></div>
-      <div>
-        Base ₹
-        <select id="baseAmount"><option>1</option><option>2</option><option>5</option><option>10</option><option>50</option><option>100</option></select>
-        ×
-        <select id="multiplier"><option>1</option><option>2</option><option>5</option><option>10</option><option>50</option><option>100</option></select>
-        <button id="placeBetBtn">Place Bet</button>
-      </div>
-    </div>
-
-    <div id="betPopup" class="popup hidden">
-      <div class="popup-content">
-        <h3>Confirm Bet</h3>
-        <p id="popupText"></p>
-        <button id="confirmBtn">Confirm</button>
-        <button onclick="closePopup()">Cancel</button>
-      </div>
-    </div>
-
-    <div class="tabs">
-      <button onclick="showSection('history')">Game History</button>
-      <button onclick="showSection('recent')">Recent Results</button>
-      <button onclick="showSection('rules')">How to Play</button>
-    </div>
-
-    <div id="history" class="info-section">
-      <ul id="historyList"></ul>
-    </div>
-
-    <div id="recent" class="info-section hidden">
-      <ul id="recentList"></ul>
-    </div>
-
-    <div id="rules" class="info-section hidden">
-      <p>Select a color or number, choose base amount & multiplier, place bet, wait for result.</p>
+    <div class="history">
+      <h3>Game History</h3>
+      <ul id="history"></ul>
     </div>
   </div>
 
