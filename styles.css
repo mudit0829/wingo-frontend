@@ -1,78 +1,79 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f7f7f7;
   margin: 0;
-  padding: 20px;
-  text-align: center;
+  padding: 0;
+  background: #f7f7f7;
 }
 
-.container {
-  max-width: 600px;
+header {
+  background: #222;
+  color: #fff;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.game-board {
+  padding: 1rem;
+  max-width: 800px;
   margin: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  color: #333;
+.bet-group {
+  margin-bottom: 1rem;
 }
 
-.wallet {
-  font-size: 1.2em;
-  margin-bottom: 10px;
-}
-
-.round-info {
-  margin-bottom: 20px;
-  font-weight: bold;
-}
-
-.bet-section {
-  margin-bottom: 20px;
-}
-
-.bet-btn {
-  margin: 5px;
+.bet-button {
   padding: 10px 20px;
-  font-size: 1em;
-  cursor: pointer;
-}
-
-.number-grid button {
-  margin: 4px;
-  padding: 8px 12px;
-}
-
-.amount-buttons button,
-.multiplier-buttons button {
   margin: 5px;
-  padding: 10px 15px;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #eee;
 }
 
-.place-bet-btn {
-  margin-top: 20px;
-  padding: 12px 25px;
-  font-size: 1.1em;
-  background: #28a745;
-  color: white;
-  border: none;
+.bet-button:hover {
+  background: #ccc;
+}
+
+.amount-selection {
+  margin: 1rem 0;
+}
+
+#amount-select {
+  padding: 5px;
+  font-size: 16px;
+}
+
+.multiplier-buttons {
+  margin-top: 0.5rem;
+}
+
+.multiplier-button {
+  padding: 6px 12px;
+  margin: 3px;
+  font-size: 14px;
+  border: 1px solid #444;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .popup {
-  display: none;
   position: fixed;
-  z-index: 99;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.6);
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 0 10px #00000044;
+  border-radius: 10px;
 }
 
-.popup-content {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  max-width: 400px;
-  margin: 100px auto;
-  text-align: left;
+.hidden {
+  display: none;
 }
