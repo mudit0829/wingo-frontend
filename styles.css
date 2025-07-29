@@ -1,79 +1,88 @@
+/* styles.css */
+
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  padding: 20px;
-  background: #f8f8f8;
-  color: #333;
+  padding: 0;
+  background: #f9f9f9;
 }
 
-.container {
-  max-width: 800px;
-  margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
+header {
+  background-color: #6200ea;
+  color: white;
+  padding: 1rem;
   text-align: center;
-  color: #222;
 }
 
-.wallet-section, .timer, .section, .bet-section {
-  margin: 20px 0;
+.wallet {
+  margin: 1rem;
+  text-align: center;
+  font-weight: bold;
 }
 
-input[type="number"] {
-  padding: 10px;
-  width: 120px;
-  margin: 8px 5px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+.timer {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
 }
 
-button {
-  padding: 10px 20px;
-  margin: 5px;
-  font-size: 15px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.color.red { background: #ff4d4d; color: white; }
-.color.green { background: #4CAF50; color: white; }
-.color.violet { background: #8e44ad; color: white; }
-.number { background: #3498db; color: white; }
-
-button:hover {
-  opacity: 0.85;
-}
-
-#results {
+.bet-section {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
 }
 
-.result-box {
-  background: #eee;
-  padding: 8px 14px;
-  border-radius: 10px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-th, td {
+.bet-card {
+  background-color: white;
   border: 1px solid #ddd;
-  padding: 8px;
+  border-radius: 10px;
+  padding: 1rem;
+  width: 180px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.bet-card button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #6200ea;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.bet-card button:hover {
+  background-color: #4500b5;
+}
+
+#result-display {
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 1rem;
+  font-weight: bold;
+}
+
+.bet-history {
+  margin: 2rem;
+}
+
+.bet-history h3 {
   text-align: center;
 }
 
-th {
-  background: #f2f2f2;
+.bet-history table {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+.bet-history th, .bet-history td {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  text-align: center;
 }
