@@ -79,6 +79,25 @@
           </tbody>
         </table>
       </section>
+
+      <!-- ✅ NEW SECTION: User's Previous Bets -->
+      <section class="my-bets">
+        <h3>Your Previous Bets</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Round</th>
+              <th>Color</th>
+              <th>Number</th>
+              <th>Amount</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="betsTableBody">
+            <!-- Fetched bet data -->
+          </tbody>
+        </table>
+      </section>
     </main>
   </div>
 
@@ -94,5 +113,43 @@
   </div>
 
   <script src="game.js"></script>
+
+  <!-- ✅ New Script to Fetch Previous Bets -->
+  <script>
+    async function fetchUserBets() {
+      const username = localStorage.getItem('username');
+      if (!username) return;
+
+      try {
+        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/user/${username}`);
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          const tbody = document.getElementById('betsTableBody');
+          tbody.innerHTML = '';
+
+          data.forEach(bet => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${bet.roundId || '-'}</td>
+              <td>${bet.colorBet || '-'}</td>
+              <td>${bet.numberBet || '-'}</td>
+              <td>₹${bet.amount}</td>
+              <td>${new Date(bet.timestamp).toLocaleString()}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        } else {
+          console.error('Error fetching bets:', data.error);
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+    }
+
+    window.onload = () => {
+      fetchUserBets();
+    };
+  </script>
 </body>
 </html>
