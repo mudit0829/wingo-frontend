@@ -4,152 +4,178 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    h1, h2 { text-align: center; }
+    .timer { font-size: 24px; color: #d00; text-align: center; margin-bottom: 10px; }
+    .bet-section, .bets-table, .result { margin: 20px auto; max-width: 600px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    .bet-section input, select { padding: 8px; margin: 5px; }
+    .bets-table table { width: 100%; border-collapse: collapse; }
+    .bets-table th, .bets-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { padding: 10px 20px; cursor: pointer; }
+    .logout { float: right; margin-top: -40px; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <img src="logo.png" alt="Logo" class="logo" />
-      <div class="wallet">
-        Wallet: ₹<span id="wallet-balance">0</span>
-        <button id="logout-btn">Logout</button>
-      </div>
-    </header>
+  <h1>🎯 WinGo Game</h1>
+  <button class="logout" onclick="logout()">Logout</button>
 
-    <main>
-      <div class="round-info">
-        <h2>Round <span id="round-id">-</span></h2>
-        <p>Time left: <span id="timer">--</span> seconds</p>
-      </div>
+  <div class="timer">⏳ Time Left: <span id="timer">--</span></div>
 
-      <div class="buttons-section">
-        <h3>Choose Color</h3>
-        <div class="color-buttons">
-          <button class="bet-button green" data-color="Green">Green</button>
-          <button class="bet-button red" data-color="Red">Red</button>
-          <button class="bet-button violet" data-color="Violet">Violet</button>
-        </div>
-
-        <h3>Choose Number</h3>
-        <div class="number-buttons">
-          <button class="number-button" data-number="0">0</button>
-          <button class="number-button" data-number="1">1</button>
-          <button class="number-button" data-number="2">2</button>
-          <button class="number-button" data-number="3">3</button>
-          <button class="number-button" data-number="4">4</button>
-          <button class="number-button" data-number="5">5</button>
-          <button class="number-button" data-number="6">6</button>
-          <button class="number-button" data-number="7">7</button>
-          <button class="number-button" data-number="8">8</button>
-          <button class="number-button" data-number="9">9</button>
-        </div>
-      </div>
-
-      <section class="recent-results">
-        <h3>Recent Results</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Round</th>
-              <th>Number</th>
-              <th>Color</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody id="results-table">
-            <!-- Results will be injected here -->
-          </tbody>
-        </table>
-      </section>
-
-      <section class="my-history">
-        <h3>My Game History</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Round</th>
-              <th>Color Bet</th>
-              <th>Number Bet</th>
-              <th>Multiplier</th>
-              <th>Profit/Loss</th>
-            </tr>
-          </thead>
-          <tbody id="history-table">
-            <!-- History data -->
-          </tbody>
-        </table>
-      </section>
-
-      <!-- ✅ NEW SECTION: User's Previous Bets -->
-      <section class="my-bets">
-        <h3>Your Previous Bets</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Round</th>
-              <th>Color</th>
-              <th>Number</th>
-              <th>Amount</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody id="betsTableBody">
-            <!-- Fetched bet data -->
-          </tbody>
-        </table>
-      </section>
-    </main>
+  <div class="bet-section">
+    <h2>Place Your Bets</h2>
+    <label>Bet Amount: <input type="number" id="betAmount" min="1" /></label><br/>
+    <label>Color Bet:
+      <select id="colorBet">
+        <option value="">--Choose Color--</option>
+        <option value="Red">Red</option>
+        <option value="Green">Green</option>
+        <option value="Violet">Violet</option>
+      </select>
+    </label><br/>
+    <label>Number Bet (0-9): <input type="number" id="numberBet" min="0" max="9" /></label><br/>
+    <button onclick="placeBet()">Place Bet</button>
+    <div id="betMsg"></div>
   </div>
 
-  <!-- Bet Popup -->
-  <div id="bet-popup" class="popup hidden">
-    <div class="popup-content">
-      <h3>Place Your Bet</h3>
-      <p id="bet-type"></p>
-      <input type="number" id="bet-amount" placeholder="Enter amount" />
-      <button id="place-bet-btn">Place Bet</button>
-      <button id="cancel-bet-btn">Cancel</button>
-    </div>
+  <div class="result">
+    <h2>🔁 Current Round</h2>
+    <p><strong>Round ID:</strong> <span id="currentRoundId">--</span></p>
+    <p><strong>Result:</strong> <span id="currentResult">Waiting...</span></p>
+    <p><strong>Color:</strong> <span id="currentColor">--</span></p>
   </div>
 
-  <script src="game.js"></script>
+  <div class="bets-table">
+    <h2>📄 Your Bet History</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Round ID</th>
+          <th>Color Bet</th>
+          <th>Number Bet</th>
+          <th>Amount</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="betHistory"></tbody>
+    </table>
+  </div>
 
-  <!-- ✅ New Script to Fetch Previous Bets -->
-  <script>
-    async function fetchUserBets() {
-      const username = localStorage.getItem('username');
-      if (!username) return;
+<script>
+const backendUrl = 'https://wingo-backend-nqk5.onrender.com'; // change if needed
+let roundId = null;
+let interval;
 
-      try {
-        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/user/${username}`);
-        const data = await res.json();
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+  window.location.href = "login.html";
+}
 
-        if (Array.isArray(data)) {
-          const tbody = document.getElementById('betsTableBody');
-          tbody.innerHTML = '';
+async function fetchLatestRound() {
+  try {
+    const res = await fetch(`${backendUrl}/api/rounds`);
+    const rounds = await res.json();
+    const latest = rounds[rounds.length - 1];
+    roundId = latest.roundId;
+    document.getElementById("currentRoundId").textContent = latest.roundId;
+    document.getElementById("currentResult").textContent = latest.result ?? "Waiting...";
+    document.getElementById("currentColor").textContent = latest.color ?? "--";
+  } catch (err) {
+    console.error("Error fetching round:", err);
+  }
+}
 
-          data.forEach(bet => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${bet.roundId || '-'}</td>
-              <td>${bet.colorBet || '-'}</td>
-              <td>${bet.numberBet || '-'}</td>
-              <td>₹${bet.amount}</td>
-              <td>${new Date(bet.timestamp).toLocaleString()}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        } else {
-          console.error('Error fetching bets:', data.error);
-        }
-      } catch (err) {
-        console.error('Fetch error:', err);
-      }
-    }
+async function placeBet() {
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
+  const amount = parseFloat(document.getElementById("betAmount").value);
+  const colorBet = document.getElementById("colorBet").value;
+  const numberBet = document.getElementById("numberBet").value;
 
-    window.onload = () => {
+  if (!token || !username) {
+    alert("Please login again.");
+    return;
+  }
+
+  if (!amount || amount < 1) {
+    alert("Enter a valid bet amount.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${backendUrl}/api/bets`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        username,
+        amount,
+        colorBet: colorBet || null,
+        numberBet: numberBet || null,
+        roundId
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById("betMsg").textContent = "✅ Bet placed successfully!";
       fetchUserBets();
-    };
-  </script>
+    } else {
+      document.getElementById("betMsg").textContent = "❌ " + (data.message || "Error placing bet.");
+    }
+  } catch (err) {
+    console.error("Bet error:", err);
+  }
+}
+
+async function fetchUserBets() {
+  const username = localStorage.getItem("username");
+  try {
+    const res = await fetch(`${backendUrl}/api/bets/user/${username}`);
+    const bets = await res.json();
+    const tbody = document.getElementById("betHistory");
+    tbody.innerHTML = "";
+    bets.reverse().slice(0, 20).forEach(bet => {
+      const row = `<tr>
+        <td>${bet.roundId}</td>
+        <td>${bet.colorBet || "-"}</td>
+        <td>${bet.numberBet || "-"}</td>
+        <td>₹${bet.amount}</td>
+        <td>${new Date(bet.timestamp).toLocaleTimeString()}</td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  } catch (err) {
+    console.error("Bet fetch error:", err);
+  }
+}
+
+function startTimer() {
+  let timeLeft = 25;
+  clearInterval(interval);
+  interval = setInterval(() => {
+    document.getElementById("timer").textContent = timeLeft + "s";
+    if (timeLeft === 0) {
+      clearInterval(interval);
+      document.getElementById("timer").textContent = "Draw Time...";
+      fetchLatestRound();
+      setTimeout(startTimer, 5000); // wait 5s, then restart timer
+    }
+    timeLeft--;
+  }, 1000);
+}
+
+window.onload = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return window.location.href = "login.html";
+
+  fetchLatestRound();
+  fetchUserBets();
+  startTimer();
+};
+</script>
 </body>
 </html>
