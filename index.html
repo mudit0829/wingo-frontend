@@ -3,59 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WinGo Game Demo</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>WinGo Game</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>🎯 WinGo Demo</h1>
-      <div id="wallet">Wallet: ₹0</div>
+      <h1>🎮 WinGo Game</h1>
     </header>
 
+    <div class="wallet-section">
+      <div class="wallet">Wallet: ₹<span id="wallet">0.00</span></div>
+      <div class="buttons">
+        <button class="withdraw">Withdraw</button>
+        <button class="deposit">Deposit</button>
+      </div>
+    </div>
+
     <div class="round-info">
-      <div>Round ID: <span id="roundId">--</span></div>
-      <div>Time Left: <span id="timer">--</span>s</div>
-      <div>Last Result: <span id="lastResult">--</span></div>
+      <div>⏳ Time Left: <span id="time">--</span></div>
+      <div>🆔 Round: <span id="roundId">--</span></div>
+      <div>🎯 Last Result: <span id="lastResult">--</span></div>
     </div>
 
-    <div class="bet-area">
-      <h2>Select Your Bet</h2>
-      <div class="bet-buttons">
-        <button class="choice-btn" data-choice="Red">🔴 Red</button>
-        <button class="choice-btn" data-choice="Green">🟢 Green</button>
-        <button class="choice-btn" data-choice="Violet">🟣 Violet</button>
-        <span class="or-text">Or Number (0‑9)</span>
-        <div class="number-grid">
-          ${[...Array(10).keys()].map(i => `<button class="choice-btn" data-choice="${i}">${i}</button>`).join('')}
-        </div>
+    <div class="bet-section">
+      <h2>Place Your Bet</h2>
+      <div class="color-buttons">
+        <button onclick="openBetPopup('Red')">Red</button>
+        <button onclick="openBetPopup('Green')">Green</button>
+        <button onclick="openBetPopup('Violet')">Violet</button>
+      </div>
+      <div class="number-buttons">
+        <button onclick="openBetPopup('0')">0</button>
+        <button onclick="openBetPopup('1')">1</button>
+        <button onclick="openBetPopup('2')">2</button>
+        <button onclick="openBetPopup('3')">3</button>
+        <button onclick="openBetPopup('4')">4</button>
+        <button onclick="openBetPopup('5')">5</button>
+        <button onclick="openBetPopup('6')">6</button>
+        <button onclick="openBetPopup('7')">7</button>
+        <button onclick="openBetPopup('8')">8</button>
+        <button onclick="openBetPopup('9')">9</button>
       </div>
     </div>
 
-    <div class="selection-info">
-      Your Bet: <span id="selectedChoice">None</span><br>
-      Base ₹ <select id="baseAmount">
-        <option>1</option><option>2</option><option>5</option><option>10</option><option>50</option><option>100</option>
-      </select>
-      × Multiplier:
-      <select id="multiplier">
-        <option>1</option><option>2</option><option>5</option><option>10</option><option>50</option><option>100</option>
-      </select>
-      <button id="placeBetBtn">Place Bet</button>
+    <div class="tabs">
+      <button onclick="showSection('history')">Game History</button>
+      <button onclick="showSection('recent')">Recent Results</button>
+      <button onclick="showSection('rules')">How to Play</button>
     </div>
 
-    <div id="popup" class="popup hidden">
-      <div class="popup-content">
-        <h3>Confirm Bet</h3>
-        <p id="popupText"></p>
-        <button id="confirmBetBtn">Confirm</button>
-        <button onclick="closePopup()">Cancel</button>
-      </div>
-    </div>
-
-    <div class="history-section">
-      <h2>Recent Rounds</h2>
+    <div id="history" class="info-section">
+      <h3>Game History</h3>
       <ul id="historyList"></ul>
+    </div>
+
+    <div id="recent" class="info-section" style="display:none;">
+      <h3>Recent Results</h3>
+      <ul id="recentResults"></ul>
+    </div>
+
+    <div id="rules" class="info-section" style="display:none;">
+      <h3>How to Play</h3>
+      <p>Select a color or number and place your bet. Wait for the timer and check results!</p>
+    </div>
+  </div>
+
+  <!-- Popup -->
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <span id="betTypeLabel"></span>
+      <div class="amounts">
+        <button onclick="setAmount(1)">₹1</button>
+        <button onclick="setAmount(10)">₹10</button>
+        <button onclick="setAmount(50)">₹50</button>
+        <button onclick="setAmount(100)">₹100</button>
+      </div>
+      <div class="multipliers">
+        <button onclick="setMultiplier(1)">x1</button>
+        <button onclick="setMultiplier(5)">x5</button>
+        <button onclick="setMultiplier(10)">x10</button>
+        <button onclick="setMultiplier(50)">x50</button>
+        <button onclick="setMultiplier(100)">x100</button>
+      </div>
+      <div>Total Bet: ₹<span id="totalAmount">0</span></div>
+      <button onclick="submitBet()">Place Bet</button>
+      <button onclick="closePopup()">Cancel</button>
     </div>
   </div>
 
