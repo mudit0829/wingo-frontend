@@ -1,154 +1,301 @@
-/* Reset some default styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+/* General Reset and Theme */
 body {
-  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #121212;
-  color: #ffffff;
-  padding: 20px;
+  color: #fff;
 }
 
-h1, h2 {
+/* Container */
+.container {
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Game Title */
+.header-title {
   text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: gold;
   margin-bottom: 20px;
-  color: #00ffd5;
 }
 
-#wallet {
+/* Wallet Card */
+.wallet-card {
   background-color: #1e1e1e;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-  margin-bottom: 20px;
+  border-radius: 16px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.wallet-balance {
   font-size: 18px;
-  font-weight: bold;
-  color: #fff;
-  border: 1px solid #333;
-}
-
-#bet-form {
-  background-color: #1e1e1e;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #333;
-}
-
-#bet-form h2 {
-  color: #00ffd5;
-  margin-bottom: 10px;
-}
-
-label {
-  display: block;
-  margin-bottom: 8px;
-}
-
-input[type="number"], select {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border-radius: 4px;
-  border: 1px solid #555;
-  background-color: #2b2b2b;
   color: #fff;
 }
 
-button {
-  padding: 10px 16px;
-  background-color: #00ffd5;
-  color: #000;
-  font-weight: bold;
+.wallet-buttons button {
+  margin-left: 10px;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #00d1b3;
-}
-
-#round-info, #current-result {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 18px;
-  color: #ffffff;
-}
-
-#current-result span {
+  padding: 8px 14px;
+  border-radius: 20px;
   font-weight: bold;
-  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
 }
 
-#game-history {
-  background-color: #1e1e1e;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #333;
+.withdraw {
+  background-color: #e53935;
 }
 
-#game-history h2 {
-  margin-bottom: 10px;
-  color: #00ffd5;
+.deposit {
+  background-color: #43a047;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: #ffffff;
-}
-
-th, td {
-  padding: 12px;
-  border: 1px solid #333;
-  text-align: center;
-}
-
-th {
-  background-color: #00ffd5;
+/* Detail Button */
+.detail-btn {
+  background-color: #fbc02d;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 16px;
   color: #000;
+  font-weight: bold;
+  margin: 10px 0;
+  display: block;
+  width: 100%;
 }
 
-.result-number {
+/* Game Status */
+.status-box {
+  background-color: #212121;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 20px 0;
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.status-title {
   font-size: 16px;
   font-weight: bold;
 }
 
-.result-red {
-  color: #ff3c3c;
+.timer {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fbc02d;
 }
 
-.result-green {
-  color: #00ff00;
+.last-results {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 10px;
 }
 
-.result-violet {
-  color: #c974ff;
+.result-ball {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
 }
 
-.success {
-  color: #00ff94;
+.green { background-color: #43a047; }
+.red { background-color: #e53935; }
+.violet { background-color: #8e24aa; }
+
+/* Betting Buttons */
+.betting-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-.error {
-  color: #ff3c3c;
+.bet-btn {
+  flex: 1;
+  margin: 0 5px;
+  padding: 12px 0;
+  border-radius: 16px;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
 }
 
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
+.bet-btn:hover {
+  transform: scale(1.05);
+}
 
-  #bet-form, #wallet, #game-history {
-    padding: 15px;
-  }
+.bet-btn.green { background-color: #43a047; }
+.bet-btn.violet { background-color: #8e24aa; }
+.bet-btn.red { background-color: #e53935; }
 
-  th, td {
-    font-size: 14px;
-  }
+/* Number Buttons */
+.numbers-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.number-btn {
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 50%;
+  border: none;
+  font-weight: bold;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.number-btn.green { background-color: #43a047; }
+.number-btn.red { background-color: #e53935; }
+.number-btn.violet { background-color: #8e24aa; }
+
+/* Multiplier Buttons */
+.multipliers {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.multiplier-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  background-color: #333;
+  color: #fbc02d;
+  cursor: pointer;
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  justify-content: space-around;
+  background-color: #1f1f1f;
+  border-top: 1px solid #333;
+  padding: 10px 0;
+  margin-top: 30px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  color: #fbc02d;
+}
+
+/* Recent Results Table */
+.recent-results {
+  margin-top: 30px;
+}
+
+.recent-results table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.recent-results th, .recent-results td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #333;
+}
+
+.recent-results th {
+  background-color: #222;
+  color: #fbc02d;
+}
+
+/* Popup Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background-color: #1f1f1f;
+  padding: 20px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 350px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+}
+
+.modal-content h3 {
+  color: #fbc02d;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.modal-content input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #555;
+  background: #2a2a2a;
+  color: #fff;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  margin: 0 6px;
+  padding: 10px;
+  font-weight: bold;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+.modal-actions .cancel-btn {
+  background-color: #616161;
+}
+
+.modal-actions .place-btn {
+  background-color: #43a047;
 }
