@@ -10,63 +10,39 @@
   <div class="game-container">
     <header>
       <h1>WinGo Game</h1>
-      <div class="wallet">Wallet: ₹<span id="wallet-balance">0</span></div>
+      <div class="wallet">Wallet: <span id="walletBalance">₹0</span></div>
     </header>
 
     <div class="round-info">
-      <span>Round ID: <span id="round-id">--</span></span>
-      <span>Time Left: <span id="timer">00</span>s</span>
+      <span id="currentRound">Round: --</span>
+      <span>Time Left: <span id="countdownTimer">30s</span></span>
     </div>
 
     <div class="result-box">
-      <span>Result: <span id="last-result">--</span></span>
+      <span id="lastResult">Result: --</span>
     </div>
 
     <div class="betting-options">
-      <button class="color-btn red" data-color="Red">Red</button>
-      <button class="color-btn green" data-color="Green">Green</button>
-      <button class="color-btn violet" data-color="Violet">Violet</button>
+      <label><input type="radio" name="color" value="Red" /> <button class="color-btn red" data-color="Red">Red</button></label>
+      <label><input type="radio" name="color" value="Green" /> <button class="color-btn green" data-color="Green">Green</button></label>
+      <label><input type="radio" name="color" value="Violet" /> <button class="color-btn violet" data-color="Violet">Violet</button></label>
     </div>
 
     <div class="number-options">
-      <button class="number-btn" data-number="0">0</button>
-      <button class="number-btn" data-number="1">1</button>
-      <button class="number-btn" data-number="2">2</button>
-      <button class="number-btn" data-number="3">3</button>
-      <button class="number-btn" data-number="4">4</button>
-      <button class="number-btn" data-number="5">5</button>
-      <button class="number-btn" data-number="6">6</button>
-      <button class="number-btn" data-number="7">7</button>
-      <button class="number-btn" data-number="8">8</button>
-      <button class="number-btn" data-number="9">9</button>
+      <select id="numberSelect">
+        <option value="">Choose Number</option>
+        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+        <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option>
+      </select>
     </div>
 
-    <button class="bet-btn" id="open-bet-modal">Place Bet</button>
-  </div>
-
-  <!-- ✅ Popup Modal -->
-  <div class="modal" id="bet-modal">
-    <div class="modal-content">
-      <span class="close-btn" id="close-bet-modal">&times;</span>
-      <h2>Place Your Bet</h2>
-      <form id="bet-form">
-        <label for="bet-amount">Amount (₹):</label>
-        <input type="number" id="bet-amount" required min="1" />
-
-        <label for="bet-type">Type:</label>
-        <select id="bet-type">
-          <option value="Red">Red</option>
-          <option value="Green">Green</option>
-          <option value="Violet">Violet</option>
-          <option value="Number">Number (0–9)</option>
-        </select>
-
-        <label for="bet-value">Value:</label>
-        <input type="text" id="bet-value" placeholder="e.g. 5" required />
-
-        <button type="submit">Submit Bet</button>
-      </form>
+    <div class="bet-amount">
+      <input type="number" id="betAmount" placeholder="Enter Amount (₹)" min="1" />
     </div>
+
+    <button class="bet-btn" id="placeBetBtn">Place Bet</button>
   </div>
 
   <script src="game.js"></script>
