@@ -4,45 +4,77 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="game-container">
+  <div class="container">
     <header>
       <h1>WinGo Game</h1>
-      <div class="wallet">Wallet: <span id="walletBalance">₹0</span></div>
+      <div class="wallet-section">
+        Wallet Balance: ₹<span id="wallet-amount">Loading...</span>
+      </div>
     </header>
 
-    <div class="round-info">
-      <span id="currentRound">Round: --</span>
-      <span>Time Left: <span id="countdownTimer">30s</span></span>
+    <section class="game-board">
+      <h2>Choose Color</h2>
+      <div class="color-options">
+        <button class="color-btn red" data-color="Red">Red</button>
+        <button class="color-btn green" data-color="Green">Green</button>
+        <button class="color-btn violet" data-color="Violet">Violet</button>
+      </div>
+
+      <h2>Choose Number</h2>
+      <div class="number-options">
+        <button class="number-btn" data-number="0">0</button>
+        <button class="number-btn" data-number="1">1</button>
+        <button class="number-btn" data-number="2">2</button>
+        <button class="number-btn" data-number="3">3</button>
+        <button class="number-btn" data-number="4">4</button>
+        <button class="number-btn" data-number="5">5</button>
+        <button class="number-btn" data-number="6">6</button>
+        <button class="number-btn" data-number="7">7</button>
+        <button class="number-btn" data-number="8">8</button>
+        <button class="number-btn" data-number="9">9</button>
+      </div>
+
+      <button id="place-bet-btn">Place Bet</button>
+    </section>
+
+    <!-- Popup Modal for Bet Input -->
+    <div id="bet-popup" class="popup hidden">
+      <div class="popup-content">
+        <h3>Enter Bet Amount</h3>
+        <input type="number" id="bet-amount-input" placeholder="Enter amount in ₹" />
+        <button id="confirm-bet-btn">Confirm Bet</button>
+        <button id="cancel-bet-btn">Cancel</button>
+      </div>
     </div>
 
-    <div class="result-box">
-      <span id="lastResult">Result: --</span>
-    </div>
+    <!-- Recent Result -->
+    <section class="recent-result">
+      <h2>Last Game Result</h2>
+      <div id="last-result">Loading...</div>
+    </section>
 
-    <div class="betting-options">
-      <label><input type="radio" name="color" value="Red" /> <button class="color-btn red" data-color="Red">Red</button></label>
-      <label><input type="radio" name="color" value="Green" /> <button class="color-btn green" data-color="Green">Green</button></label>
-      <label><input type="radio" name="color" value="Violet" /> <button class="color-btn violet" data-color="Violet">Violet</button></label>
-    </div>
-
-    <div class="number-options">
-      <select id="numberSelect">
-        <option value="">Choose Number</option>
-        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
-        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
-        <option value="6">6</option><option value="7">7</option><option value="8">8</option>
-        <option value="9">9</option>
-      </select>
-    </div>
-
-    <div class="bet-amount">
-      <input type="number" id="betAmount" placeholder="Enter Amount (₹)" min="1" />
-    </div>
-
-    <button class="bet-btn" id="placeBetBtn">Place Bet</button>
+    <!-- My Game History -->
+    <section class="history">
+      <h2>My Game History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Round ID</th>
+            <th>Color Bet</th>
+            <th>Number Bet</th>
+            <th>Amount</th>
+            <th>Result</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <!-- Bet history rows will be appended here -->
+        </tbody>
+      </table>
+    </section>
   </div>
 
   <script src="game.js"></script>
