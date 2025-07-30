@@ -100,9 +100,13 @@ function closeModal() {
 }
 
 // Event listeners
-document.getElementById("placeBetBtn").addEventListener("click", placeBet);
-document.getElementById("openModalBtn").addEventListener("click", openModal);
-document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+document.addEventListener('DOMContentLoaded', () => {
+  // Your event listeners go here
+  document.getElementById("confirm-bet-btn")?.addEventListener("click", placeBet);
+  document.getElementById("cancel-bet-btn")?.addEventListener("click", () => {
+    document.getElementById("bet-popup").classList.add("hidden");
+  });
+});
 
 // Initial loads
 loadWallet();
