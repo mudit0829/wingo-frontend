@@ -1,114 +1,140 @@
-const API_BASE = "https://wingo-backend-nqk5.onrender.com";
-const userEmail = "user@example.com";
+document.addEventListener("DOMContentLoaded", () => {
+  const BASE_URL = "https://wingo-backend-nqk5.onrender.com/api";
+  const demoEmail = "user@example.com";
 
-// Load wallet amount
-async function loadWallet() {
-  try {
-    const res = await fetch(`${API_BASE}/api/users/wallet/${userEmail}`);
-    const data = await res.json();
-    document.getElementById("wallet-amount").innerText = data.wallet.toFixed(2);
-  } catch (err) {
-    console.error("Wallet fetch error", err);
-    document.getElementById("wallet-amount").innerText = "Error";
-  }
-}
+  let selectedColor = null;
+  let selectedNumber = null;
 
-// Load last round result
-async function loadLastResult() {
-  try {
-    const res = await fetch(`${API_BASE}/api/rounds`);
-    const rounds = await res.json();
-    const latest = rounds[rounds.length - 1];
-    document.getElementById("recent-result").innerText = `Result: ${latest.result} | Round: ${latest.roundId}`;
-  } catch (err) {
-    console.error("Result fetch error", err);
-    document.getElementById("recent-result").innerText = "Error loading result";
-  }
-}
+  // ✅ Selectors
+  const walletAmountEl = document.getElementById("wallet-amount");
+  const lastResultEl = document.getElementById("last-result");
+  const historyBodyEl = document.getElementById("history-body");
+  const popup = document.getElementById("bet-popup");
+  const betAmountInput = document.getElementById("bet-amount-input");
 
-// Load bet history
-async function loadMyHistory() {
-  try {
-    const res = await fetch(`${API_BASE}/api/bets/user/${userEmail}`);
-    const bets = await res.json();
-    const container = document.getElementById("my-history");
-    container.innerHTML = "";
-    bets.slice().reverse().forEach((bet) => {
-      const div = document.createElement("div");
-      div.className = "history-entry";
-      div.innerText = `Round ${bet.roundId} | Color: ${bet.colorBet || '-'} | Number: ${bet.numberBet ?? '-'} | ₹${bet.amount}`;
-      container.appendChild(div);
-    });
-  } catch (err) {
-    console.error("History fetch error", err);
-    document.getElementById("my-history").innerText = "Unable to load history";
-  }
-}
+  const placeBetBtn = document.getElementById("place-bet-btn");
+  const confirmBetBtn = document.getElementById("confirm-bet-btn");
+  const cancelBetBtn = document.getElementById("cancel-bet-btn");
 
-// Place Bet
-async function placeBet() {
-  const color = document.querySelector('input[name="color"]:checked')?.value;
-  const number = document.querySelector("#number").value;
-  const amount = parseFloat(document.querySelector("#amount").value);
-
-  if (!color && number === "") {
-    alert("Select at least color or number");
-    return;
+  // ✅ Load Wallet
+  async function loadWallet() {
+    try {
+      const res = await fetch(`${BASE_URL}/user/wallet/${demoEmail}`);
+      const data = await res.json();
+      if (walletAmountEl) {
+        walletAmountEl.innerText = data.wallet.toFixed(2);
+      }
+    } catch (err) {
+      console.error("Wallet fetch error", err);
+      if (walletAmountEl) walletAmountEl.innerText = "Error";
+    }
   }
 
-  if (isNaN(amount) || amount <= 0) {
-    alert("Enter valid amount");
-    return;
+  // ✅ Load Last Game Result
+  async function loadLastResult() {
+    try {
+      const res = await fetch(`${BASE_URL}/rounds/last`);
+      const data = await res.json();
+      if (lastResultEl) {
+        lastResultEl.innerText = `Color: ${data.color}, Number: ${data.number}`;
+      }
+    } catch (err) {
+      console.error("Result fetch error", err);
+      if (lastResultEl) lastResultEl.innerText = "Error loading result.";
+    }
   }
 
-  try {
-    const res = await fetch(`${API_BASE}/api/bets`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: userEmail,
-        colorBet: color || null,
-        numberBet: number !== "" ? parseInt(number) : null,
-        amount,
-      }),
-    });
+  // ✅ Load Game History
+  async function loadMyHistory() {
+    try {
+      const res = await fetch(`${BASE_URL}/bets/user/${demoEmail}`);
+      const data = await res.json();
+      if (historyBodyEl) {
+        historyBodyEl.innerHTML = data.map(bet => `
+          <tr>
+            <td>${bet.roundId}</td>
+            <td>${bet.colorBet}</td>
+            <td>${bet.numberBet}</td>
+            <td>₹${bet.amount}</td>
+            <td>₹${bet.netAmount}</td>
+            <td>${new Date(bet.timestamp).toLocaleString()}</td>
+          </tr>
+        `).join('');
+      }
+    } catch (err) {
+      console.error("History fetch error", err);
+      if (historyBodyEl) historyBodyEl.innerHTML = `<tr><td colspan="6">Error loading history.</td></tr>`;
+    }
+  }
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to place bet");
+  // ✅ Place Bet
+  async function placeBet() {
+    const amount = parseFloat(betAmountInput.value);
+    if (!selectedColor || selectedNumber === null || isNaN(amount) || amount <= 0) {
+      alert("Please choose color, number, and valid amount.");
+      return;
     }
 
-    alert("Bet placed successfully!");
-    closeModal();
-    loadWallet();
-    loadMyHistory();
-  } catch (err) {
-    alert("Error: " + err.message);
-    console.error("Place bet error", err);
+    try {
+      const res = await fetch(`${BASE_URL}/bets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: demoEmail,
+          colorBet: selectedColor,
+          numberBet: selectedNumber,
+          amount: amount,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to place bet.");
+
+      alert("Bet placed successfully!");
+      popup.classList.add("hidden");
+      betAmountInput.value = "";
+      loadWallet();
+      loadMyHistory();
+    } catch (err) {
+      console.error("Bet error", err);
+      alert("Error placing bet.");
+    }
   }
-}
 
-// Show modal
-function openModal() {
-  document.getElementById("bet-modal").style.display = "block";
-}
-
-// Close modal
-function closeModal() {
-  document.getElementById("bet-modal").style.display = "none";
-  document.getElementById("bet-form").reset();
-}
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', () => {
-  // Your event listeners go here
-  document.getElementById("confirm-bet-btn")?.addEventListener("click", placeBet);
-  document.getElementById("cancel-bet-btn")?.addEventListener("click", () => {
-    document.getElementById("bet-popup").classList.add("hidden");
+  // ✅ Setup color and number selection
+  document.querySelectorAll(".color-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedColor = btn.dataset.color;
+      document.querySelectorAll(".color-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
   });
-});
 
-// Initial loads
-loadWallet();
-loadLastResult();
-loadMyHistory();
+  document.querySelectorAll(".number-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedNumber = parseInt(btn.dataset.number);
+      document.querySelectorAll(".number-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+  });
+
+  // ✅ Event listeners
+  placeBetBtn?.addEventListener("click", () => {
+    if (selectedColor === null || selectedNumber === null) {
+      alert("Please select color and number first.");
+    } else {
+      popup.classList.remove("hidden");
+    }
+  });
+
+  confirmBetBtn?.addEventListener("click", placeBet);
+  cancelBetBtn?.addEventListener("click", () => {
+    popup.classList.add("hidden");
+    betAmountInput.value = "";
+  });
+
+  // ✅ Initial Load
+  loadWallet();
+  loadLastResult();
+  loadMyHistory();
+});
