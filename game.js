@@ -1,69 +1,120 @@
-const backendUrl = "https://wingo-backend-nqk5.onrender.com";
+const API_BASE = 'https://wingo-backend-nqk5.onrender.com';
+const demoEmail = 'user@example.com';
 
-let selectedBet = null;
+let currentRoundId = '';
+let countdown = 30;
+let countdownInterval = null;
 
-document.querySelectorAll('.color-option, .number').forEach(el => {
-  el.addEventListener('click', () => {
-    selectedBet = el.dataset.color || el.dataset.number;
-    document.getElementById('bet-choice').textContent = `Selected: ${selectedBet}`;
-    document.getElementById('betModal').style.display = 'block';
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  loadWallet();
+  loadLastResult();
+  startCountdown();
+  fetchLatestRound();
+
+  document.getElementById('placeBetBtn').addEventListener('click', placeBet);
 });
 
-document.getElementById('closeModal').onclick = () => {
-  document.getElementById('betModal').style.display = 'none';
-};
-
-document.getElementById('confirmBet').onclick = async () => {
-  const amount = parseFloat(document.getElementById('betAmount').value);
-  const token = localStorage.getItem('token');
-
-  if (!amount || amount <= 0) return alert("Enter valid amount");
-  if (!selectedBet) return alert("No selection made");
-
-  try {
-    const response = await fetch(`${backendUrl}/api/bets`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        color: ['Red', 'Green', 'Violet'].includes(selectedBet) ? selectedBet : null,
-        number: !isNaN(selectedBet) ? Number(selectedBet) : null,
-        amount
-      })
+// Load wallet balance
+function loadWallet() {
+  fetch(`${API_BASE}/api/users/wallet/${demoEmail}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('walletBalance').innerText = `₹${data.wallet.toFixed(2)}`;
+    })
+    .catch(() => {
+      document.getElementById('walletBalance').innerText = '₹0';
     });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-
-    alert("Bet placed successfully!");
-    document.getElementById('betModal').style.display = 'none';
-    updateWallet();
-  } catch (err) {
-    alert("Error: " + err.message);
-  }
-};
-
-async function updateWallet() {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-
-  const res = await fetch(`${backendUrl}/api/users/profile`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  document.getElementById('wallet').textContent = data.wallet.toFixed(2);
 }
 
-// Timer logic (placeholder)
-let timeLeft = 25;
-const timerEl = document.getElementById('timer');
-setInterval(() => {
-  timeLeft--;
-  if (timeLeft < 0) timeLeft = 25;
-  timerEl.textContent = timeLeft.toString().padStart(2, '0');
-}, 1000);
+// Fetch latest roundId
+function fetchLatestRound() {
+  fetch(`${API_BASE}/api/rounds`)
+    .then(res => res.json())
+    .then(data => {
+      const latestRound = data[data.length - 1];
+      currentRoundId = latestRound.roundId;
+      document.getElementById('currentRound').innerText = `Round: ${currentRoundId}`;
+    })
+    .catch(() => {
+      document.getElementById('currentRound').innerText = 'Round: N/A';
+    });
+}
 
-updateWallet();
+// Load last round result
+function loadLastResult() {
+  fetch(`${API_BASE}/api/rounds`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.length < 2) return;
+      const lastRound = data[data.length - 2]; // Second last round is last completed
+      document.getElementById('lastResult').innerText =
+        `Result: ${lastRound.result} (ID: ${lastRound.roundId})`;
+    })
+    .catch(() => {
+      document.getElementById('lastResult').innerText = 'Result: N/A';
+    });
+}
+
+// Countdown timer
+function startCountdown() {
+  countdownInterval = setInterval(() => {
+    countdown--;
+    document.getElementById('countdownTimer').innerText = `${countdown}s`;
+
+    if (countdown === 0) {
+      clearInterval(countdownInterval);
+      setTimeout(() => {
+        countdown = 30;
+        fetchLatestRound();
+        loadLastResult();
+        startCountdown();
+      }, 3000); // Small delay before next round
+    }
+  }, 1000);
+}
+
+// Place bet
+function placeBet() {
+  const color = document.querySelector('input[name="color"]:checked')?.value;
+  const number = parseInt(document.getElementById('numberSelect').value);
+  const amount = parseFloat(document.getElementById('betAmount').value);
+
+  if (!color && isNaN(number)) {
+    alert('Select a color or number to bet.');
+    return;
+  }
+
+  if (!amount || amount < 1) {
+    alert('Enter a valid bet amount (₹1 or more).');
+    return;
+  }
+
+  const netAmount = parseFloat((amount * 0.98).toFixed(2)); // Deduct 2% service fee
+
+  const payload = {
+    email: demoEmail,
+    roundId: currentRoundId,
+    colorBet: color || null,
+    numberBet: isNaN(number) ? null : number,
+    amount,
+    netAmount,
+  };
+
+  fetch(`${API_BASE}/api/bets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === 'Bet placed successfully') {
+        alert('Bet placed!');
+        loadWallet();
+      } else {
+        alert(data.message || 'Bet failed');
+      }
+    })
+    .catch(() => {
+      alert('Server error while placing bet.');
+    });
+}
