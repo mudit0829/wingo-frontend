@@ -261,38 +261,41 @@
   }
 
   function placeBet() {
-    const total = baseAmount * multiplier;
-    if (total <= 0) {
-      alert('Please add a valid amount.');
-      return;
-    }
-
-    const betData = {
-      email,
-      betType: selectedType,
-      value: selectedValue,
-      amount: total
-    };
-
-    fetch(`${API}/api/bets`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(betData)
-    })
-    .then(async res => {
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Bet failed');
-      closePopup();
-      fetchWallet();
-      alert('Bet placed successfully!');
-    })
-    .catch(err => {
-      console.error('Place Bet Error:', err);
-      alert('Failed to place bet.');
-    });
+  const total = baseAmount * multiplier;
+  if (total <= 0 || !selectedType || selectedValue === '') {
+    alert('Please select a bet and enter a valid amount.');
+    return;
   }
 
-  function populateNumberGrid() {
+  // Ensure bet data matches backend requirements
+  const betData = {
+    email,
+    roundId: document.getElementById('roundId').textContent,
+    betType: selectedType,
+    value: selectedValue,
+    multiplier,
+    amount: total
+  };
+
+  fetch(`${API}/api/bets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(betData)
+  })
+  .then(async res => {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Bet failed');
+    closePopup();
+    fetchWallet();
+    alert('Bet placed successfully!');
+  })
+  .catch(err => {
+    console.error('Place Bet Error:', err);
+    alert('Failed to place bet: ' + err.message);
+  });
+}
+
+   function populateNumberGrid() {
     const grid = document.getElementById('numberGrid');
     grid.innerHTML = '';
     for (let i = 0; i <= 9; i++) {
