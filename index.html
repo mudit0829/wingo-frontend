@@ -287,7 +287,7 @@
     }
 
     function fetchWallet() {
-      fetch("https://wingo-backend-nqk5.onrender.com/api/users/user@example.com")
+      fetch("https://wingo-backend-nqk5.onrender.com/api/users/wallet/user@example.com")
         .then(res => res.json())
         .then(data => {
           const wallet = data.wallet ?? 0;
