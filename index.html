@@ -21,7 +21,18 @@
       background: #fff;
       padding: 10px;
       margin: 10px;
-      text-align: right;
+      text-align: center;
+    }
+    .wallet-buttons {
+      margin-top: 10px;
+    }
+    .wallet-buttons button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
     }
     .colors, .numbers {
       display: flex;
@@ -43,6 +54,7 @@
     .color-btn.violet { background-color: purple; }
     .number-btn {
       background-color: #555;
+      width: 50px;
     }
 
     .popup {
@@ -59,6 +71,22 @@
 
     .popup.active {
       bottom: 0;
+    }
+
+    .amount-options, .multiplier-options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 10px 0;
+      gap: 10px;
+    }
+
+    .amount-btn, .multiplier-btn {
+      padding: 6px 12px;
+      background-color: #ffc107;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
     }
 
     .popup input[type="number"] {
@@ -109,6 +137,10 @@
 
   <div class="wallet">
     Wallet Balance: ₹<span id="wallet">--</span>
+    <div class="wallet-buttons">
+      <button>Deposit</button>
+      <button>Withdraw</button>
+    </div>
   </div>
 
   <div class="colors">
@@ -118,19 +150,49 @@
   </div>
 
   <div class="numbers">
-    <!-- Number buttons 0-9 -->
-    <script>
-      for (let i = 0; i <= 9; i++) {
-        document.write(`<button class="number-btn" onclick="selectNumber(${i})">${i}</button>`);
-      }
-    </script>
+    <!-- Number buttons in 2 rows -->
+    <div style="display:flex;justify-content:center;width:100%;">
+      <button class="number-btn" onclick="selectNumber(0)">0</button>
+      <button class="number-btn" onclick="selectNumber(1)">1</button>
+      <button class="number-btn" onclick="selectNumber(2)">2</button>
+      <button class="number-btn" onclick="selectNumber(3)">3</button>
+      <button class="number-btn" onclick="selectNumber(4)">4</button>
+    </div>
+    <div style="display:flex;justify-content:center;width:100%;">
+      <button class="number-btn" onclick="selectNumber(5)">5</button>
+      <button class="number-btn" onclick="selectNumber(6)">6</button>
+      <button class="number-btn" onclick="selectNumber(7)">7</button>
+      <button class="number-btn" onclick="selectNumber(8)">8</button>
+      <button class="number-btn" onclick="selectNumber(9)">9</button>
+    </div>
   </div>
 
-  <!-- Popup for amount -->
+  <!-- Popup for placing bet -->
   <div class="popup" id="betPopup">
-    <div id="betTypeText"></div>
-    <input type="number" id="betAmount" placeholder="Enter Amount" />
+    <div id="betTypeText" style="font-weight:bold;margin-bottom:10px;"></div>
+
+    <div class="amount-options">
+      <button class="amount-btn" onclick="setAmount(1)">₹1</button>
+      <button class="amount-btn" onclick="setAmount(5)">₹5</button>
+      <button class="amount-btn" onclick="setAmount(10)">₹10</button>
+      <button class="amount-btn" onclick="setAmount(100)">₹100</button>
+    </div>
+
+    <div class="multiplier-options">
+      <button class="multiplier-btn" onclick="setMultiplier(2)">x2</button>
+      <button class="multiplier-btn" onclick="setMultiplier(5)">x5</button>
+      <button class="multiplier-btn" onclick="setMultiplier(10)">x10</button>
+      <button class="multiplier-btn" onclick="setMultiplier(50)">x50</button>
+      <button class="multiplier-btn" onclick="setMultiplier(100)">x100</button>
+    </div>
+
+    <div style="text-align:center;margin:10px 0;">
+      Total: ₹<span id="totalAmount">0</span>
+    </div>
+
+    <input type="number" id="betAmount" placeholder="Enter Amount" oninput="updateTotal()"/>
     <button onclick="placeBet()">Place Bet</button>
+    <button onclick="document.getElementById('betPopup').classList.remove('active')">Cancel</button>
   </div>
 
   <div class="history">
@@ -157,6 +219,7 @@
     const email = "user@example.com"; // Replace with logged-in user dynamically
     let selectedColor = null;
     let selectedNumber = null;
+    let multiplier = 1;
 
     function selectColor(color) {
       selectedColor = color;
@@ -172,6 +235,21 @@
       document.getElementById('betPopup').classList.add('active');
     }
 
+    function setAmount(amount) {
+      document.getElementById('betAmount').value = amount;
+      updateTotal();
+    }
+
+    function setMultiplier(mul) {
+      multiplier = mul;
+      updateTotal();
+    }
+
+    function updateTotal() {
+      const amount = parseFloat(document.getElementById('betAmount').value) || 0;
+      document.getElementById('totalAmount').innerText = (amount * multiplier).toFixed(2);
+    }
+
     function placeBet() {
       const amount = parseFloat(document.getElementById('betAmount').value);
       if (!amount || amount <= 0) return alert("Enter valid amount");
@@ -184,6 +262,7 @@
             email,
             roundId: latestRound._id,
             amount,
+            multiplier
           };
           if (selectedColor) payload.colorBet = selectedColor;
           if (selectedNumber !== null) payload.numberBet = selectedNumber;
@@ -213,11 +292,8 @@
       fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email}`)
         .then(res => res.json())
         .then(data => {
-          if (data && data.balance !== undefined) {
-            document.getElementById('wallet').innerText = parseFloat(data.balance).toFixed(2);
-          } else {
-            document.getElementById('wallet').innerText = "--";
-          }
+          const amount = (data?.wallet ?? 0).toFixed(2);
+          document.getElementById('wallet').innerText = amount;
         })
         .catch(err => {
           console.error("wallet fetch error:", err);
