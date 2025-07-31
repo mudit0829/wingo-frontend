@@ -250,7 +250,7 @@
   const email = localStorage.getItem('email') || 'user@example.com';
 
   function fetchWallet() {
-    fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email}`, {
+    fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/user@example.com`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => res.json())
       .then(data => {
