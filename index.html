@@ -5,118 +5,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    .btn { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; }
-    .red { background-color: red; color: white; }
-    .green { background-color: green; color: white; }
-    .violet { background-color: violet; color: white; }
-    .number { background-color: lightgray; }
-    .amounts { margin: 10px 0; }
-    .result { margin-top: 20px; font-weight: bold; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    h1 { color: #333; }
+    .bet-options button { margin: 5px; padding: 10px 20px; }
+    #result { margin-top: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>WinGo Game</h1>
-  <h3>User: user@example.com</h3>
-  <div>Wallet: ₹<span id="wallet">--</span></div>
-
-  <div class="amounts">
-    <label>Enter Bet Amount:</label>
-    <input type="number" id="amountInput" value="100" min="1"/>
-  </div>
-
+  <h1>Welcome to WinGo</h1>
   <div>
-    <h3>Select Color:</h3>
-    <button class="btn red" onclick="selectColor('Red')">Red</button>
-    <button class="btn green" onclick="selectColor('Green')">Green</button>
-    <button class="btn violet" onclick="selectColor('Violet')">Violet</button>
+    <p><strong>Email:</strong> <span id="emailDisplay">user@example.com</span></p>
+    <p><strong>Wallet Balance:</strong> ₹<span id="walletBalance">0</span></p>
+    <label for="amount">Bet Amount (₹):</label>
+    <input type="number" id="amount" value="100" />
   </div>
 
-  <div>
-    <h3>OR Select Number:</h3>
-    <div>
-      <button class="btn number" onclick="selectNumber(n)" id="nBtn" style="margin:2px;" 
-        >0</button>
-    </div>
-    <div id="numberButtons"></div>
+  <h3>Choose a Color:</h3>
+  <div class="bet-options">
+    <button onclick="selectColor('Red')">Red</button>
+    <button onclick="selectColor('Green')">Green</button>
+    <button onclick="selectColor('Violet')">Violet</button>
   </div>
 
-  <button class="btn" style="background-color: blue; color: white; margin-top: 15px;" onclick="placeBet()">Place Bet</button>
+  <h3>Choose a Number (0-9):</h3>
+  <div class="bet-options">
+    <script>
+      for (let i = 0; i <= 9; i++) {
+        document.write(`<button onclick="selectNumber(${i})">${i}</button>`);
+      }
+    </script>
+  </div>
 
-  <div class="result" id="betResult"></div>
+  <button onclick="placeBet()">Place Bet</button>
+
+  <div id="result"></div>
 
   <script>
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg5ZmUxNWE3N2UxMzI2YTY3NDBmZmUiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTM5NDg3MjAsImV4cCI6MTc1Mzk1OTUyMH0.UTgEb2MlisIpjGxLRmhY-fqm80AEcaTMpUd2p2Mrv3k";
-    const apiBase = "https://wingo-backend-nqk5.onrender.com";
     const email = "user@example.com";
-    let selectedBet = { type: null, number: null };
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg5ZmUxNWE3N2UxMzI2YTY3NDBmZmUiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTM5NDg3MjAsImV4cCI6MTc1Mzk1OTUyMH0.UTgEb2MlisIpjGxLRmhY-fqm80AEcaTMpUd2p2Mrv3k";
+
+    let selectedColor = null;
+    let selectedNumber = null;
     let currentRoundId = null;
 
     function selectColor(color) {
-      selectedBet = { type: color, number: null };
-      document.getElementById("betResult").textContent = `Selected Color: ${color}`;
+      selectedColor = color;
+      alert(`Color Bet Selected: ${color}`);
     }
 
     function selectNumber(num) {
-      selectedBet = { type: null, number: num };
-      document.getElementById("betResult").textContent = `Selected Number: ${num}`;
+      selectedNumber = num;
+      alert(`Number Bet Selected: ${num}`);
     }
 
-    // Generate 0-9 number buttons
-    const numBtns = document.getElementById("numberButtons");
-    for (let i = 0; i < 10; i++) {
-      const btn = document.createElement("button");
-      btn.className = "btn number";
-      btn.textContent = i;
-      btn.onclick = () => selectNumber(i);
-      numBtns.appendChild(btn);
-    }
-
-    async function fetchCurrentRound() {
+    async function fetchRoundId() {
       try {
-        const res = await fetch(`${apiBase}/api/rounds`);
+        const res = await fetch('https://wingo-backend-nqk5.onrender.com/api/rounds');
         const data = await res.json();
-        if (data.length > 0) {
-          currentRoundId = data[data.length - 1]._id;
-        }
+        currentRoundId = data[data.length - 1].roundId;
       } catch (err) {
-        console.error("Failed to fetch current round", err);
+        console.error("Failed to fetch roundId:", err);
       }
     }
 
     async function fetchWallet() {
       try {
-        const res = await fetch(`${apiBase}/api/users/email/${email}`);
+        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/users/${email}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         const data = await res.json();
-        document.getElementById("wallet").textContent = data.wallet.toFixed(2);
+        document.getElementById('walletBalance').textContent = data.wallet.toFixed(2);
       } catch (err) {
-        document.getElementById("wallet").textContent = "--";
-        console.error("Error fetching wallet", err);
+        console.error("Error fetching wallet:", err);
       }
     }
 
     async function placeBet() {
-      if (!currentRoundId) {
-        document.getElementById("betResult").textContent = "Please wait... Round not loaded.";
-        return;
-      }
+      await fetchRoundId();
+      const amount = parseFloat(document.getElementById("amount").value);
+      const effectiveAmount = +(amount * 0.98).toFixed(2);
 
-      const amount = parseFloat(document.getElementById("amountInput").value);
-      if (!amount || amount <= 0) {
-        alert("Enter valid amount.");
-        return;
-      }
-
-      const payload = {
-        email,
-        roundId: currentRoundId,
-        amount,
-        colorBet: selectedBet.number === null ? selectedBet.type : null,
-        numberBet: selectedBet.number !== null ? selectedBet.number : null
-      };
+      if (!amount || amount <= 0) return alert("Enter valid amount");
+      if (!selectedColor && selectedNumber === null) return alert("Select a color or number");
 
       try {
-        const res = await fetch(`${apiBase}/api/bets`, {
+        const payload = {
+          email,
+          roundId: currentRoundId,
+          amount: amount,
+          colorBet: selectedColor,
+          numberBet: selectedNumber,
+        };
+
+        const res = await fetch("https://wingo-backend-nqk5.onrender.com/api/bets", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -125,66 +106,28 @@
           body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error("Bet failed");
-
         const data = await res.json();
-        document.getElementById("betResult").textContent = `✅ Bet Placed Successfully! Waiting for result...`;
-        await fetchWallet();
 
-        // Auto-fetch result after 6 seconds
-        setTimeout(() => checkResult(payload), 6000);
-
-      } catch (err) {
-        console.error("Place Bet Error:", err);
-        document.getElementById("betResult").textContent = "❌ Failed to place bet.";
-      }
-    }
-
-    async function checkResult(payload) {
-      try {
-        const res = await fetch(`${apiBase}/api/rounds`);
-        const rounds = await res.json();
-        const myRound = rounds.find(r => r._id === payload.roundId);
-        if (!myRound || myRound.result === null) {
-          document.getElementById("betResult").textContent += "\n❗ Result not yet available.";
-          return;
-        }
-
-        let won = false;
-        let winAmount = 0;
-
-        if (payload.colorBet) {
-          if (
-            (payload.colorBet === "Red" && [1,3,7,9].includes(myRound.result)) ||
-            (payload.colorBet === "Green" && [0,2,4,6,8].includes(myRound.result)) ||
-            (payload.colorBet === "Violet" && [0,5].includes(myRound.result))
-          ) {
-            won = true;
-            winAmount = 98 * (payload.colorBet === "Violet" ? 4.5 : ([0,5].includes(myRound.result) ? 1.5 : 2));
-          }
-        }
-
-        if (payload.numberBet !== null && payload.numberBet === myRound.result) {
-          won = true;
-          winAmount += 98 * 9;
-        }
-
-        if (won) {
-          document.getElementById("betResult").textContent += `\n🎉 You WON! +₹${winAmount.toFixed(2)}`;
+        if (res.ok) {
+          document.getElementById("result").innerHTML = `
+            ✅ Bet placed! <br>
+            Bet Amount: ₹${amount} <br>
+            Effective (after fee): ₹${effectiveAmount} <br>
+            Round: ${currentRoundId}<br>
+            Waiting for result...
+          `;
+          fetchWallet();
         } else {
-          document.getElementById("betResult").textContent += "\n😞 You lost.";
+          throw new Error(data.message || "Failed to place bet");
         }
 
-        await fetchWallet();
-
       } catch (err) {
-        console.error("Result Fetch Error", err);
+        console.error("Bet Error:", err);
+        document.getElementById("result").textContent = "❌ Failed to place bet: " + err.message;
       }
     }
 
-    // Init
-    fetchCurrentRound();
-    fetchWallet();
+    window.onload = fetchWallet;
   </script>
 </body>
 </html>
