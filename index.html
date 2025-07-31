@@ -39,6 +39,15 @@
       color: white;
       border: none;
     }
+    #result-message {
+      display: none;
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #e6f7ff;
+      border-left: 5px solid #1890ff;
+    }
   </style>
 </head>
 <body>
@@ -74,15 +83,19 @@
     </div>
   </div>
 
+  <div id="result-message"></div>
+
   <script>
     const email = localStorage.getItem("email");
+    const backendUrl = "https://wingo-backend-nqk5.onrender.com";
+    let selectedBet = { type: null, number: null };
+    let currentAmount = 0;
+    let currentRoundId = "";
+
     if (!email) {
       alert("No email found. Please login first.");
       window.location.href = "login.html";
     }
-
-    let selectedBet = { type: null, number: null };
-    let currentAmount = 0;
 
     function selectColor(color) {
       selectedBet = { type: color, number: null };
@@ -96,9 +109,9 @@
 
     async function fetchWallet() {
       try {
-        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email}`);
+        const res = await fetch(`${backendUrl}/api/users/wallet/${email}`);
         const data = await res.json();
-        document.getElementById("walletBalance").innerText = data.wallet || 0;
+        document.getElementById("walletBalance").innerText = data.balance || 0;
       } catch (err) {
         console.error("Error fetching wallet:", err);
       }
@@ -114,22 +127,20 @@
         currentAmount = amount;
 
         // Step 1: Get latest round
-        const roundResponse = await fetch('https://wingo-backend-nqk5.onrender.com/api/rounds');
+        const roundResponse = await fetch(`${backendUrl}/api/rounds`);
         const rounds = await roundResponse.json();
-        const latestRound = rounds[rounds.length - 1]; // Get last round
-        const roundId = latestRound._id;
+        const latestRound = rounds[rounds.length - 1];
+        currentRoundId = latestRound._id;
 
-        // Step 2: Prepare payload
         const payload = {
           email,
-          roundId: roundId,
+          roundId: currentRoundId,
           amount: currentAmount,
           colorBet: selectedBet.number === null ? selectedBet.type : null,
           numberBet: selectedBet.number !== null ? selectedBet.number : null
         };
 
-        // Step 3: Send POST request
-        const response = await fetch('https://wingo-backend-nqk5.onrender.com/api/bets', {
+        const response = await fetch(`${backendUrl}/api/bets`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -139,8 +150,10 @@
 
         if (response.ok) {
           alert('Bet placed successfully!');
-          console.log(result);
-          fetchWallet(); // Refresh wallet
+          fetchWallet();
+          showResultStatus("Bet placed successfully. Awaiting result...");
+
+          setTimeout(() => checkResult(currentRoundId), 5000);
         } else {
           alert('Bet placement failed: ' + result.message);
         }
@@ -151,7 +164,41 @@
       }
     }
 
-    // Fetch wallet on page load
+    async function checkResult(roundId) {
+      try {
+        const res = await fetch(`${backendUrl}/api/rounds`);
+        const rounds = await res.json();
+        const round = rounds.find(r => r._id === roundId);
+        if (round && round.result !== undefined) {
+          const result = round.result.toString();
+          const win = evaluateWin(result);
+          showResultStatus(win ? `🎉 You WON! Result: ${result}` : `😢 You lost. Result: ${result}`);
+          fetchWallet();
+        } else {
+          showResultStatus("Result not available yet.");
+        }
+      } catch (err) {
+        console.error("Result check failed:", err);
+        showResultStatus("Failed to fetch result.");
+      }
+    }
+
+    function evaluateWin(result) {
+      if (selectedBet.number !== null) {
+        return selectedBet.number.toString() === result;
+      }
+      if (selectedBet.type === "Red" && ["1", "3", "7", "9"].includes(result)) return true;
+      if (selectedBet.type === "Green" && ["0", "2", "4", "6", "8"].includes(result)) return true;
+      if (selectedBet.type === "Violet" && ["0", "5"].includes(result)) return true;
+      return false;
+    }
+
+    function showResultStatus(message) {
+      const resultBox = document.getElementById("result-message");
+      resultBox.innerText = message;
+      resultBox.style.display = "block";
+    }
+
     window.onload = fetchWallet;
   </script>
 </body>
