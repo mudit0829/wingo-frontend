@@ -1,183 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>WinGo Game</title>
-<style>
-  body { background:#121212;color:#fff;font-family:sans-serif;margin:0;padding:0;}
-  .header { background:#1abc9c;padding:20px;text-align:center;font-size:1.5em; }  
-  .wallet { padding:10px; text-align:center; background:#2c3e50;}
-  .actions button { margin:10px;padding:10px 20px;border:none;border-radius:5px;font-weight:bold;cursor:pointer;}
-  .actions .withdraw { background:#e74c3c;} .actions .deposit { background:#2ecc71;}
-  .tabs { display:flex; justify-content:space-around; margin:20px 0; }
-  .tabs button { flex:1;padding:10px;background:#34495e;border:none;color:#fff;margin:0 5px;cursor:pointer;}
-  .tabs .active { background:#1abc9c;}
-  .bet-grid { display:flex; justify-content:space-between; padding:0 5px;}
-  .bet-grid button { width:32%; padding:15px 0;border:none;border-radius:5px;font-size:1em;}
-  .color-red { background:#c0392b;} .color-green { background:#27ae60;} .color-violet { background:#8e44ad;}
-  .numbers { display:flex; flex-wrap:wrap; justify-content:space-around;margin:10px 0;}
-  .numbers button { width:30px;height:30px;border-radius:50%;border:none;background:#2980b9;color:#fff; margin:5px;}
-  .popup { position:fixed; bottom:0; left:0; width:100%; background:#16a085;padding:20px;border-top-left-radius:15px;border-top-right-radius:15px; transform:translateY(100%); transition:transform .3s ease; }
-  .popup.active { transform:translateY(0); }
-  .popup h3 { margin-top:0;color:#fff;}
-  .popup .balance { color:#fff;margin-bottom:10px;}
-  .popup .multiplier button { margin:5px;padding:10px;border:none;border-radius:5px;cursor:pointer;}
-  .popup .actions { display:flex; justify-content:space-between;margin-top:10px; }
-  .slider { display:none;}
-  .history { padding:10px; background:#2c3e50;height:300px; overflow:auto;}
-  .history h3 { margin-top:0;text-align:center;}
-  .history-table { width:100%;border-collapse:collapse;font-size:0.9em;}
-  .history-table th, .history-table td { border:1px solid #34495e;padding:5px;text-align:center;}
-  .timer { text-align:center;font-size:1.2em;padding:10px;background:#34495e;}
-</style>
-</head>
-<body>
-
-<div class="header">WinGo Game</div>
-<div class="wallet">Wallet: ₹<span id="wallet">Loading...</span></div>
-
-<div class="timer">Next Round In: <span id="countdown">30</span>s</div>
-<div style="text-align:center;">Last Result: <span id="lastResult">--</span></div>
-
-<div class="actions">
-  <button class="withdraw">Withdraw</button>
-  <button class="deposit">Deposit</button>
-</div>
-
-<div class="bet-grid">
-  <button class="color-red" onclick="openPopup('Red',null)">Red</button>
-  <button class="color-green" onclick="openPopup('Green',null)">Green</button>
-  <button class="color-violet" onclick="openPopup('Violet',null)">Violet</button>
-</div>
-
-<div class="numbers">
-  ${[...Array(10).keys()].map(n => `<button onclick="openPopup(null,${n})">${n}</button>`).join('')}
-</div>
-
-<div class="popup" id="betPopup">
-  <h3>Place Bet on <span id="popupChoice"></span></h3>
-  <div class="balance">Balance: ₹<span id="popupBalance">0</span></div>
-  <div>
-    <input type="number" id="popupAmount" placeholder="Amount" style="width:48%;"/>
-    <select id="popupMultiplier" style="width:48%;">
-      <option value="1">x1</option><option value="5">x5</option><option value="10">x10</option>
-      <option value="50">x50</option><option value="100">x100</option>
-    </select>
-  </div>
-  <div>Total: ₹<span id="popupTotal">0</span></div>
-  <div class="actions">
-    <button onclick="submitBet()">Confirm</button>
-    <button onclick="closePopup()">Cancel</button>
-  </div>
-</div>
-
-<div class="tabs">
-  <button class="active">Game History</button>
-  <button>My History</button>
-</div>
-
-<div class="history" id="historyContainer">
-  <h3>History</h3>
-  <table class="history-table" id="historyTable">
-    <thead><tr><th>Round</th><th>Number</th><th>Color</th><th>Amount</th><th>Net</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<script>
-  const API = 'https://wingo-backend-nqk5.onrender.com/api';
-  const email = 'user@example.com';
-  let curColor = null, curNumber = null, roundId = null;
-
-  async function fetchRoundAndResult() {
-    const res = await fetch(API + '/rounds');
-    const data = await res.json();
-    const last = data[data.length-1];
-    roundId = last.roundId;
-    document.getElementById('lastResult').innerText = last.result ?? '--';
-  }
-
-  function startTimer() {
-    let sec = 30 - Math.floor(Date.now()/1000 % 30);
-    const cEl = document.getElementById('countdown');
-    cEl.innerText = sec;
-    setInterval(() => {
-      sec = sec <= 1 ? 30 : sec -1;
-      cEl.innerText = sec;
-      if (sec === 30) fetchHistory();
-    },1000);
-  }
-
-  async function fetchWallet() {
-    const res = await fetch(API + '/users/wallet/' + email);
-    const data = await res.json();
-    document.getElementById('wallet').innerText = data.balance?.toFixed(2) ?? '0';
-  }
-
-  function openPopup(color, number) {
-    curColor = color;
-    curNumber = number;
-    document.getElementById('popupChoice').innerText = color || number;
-    document.getElementById('popupBalance').innerText = document.getElementById('wallet').innerText;
-    document.getElementById('popupAmount').value = '';
-    document.getElementById('popupMultiplier').value = '1';
-    document.getElementById('popupTotal').innerText = '0';
-    document.getElementById('betPopup').classList.add('active');
-    document.getElementById('popupMultiplier').onchange = recalcTotal;
-  }
-
-  function recalcTotal() {
-    const amt = Number(document.getElementById('popupAmount').value)||0;
-    const mult = Number(document.getElementById('popupMultiplier').value);
-    document.getElementById('popupTotal').innerText = (amt * mult).toFixed(2);
-  }
-
-  function closePopup() {
-    document.getElementById('betPopup').classList.remove('active');
-  }
-
-  async function submitBet() {
-    const amt = Number(document.getElementById('popupTotal').innerText);
-    if (!amt || amt <= 0) return alert('Invalid amount');
-    const payload = { email, roundId, amount: amt };
-    if (curColor) payload.colorBet = curColor;
-    if (curNumber !== null) payload.numberBet = curNumber;
-    const res = await fetch(API + '/bets', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      await fetchWallet();
-      closePopup();
-      await fetchHistory();
-    } else {
-      alert(data.message || 'Bet failed');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WinGo Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
     }
-  }
 
-  async function fetchHistory() {
-    await fetchRoundAndResult();
-    const res = await fetch(API + '/bets/user/' + email);
-    const data = await res.json();
-    const tbody = document.getElementById('historyTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    data.slice(0,20).forEach(b => {
-      const row = `<tr>
-        <td>${b.roundId}</td>
-        <td>${b.numberBet ?? '-'}</td>
-        <td>${b.colorBet ?? '-'}</td>
-        <td>${b.amount}</td>
-        <td>${b.netAmount}</td>
-      </tr>`;
-      tbody.innerHTML += row;
-    });
-  }
+    body {
+      background-color: #f1f1f1;
+      color: #333;
+    }
 
-  // Init
-  fetchWallet(); fetchRoundAndResult(); startTimer(); fetchHistory();
-  setInterval(()=>{ fetchWallet(); fetchRoundAndResult(); fetchHistory(); },10000);
-</script>
+    .container {
+      max-width: 450px;
+      margin: auto;
+      padding: 1rem;
+    }
+
+    .wallet-section,
+    .timer,
+    .result,
+    .color-buttons,
+    .number-buttons,
+    .bet-amount,
+    .bet-actions,
+    .history {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .wallet-section {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+    }
+
+    .timer,
+    .result {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .color-buttons button,
+    .number-buttons button {
+      width: 30%;
+      margin: 0.3rem;
+      padding: 1rem 0;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .color-buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .color-buttons .green {
+      background-color: #2ecc71;
+    }
+
+    .color-buttons .red {
+      background-color: #e74c3c;
+    }
+
+    .color-buttons .violet {
+      background-color: #9b59b6;
+    }
+
+    .number-buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+    }
+
+    .number-buttons button {
+      background-color: #3498db;
+    }
+
+    .bet-amount input {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-top: 0.5rem;
+    }
+
+    .bet-actions button {
+      width: 100%;
+      padding: 1rem;
+      font-size: 16px;
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .history table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .history th,
+    .history td {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="wallet-section">
+      <div><strong>User:</strong> user@example.com</div>
+      <div><strong>Wallet:</strong> ₹<span id="wallet">0</span></div>
+    </div>
+
+    <div class="timer">
+      Time Left: <span id="countdown">--</span>s
+    </div>
+
+    <div class="result">
+      Last Result: <span id="last-result">--</span>
+    </div>
+
+    <div class="color-buttons">
+      <button class="green" onclick="selectColor('Green')">Green</button>
+      <button class="red" onclick="selectColor('Red')">Red</button>
+      <button class="violet" onclick="selectColor('Violet')">Violet</button>
+    </div>
+
+    <div class="number-buttons">
+      <script>
+        for (let i = 0; i < 10; i++) {
+          document.write(`<button onclick="selectNumber(${i})">${i}</button>`);
+        }
+      </script>
+    </div>
+
+    <div class="bet-amount">
+      <label for="amount">Enter Amount:</label>
+      <input type="number" id="amount" min="1" />
+    </div>
+
+    <div class="bet-actions">
+      <button onclick="placeBet()">Place Bet</button>
+    </div>
+
+    <div class="history">
+      <h3>My Bets</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th>Color</th>
+            <th>Number</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="bet-history"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const BASE_URL = 'https://wingo-backend-nqk5.onrender.com';
+    const username = 'user@example.com';
+
+    let selectedColor = null;
+    let selectedNumber = null;
+
+    function selectColor(color) {
+      selectedColor = color;
+      selectedNumber = null;
+      alert(`Selected Color: ${color}`);
+    }
+
+    function selectNumber(number) {
+      selectedNumber = number;
+      selectedColor = null;
+      alert(`Selected Number: ${number}`);
+    }
+
+    async function fetchWallet() {
+      const res = await fetch(`${BASE_URL}/api/users/${username}`);
+      const data = await res.json();
+      document.getElementById('wallet').textContent = data.wallet;
+    }
+
+    async function fetchRounds() {
+      const res = await fetch(`${BASE_URL}/api/rounds`);
+      const data = await res.json();
+      const last = data[data.length - 1];
+      document.getElementById('last-result').textContent = `${last.result} (${last.color})`;
+
+      const now = new Date();
+      const roundTime = new Date(last.timestamp);
+      const diff = 30 - Math.floor((now - roundTime) / 1000);
+      startCountdown(diff > 0 ? diff : 0);
+    }
+
+    function startCountdown(timeLeft) {
+      const countdownEl = document.getElementById('countdown');
+      const interval = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          countdownEl.textContent = '0';
+        } else {
+          countdownEl.textContent = timeLeft--;
+        }
+      }, 1000);
+    }
+
+    async function placeBet() {
+      const amount = parseFloat(document.getElementById('amount').value);
+      if ((!selectedColor && selectedNumber === null) || isNaN(amount)) {
+        alert('Please select color or number and enter valid amount.');
+        return;
+      }
+
+      const bet = {
+        username,
+        amount,
+        color: selectedColor,
+        number: selectedNumber
+      };
+
+      const res = await fetch(`${BASE_URL}/api/bets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bet)
+      });
+
+      if (res.ok) {
+        alert('Bet placed!');
+        document.getElementById('amount').value = '';
+        fetchWallet();
+        fetchHistory();
+      } else {
+        alert('Failed to place bet');
+      }
+    }
+
+    async function fetchHistory() {
+      const res = await fetch(`${BASE_URL}/api/bets/user/${username}`);
+      const data = await res.json();
+      const tbody = document.getElementById('bet-history');
+      tbody.innerHTML = '';
+      data.slice(-10).reverse().forEach(bet => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${bet.roundId || '--'}</td>
+          <td>${bet.color || '-'}</td>
+          <td>${bet.number !== null ? bet.number : '-'}</td>
+          <td>${bet.amount}</td>
+          <td>${bet.status || 'pending'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    fetchWallet();
+    fetchRounds();
+    fetchHistory();
+    setInterval(fetchRounds, 5000);
+  </script>
 </body>
+
 </html>
