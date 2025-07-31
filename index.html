@@ -1,166 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BDG Game Clone</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WinGo Game</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
-    body { background: #1b1b1b; color: white; padding: 10px; }
-    .container { max-width: 500px; margin: auto; background: #2c2c2c; border-radius: 10px; overflow: hidden; }
-    .header { display: flex; align-items: center; padding: 10px; background: #141414; }
-    .header img { width: 30px; margin-right: 10px; }
-    .wallet { background: #2a2a2a; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .wallet span { font-size: 18px; }
-    .wallet button { padding: 5px 10px; margin-left: 5px; border: none; border-radius: 5px; }
-    .wallet .deposit { background: #1abc9c; color: white; }
-    .wallet .withdraw { background: #e74c3c; color: white; }
-    .timer { text-align: center; font-size: 24px; padding: 10px; background: #1b1b1b; }
-    .bet-options, .number-options, .history-buttons { display: flex; justify-content: space-around; margin: 10px 0; }
-    .bet-options button, .number-options button, .history-buttons button { border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-    .green { background: #00e676; color: black; }
-    .red { background: #f44336; color: white; }
-    .violet { background: #9c27b0; color: white; }
-    .number-options button { width: 35px; height: 35px; border-radius: 50%; font-weight: bold; }
-    .number-green { background: #00e676; color: black; }
-    .number-red { background: #f44336; color: white; }
-    .number-violet { background: #9c27b0; color: white; }
-    .number-white { background: white; color: black; }
-    .history-buttons button { background: #444; color: white; flex: 1; margin: 0 2px; padding: 10px; }
-    .table { width: 100%; margin-top: 10px; border-collapse: collapse; background: #2d2d2d; font-size: 14px; }
-    .table th, .table td { border: 1px solid #444; padding: 8px; text-align: center; }
-    .table th { background: #3c3c3c; }
-    .result-bar { padding: 10px; background: #222; margin-top: 10px; }
-    .popup { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #1b1b1b; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; z-index: 999; }
-    .popup h3 { margin-bottom: 10px; }
-    .popup .amount-buttons button { margin: 5px; padding: 8px 15px; background: #444; color: white; border: none; border-radius: 5px; }
-    .popup .confirm { margin-top: 10px; background: #1abc9c; border: none; padding: 10px; width: 100%; border-radius: 5px; color: white; font-weight: bold; }
-    .popup .cancel { background: #e74c3c; margin-top: 5px; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #101010;
+      color: white;
+    }
+
+    .header {
+      text-align: center;
+      padding: 10px 0;
+      background: #111;
+    }
+
+    .header img {
+      width: 150px;
+    }
+
+    .wallet-section {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: #1e1e1e;
+      font-size: 16px;
+    }
+
+    .wallet-section button {
+      background: #444;
+      border: none;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .color-tabs {
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+    }
+
+    .color-btn {
+      margin: 0 10px;
+      padding: 10px 25px;
+      border-radius: 25px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      color: white;
+    }
+
+    .red { background: #ff4b4b; }
+    .green { background: #3cba54; }
+    .violet { background: #9b59b6; }
+
+    .number-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      padding: 15px;
+    }
+
+    .number-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 60px;
+      font-size: 20px;
+      cursor: pointer;
+      margin: auto;
+    }
+
+    .number-red { background: #ff4b4b; }
+    .number-green { background: #3cba54; }
+    .number-violet { background: #9b59b6; }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .tab-btn {
+      background: #222;
+      border: none;
+      color: white;
+      padding: 8px 20px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+
+    /* Popup */
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #181818;
+      border-radius: 15px;
+      padding: 25px;
+      width: 300px;
+      display: none;
+      flex-direction: column;
+      z-index: 999;
+    }
+
+    .popup h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .amount-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .amount-options button {
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: #555;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    .popup .total {
+      margin-top: 15px;
+      font-size: 16px;
+    }
+
+    .popup button.place-btn {
+      margin-top: 15px;
+      background: #2ecc71;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 998;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <img src="logo.png" alt="logo" />
-      <h2>BDG Game</h2>
-    </div>
 
-    <div class="wallet">
-      <span>Wallet: ₹7500</span>
-      <div>
-        <button class="deposit">Deposit</button>
-        <button class="withdraw">Withdraw</button>
-      </div>
-    </div>
+<div class="header">
+  <img src="logo.png" alt="WinGo Logo" />
+</div>
 
-    <div class="timer">Time Left: <span id="timer">30</span>s</div>
-
-    <div class="bet-options">
-      <button class="green" onclick="openBetPopup('Green')">Green</button>
-      <button class="violet" onclick="openBetPopup('Violet')">Violet</button>
-      <button class="red" onclick="openBetPopup('Red')">Red</button>
-    </div>
-
-    <div class="number-options">
-      <button class="number-green" onclick="openBetPopup('0')">0</button>
-      <button class="number-red" onclick="openBetPopup('1')">1</button>
-      <button class="number-red" onclick="openBetPopup('2')">2</button>
-      <button class="number-green" onclick="openBetPopup('3')">3</button>
-      <button class="number-green" onclick="openBetPopup('4')">4</button>
-      <button class="number-violet" onclick="openBetPopup('5')">5</button>
-      <button class="number-red" onclick="openBetPopup('6')">6</button>
-      <button class="number-green" onclick="openBetPopup('7')">7</button>
-      <button class="number-red" onclick="openBetPopup('8')">8</button>
-      <button class="number-red" onclick="openBetPopup('9')">9</button>
-    </div>
-
-    <div class="history-buttons">
-      <button onclick="showGameHistory()">Game History</button>
-      <button onclick="showMyHistory()">My History</button>
-    </div>
-
-    <div class="result-bar">Recent Results: <span id="recent-results">5, 3, 8, 1, 0</span></div>
-
-    <table class="table" id="history-table">
-      <thead>
-        <tr><th>Period</th><th>Number</th><th>Big/Small</th><th>Color</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Loading...</td></tr>
-      </tbody>
-    </table>
+<div class="wallet-section">
+  <div>Wallet: ₹<span id="walletBalance">1000</span></div>
+  <div>
+    <button>Deposit</button>
+    <button>Withdraw</button>
   </div>
+</div>
 
-  <div class="popup" id="betPopup">
-    <h3 id="betTitle">Select Bet</h3>
-    <div>
-      Quantity:
-      <div class="amount-buttons">
-        <button onclick="setAmount(1)">1</button>
-        <button onclick="setAmount(10)">10</button>
-        <button onclick="setAmount(100)">100</button>
-        <button onclick="setAmount(1000)">1000</button>
-      </div>
-    </div>
-    <div>
-      Multiplier:
-      <div class="amount-buttons">
-        <button onclick="setMultiplier(1)">x1</button>
-        <button onclick="setMultiplier(5)">x5</button>
-        <button onclick="setMultiplier(10)">x10</button>
-        <button onclick="setMultiplier(50)">x50</button>
-        <button onclick="setMultiplier(100)">x100</button>
-      </div>
-    </div>
-    <button class="confirm" onclick="placeBet()">Confirm Bet</button>
-    <button class="confirm cancel" onclick="closePopup()">Cancel</button>
+<div class="color-tabs">
+  <button class="color-btn red" onclick="openPopup('Red')">Red</button>
+  <button class="color-btn violet" onclick="openPopup('Violet')">Violet</button>
+  <button class="color-btn green" onclick="openPopup('Green')">Green</button>
+</div>
+
+<div class="number-grid">
+  <div class="number-circle number-green" onclick="openPopup('0')">0</div>
+  <div class="number-circle number-red" onclick="openPopup('1')">1</div>
+  <div class="number-circle number-green" onclick="openPopup('2')">2</div>
+  <div class="number-circle number-red" onclick="openPopup('3')">3</div>
+  <div class="number-circle number-green" onclick="openPopup('4')">4</div>
+  <div class="number-circle number-red" onclick="openPopup('5')">5</div>
+  <div class="number-circle number-green" onclick="openPopup('6')">6</div>
+  <div class="number-circle number-red" onclick="openPopup('7')">7</div>
+  <div class="number-circle number-green" onclick="openPopup('8')">8</div>
+  <div class="number-circle number-red" onclick="openPopup('9')">9</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn">Game History</button>
+  <button class="tab-btn">My History</button>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+
+<div class="popup" id="betPopup">
+  <h3>Place Bet on <span id="selectedBetType"></span></h3>
+  <div class="amount-options">
+    <button onclick="selectAmount(10)">₹10</button>
+    <button onclick="selectAmount(50)">₹50</button>
+    <button onclick="selectAmount(100)">₹100</button>
+    <button onclick="selectAmount(500)">₹500</button>
+    <button onclick="multiplyAmount(2)">×2</button>
+    <button onclick="multiplyAmount(5)">×5</button>
+    <button onclick="multiplyAmount(10)">×10</button>
+    <button onclick="multiplyAmount(50)">×50</button>
   </div>
+  <div class="total">Total: ₹<span id="totalAmount">0</span></div>
+  <button class="place-btn" onclick="placeBet()">Place Bet</button>
+</div>
 
-  <script>
-    let selectedBet = null;
-    let selectedAmount = 1;
-    let selectedMultiplier = 1;
+<script>
+  let currentBetType = '';
+  let baseAmount = 0;
 
-    function openBetPopup(bet) {
-      selectedBet = bet;
-      document.getElementById('betTitle').textContent = `Select ${bet}`;
-      document.getElementById('betPopup').style.display = 'block';
+  function openPopup(betType) {
+    currentBetType = betType;
+    document.getElementById('selectedBetType').innerText = betType;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('betPopup').style.display = 'flex';
+    baseAmount = 0;
+    updateTotal();
+  }
+
+  function closePopup() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('betPopup').style.display = 'none';
+  }
+
+  function selectAmount(amount) {
+    baseAmount = amount;
+    updateTotal();
+  }
+
+  function multiplyAmount(multiplier) {
+    baseAmount *= multiplier;
+    updateTotal();
+  }
+
+  function updateTotal() {
+    document.getElementById('totalAmount').innerText = baseAmount;
+  }
+
+  function placeBet() {
+    if (baseAmount <= 0) {
+      alert('Please select a valid amount');
+      return;
     }
 
-    function closePopup() {
-      document.getElementById('betPopup').style.display = 'none';
-    }
+    // ✅ Replace with your actual backend API call:
+    console.log(`Placing bet: ${currentBetType} ₹${baseAmount}`);
 
-    function setAmount(amount) {
-      selectedAmount = amount;
-    }
-
-    function setMultiplier(mult) {
-      selectedMultiplier = mult;
-    }
-
-    function placeBet() {
-      alert(`Bet placed on ${selectedBet} with amount ₹${selectedAmount * selectedMultiplier}`);
+    // Example placeholder for sending bet:
+    fetch('https://your-backend-url.com/api/bets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'testuser',
+        roundId: '123456',
+        colorBet: ['Red', 'Green', 'Violet'].includes(currentBetType) ? currentBetType : null,
+        numberBet: isNaN(currentBetType) ? null : parseInt(currentBetType),
+        amount: baseAmount
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert('Bet placed!');
       closePopup();
-    }
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      alert('Failed to place bet');
+    });
+  }
+</script>
 
-    let timer = 30;
-    setInterval(() => {
-      timer--;
-      if (timer <= 0) timer = 30;
-      document.getElementById('timer').textContent = timer;
-    }, 1000);
-
-    function showGameHistory() {
-      // Fetch game history here
-      alert('Show Game History (connect to /api/rounds)');
-    }
-
-    function showMyHistory() {
-      // Fetch my history here
-      alert('Show My History (connect to /api/bets/user/user@example.com)');
-    }
-  </script>
 </body>
 </html>
