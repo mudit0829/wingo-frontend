@@ -1,230 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WinGo Game</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BDG Game Clone</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background-color: #101010;
-      color: #fff;
-    }
-    .container {
-      max-width: 480px;
-      margin: auto;
-      padding: 10px;
-    }
-    header img {
-      width: 100%;
-      height: auto;
-      max-height: 70px;
-      object-fit: contain;
-    }
-    .wallet {
-      background: #1a1a1a;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 10px;
-    }
-    .wallet span {
-      font-size: 16px;
-    }
-    .wallet button {
-      background: #444;
-      border: none;
-      color: #fff;
-      padding: 6px 12px;
-      margin-left: 5px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .bet-tabs, .number-bets, .history-tabs {
-      display: flex;
-      justify-content: space-between;
-      margin: 10px 0;
-    }
-    .bet-tabs button, .number-bets button {
-      flex: 1;
-      margin: 0 4px;
-      padding: 10px;
-      font-size: 14px;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-weight: bold;
-    }
-    .bet-tabs .green { background: #0f0; color: #000; }
-    .bet-tabs .violet { background: #b200ff; }
-    .bet-tabs .red { background: #f00; }
-    .number-bets button.green { background: #0f0; color: #000; }
-    .number-bets button.red { background: #f00; }
-    .number-bets button.neutral { background: #333; }
-
-    .number-bets button {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin: 5px;
-    }
-
-    .popup {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.8);
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    .popup-content {
-      background: #222;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 400px;
-    }
-    .popup-content h3 {
-      margin-top: 0;
-    }
-    .multipliers button {
-      margin: 5px;
-      padding: 6px 10px;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .popup-content input {
-      width: 100%;
-      padding: 8px;
-      margin: 10px 0;
-      border-radius: 6px;
-      border: none;
-    }
-    .popup-content .btn-group {
-      display: flex;
-      justify-content: space-between;
-    }
-    .popup-content .btn-group button {
-      flex: 1;
-      margin: 5px;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    .history-tabs button {
-      flex: 1;
-      padding: 10px;
-      background: #222;
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      margin: 0 2px;
-      font-size: 14px;
-    }
-    .game-history, .my-history {
-      margin-top: 10px;
-      background: #1a1a1a;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .countdown {
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 10px 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+    body { background: #1b1b1b; color: white; padding: 10px; }
+    .container { max-width: 500px; margin: auto; background: #2c2c2c; border-radius: 10px; overflow: hidden; }
+    .header { display: flex; align-items: center; padding: 10px; background: #141414; }
+    .header img { width: 30px; margin-right: 10px; }
+    .wallet { background: #2a2a2a; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .wallet span { font-size: 18px; }
+    .wallet button { padding: 5px 10px; margin-left: 5px; border: none; border-radius: 5px; }
+    .wallet .deposit { background: #1abc9c; color: white; }
+    .wallet .withdraw { background: #e74c3c; color: white; }
+    .timer { text-align: center; font-size: 24px; padding: 10px; background: #1b1b1b; }
+    .bet-options, .number-options, .history-buttons { display: flex; justify-content: space-around; margin: 10px 0; }
+    .bet-options button, .number-options button, .history-buttons button { border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .green { background: #00e676; color: black; }
+    .red { background: #f44336; color: white; }
+    .violet { background: #9c27b0; color: white; }
+    .number-options button { width: 35px; height: 35px; border-radius: 50%; font-weight: bold; }
+    .number-green { background: #00e676; color: black; }
+    .number-red { background: #f44336; color: white; }
+    .number-violet { background: #9c27b0; color: white; }
+    .number-white { background: white; color: black; }
+    .history-buttons button { background: #444; color: white; flex: 1; margin: 0 2px; padding: 10px; }
+    .table { width: 100%; margin-top: 10px; border-collapse: collapse; background: #2d2d2d; font-size: 14px; }
+    .table th, .table td { border: 1px solid #444; padding: 8px; text-align: center; }
+    .table th { background: #3c3c3c; }
+    .result-bar { padding: 10px; background: #222; margin-top: 10px; }
+    .popup { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #1b1b1b; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; z-index: 999; }
+    .popup h3 { margin-bottom: 10px; }
+    .popup .amount-buttons button { margin: 5px; padding: 8px 15px; background: #444; color: white; border: none; border-radius: 5px; }
+    .popup .confirm { margin-top: 10px; background: #1abc9c; border: none; padding: 10px; width: 100%; border-radius: 5px; color: white; font-weight: bold; }
+    .popup .cancel { background: #e74c3c; margin-top: 5px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <img src="logo.png" alt="WinGo Logo" />
-    </header>
+    <div class="header">
+      <img src="logo.png" alt="logo" />
+      <h2>BDG Game</h2>
+    </div>
 
     <div class="wallet">
-      <span>Wallet: ₹5000</span>
+      <span>Wallet: ₹7500</span>
       <div>
-        <button>Deposit</button>
-        <button>Withdraw</button>
+        <button class="deposit">Deposit</button>
+        <button class="withdraw">Withdraw</button>
       </div>
     </div>
 
-    <div class="countdown">Time Left: <span id="timer">25</span>s</div>
+    <div class="timer">Time Left: <span id="timer">30</span>s</div>
 
-    <div class="bet-tabs">
-      <button class="green" onclick="openPopup('Green')">Green</button>
-      <button class="violet" onclick="openPopup('Violet')">Violet</button>
-      <button class="red" onclick="openPopup('Red')">Red</button>
+    <div class="bet-options">
+      <button class="green" onclick="openBetPopup('Green')">Green</button>
+      <button class="violet" onclick="openBetPopup('Violet')">Violet</button>
+      <button class="red" onclick="openBetPopup('Red')">Red</button>
     </div>
 
-    <div class="number-bets">
-      <button class="green" onclick="openPopup('0')">0</button>
-      <button class="red" onclick="openPopup('1')">1</button>
-      <button class="green" onclick="openPopup('2')">2</button>
-      <button class="red" onclick="openPopup('3')">3</button>
-      <button class="green" onclick="openPopup('4')">4</button>
-      <button class="violet" onclick="openPopup('5')">5</button>
-      <button class="green" onclick="openPopup('6')">6</button>
-      <button class="red" onclick="openPopup('7')">7</button>
-      <button class="green" onclick="openPopup('8')">8</button>
-      <button class="red" onclick="openPopup('9')">9</button>
+    <div class="number-options">
+      <button class="number-green" onclick="openBetPopup('0')">0</button>
+      <button class="number-red" onclick="openBetPopup('1')">1</button>
+      <button class="number-red" onclick="openBetPopup('2')">2</button>
+      <button class="number-green" onclick="openBetPopup('3')">3</button>
+      <button class="number-green" onclick="openBetPopup('4')">4</button>
+      <button class="number-violet" onclick="openBetPopup('5')">5</button>
+      <button class="number-red" onclick="openBetPopup('6')">6</button>
+      <button class="number-green" onclick="openBetPopup('7')">7</button>
+      <button class="number-red" onclick="openBetPopup('8')">8</button>
+      <button class="number-red" onclick="openBetPopup('9')">9</button>
     </div>
 
-    <div class="history-tabs">
-      <button onclick="showTab('game')">Game History</button>
-      <button onclick="showTab('my')">My History</button>
+    <div class="history-buttons">
+      <button onclick="showGameHistory()">Game History</button>
+      <button onclick="showMyHistory()">My History</button>
     </div>
 
-    <div class="game-history" id="game-history">
-      <p>Recent Results: 5, 3, 8, 1, 0</p>
-    </div>
+    <div class="result-bar">Recent Results: <span id="recent-results">5, 3, 8, 1, 0</span></div>
 
-    <div class="my-history" id="my-history" style="display: none;">
-      <p>Your Bets will appear here...</p>
-    </div>
+    <table class="table" id="history-table">
+      <thead>
+        <tr><th>Period</th><th>Number</th><th>Big/Small</th><th>Color</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Loading...</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="popup" id="betPopup">
-    <div class="popup-content">
-      <h3 id="betChoice">Place Your Bet</h3>
-      <div class="multipliers">
-        <button onclick="setAmount(10)">₹10</button>
-        <button onclick="setAmount(50)">₹50</button>
-        <button onclick="setAmount(100)">₹100</button>
-        <button onclick="multiplyAmount(2)">x2</button>
-        <button onclick="multiplyAmount(5)">x5</button>
-        <button onclick="multiplyAmount(10)">x10</button>
-      </div>
-      <input type="text" id="amountInput" value="" placeholder="Enter Amount" readonly />
-      <div class="btn-group">
-        <button style="background: #4caf50; color: white;" onclick="submitBet()">Place Bet</button>
-        <button style="background: #f44336; color: white;" onclick="closePopup()">Cancel</button>
+    <h3 id="betTitle">Select Bet</h3>
+    <div>
+      Quantity:
+      <div class="amount-buttons">
+        <button onclick="setAmount(1)">1</button>
+        <button onclick="setAmount(10)">10</button>
+        <button onclick="setAmount(100)">100</button>
+        <button onclick="setAmount(1000)">1000</button>
       </div>
     </div>
+    <div>
+      Multiplier:
+      <div class="amount-buttons">
+        <button onclick="setMultiplier(1)">x1</button>
+        <button onclick="setMultiplier(5)">x5</button>
+        <button onclick="setMultiplier(10)">x10</button>
+        <button onclick="setMultiplier(50)">x50</button>
+        <button onclick="setMultiplier(100)">x100</button>
+      </div>
+    </div>
+    <button class="confirm" onclick="placeBet()">Confirm Bet</button>
+    <button class="confirm cancel" onclick="closePopup()">Cancel</button>
   </div>
 
   <script>
-    let selectedBet = '';
+    let selectedBet = null;
+    let selectedAmount = 1;
+    let selectedMultiplier = 1;
 
-    function openPopup(choice) {
-      selectedBet = choice;
-      document.getElementById('betChoice').innerText = `Bet on ${choice}`;
-      document.getElementById('amountInput').value = '';
-      document.getElementById('betPopup').style.display = 'flex';
+    function openBetPopup(bet) {
+      selectedBet = bet;
+      document.getElementById('betTitle').textContent = `Select ${bet}`;
+      document.getElementById('betPopup').style.display = 'block';
     }
 
     function closePopup() {
@@ -232,34 +133,34 @@
     }
 
     function setAmount(amount) {
-      document.getElementById('amountInput').value = amount;
+      selectedAmount = amount;
     }
 
-    function multiplyAmount(multiplier) {
-      let current = parseInt(document.getElementById('amountInput').value || 0);
-      document.getElementById('amountInput').value = current * multiplier;
+    function setMultiplier(mult) {
+      selectedMultiplier = mult;
     }
 
-    function submitBet() {
-      const amount = document.getElementById('amountInput').value;
-      if (!amount || amount <= 0) return alert('Enter valid amount');
-      alert(`Bet Placed on ${selectedBet} with ₹${amount}`);
+    function placeBet() {
+      alert(`Bet placed on ${selectedBet} with amount ₹${selectedAmount * selectedMultiplier}`);
       closePopup();
     }
 
-    function showTab(tab) {
-      document.getElementById('game-history').style.display = tab === 'game' ? 'block' : 'none';
-      document.getElementById('my-history').style.display = tab === 'my' ? 'block' : 'none';
+    let timer = 30;
+    setInterval(() => {
+      timer--;
+      if (timer <= 0) timer = 30;
+      document.getElementById('timer').textContent = timer;
+    }, 1000);
+
+    function showGameHistory() {
+      // Fetch game history here
+      alert('Show Game History (connect to /api/rounds)');
     }
 
-    // Timer logic
-    let seconds = 25;
-    const timerDisplay = document.getElementById('timer');
-    setInterval(() => {
-      seconds--;
-      if (seconds <= 0) seconds = 25;
-      timerDisplay.innerText = seconds;
-    }, 1000);
+    function showMyHistory() {
+      // Fetch my history here
+      alert('Show My History (connect to /api/bets/user/user@example.com)');
+    }
   </script>
 </body>
 </html>
