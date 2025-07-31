@@ -7,196 +7,155 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
       padding: 20px;
-      background: #f9f9f9;
-    }
-    h2 {
       color: #333;
     }
-    .balance {
-      margin-bottom: 15px;
+    h1 {
+      color: #0066cc;
     }
-    .bet-buttons button {
+    .wallet, .bet-section, .result, .controls {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px;
       margin: 5px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    .number-buttons button {
-      margin: 3px;
-      padding: 10px;
-      width: 40px;
-    }
-    input[type="number"] {
-      margin-top: 10px;
-      padding: 8px;
-      font-size: 16px;
-    }
-    button.place-bet {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: green;
-      color: white;
+      cursor: pointer;
+      border-radius: 5px;
       border: none;
+      background-color: #007bff;
+      color: white;
     }
-    #result-message {
-      margin-top: 20px;
-      padding: 10px;
-      font-weight: bold;
-      font-size: 18px;
-      display: none;
-      border-left: 5px solid #007bff;
-      background-color: #e6f0ff;
+    button:hover {
+      background-color: #0056b3;
+    }
+    .selected {
+      background-color: #28a745 !important;
     }
   </style>
 </head>
 <body>
-  <h2>Welcome to WinGo Game</h2>
-  <div class="balance">
-    Wallet Balance: ₹<span id="walletBalance">0</span>
+
+  <h1>WinGo Game</h1>
+
+  <div class="wallet">
+    <strong>Wallet:</strong> ₹<span id="walletAmount">0</span>
   </div>
+
+  <div class="controls">
+    <button onclick="adjustAmount(-10)">-10</button>
+    <button onclick="adjustAmount(-1)">-1</button>
+    <span id="amountDisplay">₹0</span>
+    <button onclick="adjustAmount(1)">+1</button>
+    <button onclick="adjustAmount(10)">+10</button>
+  </div>
+
   <div class="bet-section">
-    <h3>Select Color</h3>
-    <div class="bet-buttons">
-      <button onclick="selectColor('Red')">Red</button>
-      <button onclick="selectColor('Green')">Green</button>
-      <button onclick="selectColor('Violet')">Violet</button>
-    </div>
+    <h3>Choose Color Bet</h3>
+    <button onclick="selectBet('Red', null)">Red</button>
+    <button onclick="selectBet('Green', null)">Green</button>
+    <button onclick="selectBet('Violet', null)">Violet</button>
 
-    <h3>Or Select Number</h3>
-    <div class="number-buttons">
-      <button onclick="selectNumber(0)">0</button>
-      <button onclick="selectNumber(1)">1</button>
-      <button onclick="selectNumber(2)">2</button>
-      <button onclick="selectNumber(3)">3</button>
-      <button onclick="selectNumber(4)">4</button>
-      <button onclick="selectNumber(5)">5</button>
-      <button onclick="selectNumber(6)">6</button>
-      <button onclick="selectNumber(7)">7</button>
-      <button onclick="selectNumber(8)">8</button>
-      <button onclick="selectNumber(9)">9</button>
-    </div>
-
-    <div>
-      <input type="number" id="betAmount" placeholder="Enter bet amount" />
-      <button class="place-bet" onclick="placeBet()">Place Bet</button>
-    </div>
+    <h3>Choose Number Bet</h3>
+    <div id="numberButtons"></div>
   </div>
 
-  <div id="result-message"></div>
+  <div class="result">
+    <h3>Result:</h3>
+    <p id="resultMessage">No result yet</p>
+  </div>
+
+  <button onclick="placeBet()">Place Bet</button>
 
   <script>
     const backendUrl = "https://wingo-backend-nqk5.onrender.com";
-    let email = localStorage.getItem("email") || "demo@example.com"; // fallback for demo
-    let selectedBet = { type: null, number: null };
+    const email = "test2@example.com"; // HARD-CODED DEMO USER
     let currentAmount = 0;
-    let currentRoundId = "";
+    let selectedBet = { type: null, number: null };
 
-    function selectColor(color) {
-      selectedBet = { type: color, number: null };
-      console.log("Selected color:", color);
+    // Amount Control
+    function adjustAmount(amount) {
+      currentAmount = Math.max(0, currentAmount + amount);
+      document.getElementById("amountDisplay").innerText = `₹${currentAmount}`;
     }
 
-    function selectNumber(number) {
-      selectedBet = { type: null, number: number };
-      console.log("Selected number:", number);
+    // Color/Number Selection
+    function selectBet(type, number) {
+      selectedBet = { type, number };
+      document.querySelectorAll("button").forEach(btn => btn.classList.remove("selected"));
+      event.target.classList.add("selected");
     }
 
+    // Generate Number Buttons 0-9
+    window.onload = async () => {
+      for (let i = 0; i <= 9; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        btn.onclick = () => selectBet(null, i);
+        document.getElementById("numberButtons").appendChild(btn);
+      }
+      await fetchWallet();
+    };
+
+    // Get Wallet Amount
     async function fetchWallet() {
       try {
-        const res = await fetch(`${backendUrl}/api/users/wallet/${email}`);
+        const res = await fetch(`${backendUrl}/api/users/${email}`);
         const data = await res.json();
-        document.getElementById("walletBalance").innerText = data.wallet || 0;
+        document.getElementById("walletAmount").innerText = data.wallet.toFixed(2);
       } catch (err) {
-        console.error("Error fetching wallet:", err);
+        alert("Error fetching wallet!");
       }
     }
 
+    // Get Current Round ID from backend
+    async function fetchCurrentRoundId() {
+      const res = await fetch(`${backendUrl}/api/rounds`);
+      const data = await res.json();
+      const latestRound = data[data.length - 1];
+      return latestRound.roundId;
+    }
+
+    // Place Bet API
     async function placeBet() {
       try {
-        const amount = parseFloat(document.getElementById("betAmount").value);
-        if (isNaN(amount) || amount <= 0) {
-          alert("Enter a valid amount");
+        if (!currentAmount || (!selectedBet.type && selectedBet.number === null)) {
+          alert("Please select a bet and amount!");
           return;
         }
-        currentAmount = amount;
 
-        const roundResponse = await fetch(`${backendUrl}/api/rounds`);
-        const rounds = await roundResponse.json();
-        const latestRound = rounds[rounds.length - 1];
-        currentRoundId = latestRound._id;
-
+        const roundId = await fetchCurrentRoundId();
         const payload = {
           email,
-          roundId: currentRoundId,
+          roundId,
           amount: currentAmount,
           colorBet: selectedBet.number === null ? selectedBet.type : null,
           numberBet: selectedBet.number !== null ? selectedBet.number : null
         };
 
-        const response = await fetch(`${backendUrl}/api/bets`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(`${backendUrl}/api/bets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
+        const data = await res.json();
 
-        if (response.ok) {
-          alert("Bet placed successfully!");
-          fetchWallet();
-          showResultStatus("Bet placed. Waiting for result...");
-          setTimeout(() => checkResult(currentRoundId), 5000);
-        } else {
-          alert("Bet failed: " + result.message);
+        if (!res.ok) {
+          throw new Error(data.message || "Bet failed");
         }
+
+        document.getElementById("resultMessage").innerText = `✅ Bet placed on round ${roundId}`;
+        currentAmount = 0;
+        document.getElementById("amountDisplay").innerText = "₹0";
+        selectedBet = { type: null, number: null };
+        await fetchWallet();
       } catch (err) {
-        console.error("Error placing bet:", err);
-        alert("Something went wrong.");
+        console.error(err);
+        document.getElementById("resultMessage").innerText = `❌ ${err.message}`;
       }
     }
-
-    async function checkResult(roundId) {
-      try {
-        const res = await fetch(`${backendUrl}/api/rounds`);
-        const rounds = await res.json();
-        const round = rounds.find(r => r._id === roundId);
-        if (!round || round.result === undefined) {
-          showResultStatus("Result not available yet.");
-          return;
-        }
-
-        const result = round.result.toString();
-        const win = evaluateWin(result);
-        if (win) {
-          showResultStatus(`🎉 You WON! Result: ${result}`);
-        } else {
-          showResultStatus(`😢 You lost. Result: ${result}`);
-        }
-        fetchWallet();
-      } catch (err) {
-        console.error("Error checking result:", err);
-        showResultStatus("Could not fetch result.");
-      }
-    }
-
-    function evaluateWin(result) {
-      if (selectedBet.number !== null) {
-        return selectedBet.number.toString() === result;
-      }
-      if (selectedBet.type === "Red" && ["1", "3", "7", "9"].includes(result)) return true;
-      if (selectedBet.type === "Green" && ["0", "2", "4", "6", "8"].includes(result)) return true;
-      if (selectedBet.type === "Violet" && ["0", "5"].includes(result)) return true;
-      return false;
-    }
-
-    function showResultStatus(message) {
-      const box = document.getElementById("result-message");
-      box.innerText = message;
-      box.style.display = "block";
-    }
-
-    window.onload = fetchWallet;
   </script>
 </body>
 </html>
