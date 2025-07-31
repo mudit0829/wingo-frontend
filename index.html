@@ -4,246 +4,292 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
+      margin: 0;
+      font-family: sans-serif;
       background: #111;
       color: white;
-      overflow-x: hidden;
+      text-align: center;
     }
     header {
       padding: 10px;
-      text-align: center;
-      background: #222;
-    }
-    .balance-box {
-      text-align: center;
-      padding: 10px;
-      background: #333;
-    }
-    .bet-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 15px 0;
-      flex-wrap: wrap;
-    }
-    .bet-buttons button {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #555;
-      color: #fff;
-    }
-    .number-buttons {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      padding: 10px;
-      max-width: 300px;
-      margin: auto;
-    }
-    .number-buttons button {
-      padding: 15px;
-      border-radius: 50%;
-      font-size: 18px;
-      border: none;
-      cursor: pointer;
-      background: #444;
-      color: white;
-    }
-    #historyPopup {
-      position: fixed;
-      bottom: -100%;
-      left: 0;
-      width: 100%;
-      height: 70%;
-      background: #222;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
-      overflow-y: auto;
-      transition: bottom 0.3s ease;
-      z-index: 1000;
-    }
-    #historyPopup.open {
-      bottom: 0;
-    }
-    .popup-header {
-      padding: 15px;
-      background: #333;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .tab-buttons {
+    header img {
+      height: 40px;
+    }
+    .wallet {
+      margin: 10px 0;
+      font-size: 20px;
+    }
+    .wallet-buttons button {
+      margin: 5px;
+      padding: 8px 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+    }
+    .deposit {
+      background-color: green;
+      color: white;
+    }
+    .withdraw {
+      background-color: red;
+      color: white;
+    }
+    .round {
+      margin: 10px;
+      font-size: 18px;
+    }
+    .timer {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .color-tabs, .number-tabs {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
+      margin: 10px;
+    }
+    .color-tabs button, .number-tabs button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      min-width: 80px;
+      text-transform: uppercase;
+    }
+    .red { background-color: red; color: white; }
+    .green { background-color: green; color: white; }
+    .violet { background-color: violet; color: white; }
+    .popup, .history-modal {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      background: #222;
+      padding: 20px;
+      transition: bottom 0.3s;
+      border-radius: 20px 20px 0 0;
+      z-index: 10;
+    }
+    .popup.show, .history-modal.show {
+      bottom: 0;
+    }
+    .popup button, .history-modal button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+    }
+    .amount-options button, .multiplier-options button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 14px;
+    }
+    .history-buttons {
       margin-top: 10px;
     }
-    .tab-buttons button {
-      flex: 1;
-      padding: 10px;
-      background: #444;
-      border: none;
+    .history-buttons button {
+      padding: 10px 20px;
+      margin: 5px;
+    }
+    table {
+      width: 100%;
+      background: #333;
       color: white;
-      font-weight: bold;
+      border-collapse: collapse;
     }
-    .tab-buttons button.active {
-      background: #666;
+    th, td {
+      padding: 8px;
+      border: 1px solid #444;
     }
-    .history-list {
-      padding: 10px;
-    }
-    .history-item {
-      border-bottom: 1px solid #444;
-      padding: 10px 5px;
-    }
-    .history-item.win { color: #00ff00; }
-    .history-item.loss { color: #ff4444; }
-    .footer-btn {
-      position: fixed;
-      bottom: 10px;
-      right: 20px;
-      background: #ffcc00;
-      color: #000;
-      border: none;
-      padding: 12px 18px;
-      font-weight: bold;
-      border-radius: 50px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      z-index: 999;
+    @media screen and (max-width: 600px) {
+      .color-tabs, .number-tabs {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
 <body>
-
   <header>
-    <h2>WinGo Game</h2>
+    <div></div>
+    <img src="logo.png" alt="Logo">
+    <i class="fas fa-user-circle fa-2x" style="color:white;"></i>
   </header>
 
-  <div class="balance-box">
-    Wallet: ₹<span id="wallet">0</span>
+  <div class="wallet">Wallet: ₹<span id="walletAmount">0.00</span></div>
+  <div class="wallet-buttons">
+    <button class="withdraw">Withdraw</button>
+    <button class="deposit">Deposit</button>
   </div>
 
-  <div class="bet-buttons">
-    <button onclick="placeColorBet('Red')">Red</button>
-    <button onclick="placeColorBet('Green')">Green</button>
-    <button onclick="placeColorBet('Violet')">Violet</button>
+  <div class="round">
+    Round: <span id="roundId">-</span> | <span class="timer" id="timer">--</span>
   </div>
 
-  <div class="number-buttons">
-    ${[...Array(10).keys()].map(n => `<button onclick="placeNumberBet(${n})">${n}</button>`).join('')}
+  <div class="color-tabs">
+    <button class="red" onclick="openPopup('Red')">Red</button>
+    <button class="green" onclick="openPopup('Green')">Green</button>
+    <button class="violet" onclick="openPopup('Violet')">Violet</button>
   </div>
 
-  <button class="footer-btn" onclick="togglePopup()">My History</button>
+  <div class="number-tabs" id="numberTabs"></div>
 
-  <!-- Bottom Popup -->
-  <div id="historyPopup">
-    <div class="popup-header">
-      <span>Game History</span>
-      <button onclick="togglePopup()" style="color:white;background:none;border:none;">✕</button>
+  <div class="history-buttons">
+    <button onclick="openHistory('my')">My History</button>
+    <button onclick="openHistory('game')">Game History</button>
+  </div>
+
+  <!-- Bet Popup -->
+  <div class="popup" id="betPopup">
+    <h3>Place Bet: <span id="betType"></span></h3>
+    <div class="amount-options">
+      <button onclick="selectAmount(1)">₹1</button>
+      <button onclick="selectAmount(10)">₹10</button>
+      <button onclick="selectAmount(100)">₹100</button>
     </div>
-
-    <div class="tab-buttons">
-      <button id="tab-my" class="active" onclick="showTab('my')">My History</button>
-      <button id="tab-game" onclick="showTab('game')">Game History</button>
+    <div class="multiplier-options">
+      <button onclick="selectMultiplier(2)">x2</button>
+      <button onclick="selectMultiplier(5)">x5</button>
+      <button onclick="selectMultiplier(10)">x10</button>
+      <button onclick="selectMultiplier(50)">x50</button>
+      <button onclick="selectMultiplier(100)">x100</button>
     </div>
+    <div>Total: ₹<span id="totalAmount">0</span></div>
+    <button onclick="placeBet()">Place Bet</button>
+    <button onclick="closePopup()">Cancel</button>
+  </div>
 
-    <div class="history-list" id="myHistory"></div>
-    <div class="history-list" id="gameHistory" style="display:none;"></div>
+  <!-- History Modal -->
+  <div class="history-modal" id="historyModal">
+    <h3 id="historyTitle"></h3>
+    <div id="historyContent">Loading...</div>
+    <button onclick="closeHistory()">Close</button>
   </div>
 
   <script>
-    const userEmail = 'user@example.com';
+    const userEmail = "user@example.com";
+    let selectedAmount = 0;
+    let selectedMultiplier = 1;
+    let selectedType = "";
 
-    async function fetchWallet() {
-      try {
-        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${userEmail}`);
-        const data = await res.json();
-        document.getElementById('wallet').textContent = data.wallet.toFixed(2);
-      } catch (e) {
-        console.error('Wallet fetch error:', e);
-      }
+    function fetchWallet() {
+      fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${userEmail}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("walletAmount").textContent = data.wallet.toFixed(2);
+        })
+        .catch(err => console.error("wallet fetch error:", err));
     }
 
-    function togglePopup() {
-      document.getElementById('historyPopup').classList.toggle('open');
-      loadMyHistory();
+    function fetchCurrentRound() {
+      fetch(`https://wingo-backend-nqk5.onrender.com/api/rounds`)
+        .then(res => res.json())
+        .then(data => {
+          const latest = data[data.length - 1];
+          document.getElementById("roundId").textContent = latest.roundId || "-";
+        });
     }
 
-    function showTab(tab) {
-      document.getElementById('tab-my').classList.remove('active');
-      document.getElementById('tab-game').classList.remove('active');
-      document.getElementById('myHistory').style.display = 'none';
-      document.getElementById('gameHistory').style.display = 'none';
+    function startTimer(seconds = 30) {
+      let time = seconds;
+      const timerEl = document.getElementById("timer");
+      const interval = setInterval(() => {
+        if (time <= 0) {
+          clearInterval(interval);
+          timerEl.textContent = "Waiting...";
+          return;
+        }
+        timerEl.textContent = time + "s";
+        time--;
+      }, 1000);
+    }
 
-      if (tab === 'my') {
-        document.getElementById('tab-my').classList.add('active');
-        document.getElementById('myHistory').style.display = 'block';
-        loadMyHistory();
+    function openPopup(type) {
+      selectedType = type;
+      document.getElementById("betType").textContent = type;
+      document.getElementById("betPopup").classList.add("show");
+    }
+
+    function closePopup() {
+      document.getElementById("betPopup").classList.remove("show");
+      selectedAmount = 0;
+      selectedMultiplier = 1;
+      document.getElementById("totalAmount").textContent = "0";
+    }
+
+    function selectAmount(amt) {
+      selectedAmount = amt;
+      updateTotal();
+    }
+
+    function selectMultiplier(multi) {
+      selectedMultiplier = multi;
+      updateTotal();
+    }
+
+    function updateTotal() {
+      document.getElementById("totalAmount").textContent = selectedAmount * selectedMultiplier;
+    }
+
+    function placeBet() {
+      alert(`Placed bet of ₹${selectedAmount * selectedMultiplier} on ${selectedType}`);
+      closePopup();
+      fetchWallet(); // auto refresh wallet after bet
+    }
+
+    function openHistory(type) {
+      document.getElementById("historyModal").classList.add("show");
+      const title = type === "my" ? "My History" : "Game History";
+      document.getElementById("historyTitle").textContent = title;
+      if (type === "my") {
+        fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/user/${userEmail}`)
+          .then(res => res.json())
+          .then(data => {
+            const html = `
+              <table>
+                <tr><th>Round</th><th>Color</th><th>Number</th><th>Status</th></tr>
+                ${data.map(bet => `
+                  <tr>
+                    <td>${bet.roundId}</td>
+                    <td>${bet.colorBet || '-'}</td>
+                    <td>${bet.numberBet ?? '-'}</td>
+                    <td>${bet.result || '-'}</td>
+                  </tr>
+                `).join("")}
+              </table>`;
+            document.getElementById("historyContent").innerHTML = html;
+          });
       } else {
-        document.getElementById('tab-game').classList.add('active');
-        document.getElementById('gameHistory').style.display = 'block';
-        loadGameHistory();
+        document.getElementById("historyContent").innerHTML = "<i>Coming soon...</i>";
       }
     }
 
-    async function loadMyHistory() {
-      try {
-        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/user/${userEmail}`);
-        const data = await res.json();
-        const container = document.getElementById('myHistory');
-        container.innerHTML = '';
-        data.reverse().forEach(bet => {
-          const isWin = bet.status === 'win';
-          container.innerHTML += `
-            <div class="history-item ${isWin ? 'win' : 'loss'}">
-              <div><strong>Round:</strong> ${bet.roundId}</div>
-              <div><strong>Color:</strong> ${bet.color || '-'}</div>
-              <div><strong>Number:</strong> ${bet.number !== null ? bet.number : '-'}</div>
-              <div><strong>Amount:</strong> ₹${bet.amount}</div>
-              <div><strong>Result:</strong> ${isWin ? 'Win' : 'Loss'}</div>
-            </div>
-          `;
-        });
-      } catch (e) {
-        console.error('My History error:', e);
+    function closeHistory() {
+      document.getElementById("historyModal").classList.remove("show");
+    }
+
+    function renderNumberButtons() {
+      const container = document.getElementById("numberTabs");
+      for (let i = 0; i <= 9; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.onclick = () => openPopup(i.toString());
+        container.appendChild(btn);
       }
-    }
-
-    async function loadGameHistory() {
-      try {
-        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/rounds`);
-        const data = await res.json();
-        const container = document.getElementById('gameHistory');
-        container.innerHTML = '';
-        data.reverse().forEach(round => {
-          container.innerHTML += `
-            <div class="history-item">
-              <div><strong>Round:</strong> ${round.roundId}</div>
-              <div><strong>Result:</strong> ${round.result}</div>
-              <div><strong>Time:</strong> ${new Date(round.timestamp).toLocaleTimeString()}</div>
-            </div>
-          `;
-        });
-      } catch (e) {
-        console.error('Game History error:', e);
-      }
-    }
-
-    function placeColorBet(color) {
-      alert(`Color Bet placed on ${color}`);
-    }
-
-    function placeNumberBet(number) {
-      alert(`Number Bet placed on ${number}`);
     }
 
     fetchWallet();
+    fetchCurrentRound();
+    startTimer();
+    renderNumberButtons();
   </script>
 </body>
 </html>
