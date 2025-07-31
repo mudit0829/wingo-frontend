@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,7 +96,7 @@
 
     async function fetchWallet() {
       try {
-        const res = await fetch(https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email});
+        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email}`);
         const data = await res.json();
         document.getElementById("walletBalance").innerText = data.wallet || 0;
       } catch (err) {
