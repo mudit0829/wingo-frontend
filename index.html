@@ -40,13 +40,13 @@
       border: none;
     }
     #result-message {
-      display: none;
       margin-top: 20px;
       padding: 10px;
-      font-size: 18px;
       font-weight: bold;
-      background: #e6f7ff;
-      border-left: 5px solid #1890ff;
+      font-size: 18px;
+      display: none;
+      border-left: 5px solid #007bff;
+      background-color: #e6f0ff;
     }
   </style>
 </head>
@@ -86,16 +86,11 @@
   <div id="result-message"></div>
 
   <script>
-    const email = localStorage.getItem("email");
     const backendUrl = "https://wingo-backend-nqk5.onrender.com";
+    let email = localStorage.getItem("email") || "demo@example.com"; // fallback for demo
     let selectedBet = { type: null, number: null };
     let currentAmount = 0;
     let currentRoundId = "";
-
-    if (!email) {
-      alert("No email found. Please login first.");
-      window.location.href = "login.html";
-    }
 
     function selectColor(color) {
       selectedBet = { type: color, number: null };
@@ -111,7 +106,7 @@
       try {
         const res = await fetch(`${backendUrl}/api/users/wallet/${email}`);
         const data = await res.json();
-        document.getElementById("walletBalance").innerText = data.balance || 0;
+        document.getElementById("walletBalance").innerText = data.wallet || 0;
       } catch (err) {
         console.error("Error fetching wallet:", err);
       }
@@ -126,7 +121,6 @@
         }
         currentAmount = amount;
 
-        // Step 1: Get latest round
         const roundResponse = await fetch(`${backendUrl}/api/rounds`);
         const rounds = await roundResponse.json();
         const latestRound = rounds[rounds.length - 1];
@@ -149,18 +143,16 @@
         const result = await response.json();
 
         if (response.ok) {
-          alert('Bet placed successfully!');
+          alert("Bet placed successfully!");
           fetchWallet();
-          showResultStatus("Bet placed successfully. Awaiting result...");
-
+          showResultStatus("Bet placed. Waiting for result...");
           setTimeout(() => checkResult(currentRoundId), 5000);
         } else {
-          alert('Bet placement failed: ' + result.message);
+          alert("Bet failed: " + result.message);
         }
-
       } catch (err) {
-        console.error('Error placing bet:', err);
-        alert('Bet placement failed due to error');
+        console.error("Error placing bet:", err);
+        alert("Something went wrong.");
       }
     }
 
@@ -169,17 +161,22 @@
         const res = await fetch(`${backendUrl}/api/rounds`);
         const rounds = await res.json();
         const round = rounds.find(r => r._id === roundId);
-        if (round && round.result !== undefined) {
-          const result = round.result.toString();
-          const win = evaluateWin(result);
-          showResultStatus(win ? `🎉 You WON! Result: ${result}` : `😢 You lost. Result: ${result}`);
-          fetchWallet();
-        } else {
+        if (!round || round.result === undefined) {
           showResultStatus("Result not available yet.");
+          return;
         }
+
+        const result = round.result.toString();
+        const win = evaluateWin(result);
+        if (win) {
+          showResultStatus(`🎉 You WON! Result: ${result}`);
+        } else {
+          showResultStatus(`😢 You lost. Result: ${result}`);
+        }
+        fetchWallet();
       } catch (err) {
-        console.error("Result check failed:", err);
-        showResultStatus("Failed to fetch result.");
+        console.error("Error checking result:", err);
+        showResultStatus("Could not fetch result.");
       }
     }
 
@@ -194,9 +191,9 @@
     }
 
     function showResultStatus(message) {
-      const resultBox = document.getElementById("result-message");
-      resultBox.innerText = message;
-      resultBox.style.display = "block";
+      const box = document.getElementById("result-message");
+      box.innerText = message;
+      box.style.display = "block";
     }
 
     window.onload = fetchWallet;
