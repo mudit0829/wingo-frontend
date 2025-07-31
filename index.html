@@ -1,226 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WinGo Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1a1a1a;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #00ffd5;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
-    .bet-section, .timer, .result-display {
-      background: #2e2e2e;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 5px;
-      font-size: 1em;
-    }
-    button {
-      background-color: #00ffd5;
-      color: #000;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #222;
-    }
-    th, td {
-      padding: 10px;
-      text-align: center;
-      border-bottom: 1px solid #444;
-    }
-    .popup {
-      display: none;
-      position: fixed;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #333;
-      padding: 20px;
-      border-radius: 10px;
-      color: #fff;
-      z-index: 9999;
-      box-shadow: 0 0 15px #00ffd5;
-    }
-    @media (max-width: 600px) {
-      .container {
-        padding: 10px;
-      }
-    }
-  </style>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>WinGo Game</title>
+<style>
+  body { background:#121212;color:#fff;font-family:sans-serif;margin:0;padding:0;}
+  .header { background:#1abc9c;padding:20px;text-align:center;font-size:1.5em; }  
+  .wallet { padding:10px; text-align:center; background:#2c3e50;}
+  .actions button { margin:10px;padding:10px 20px;border:none;border-radius:5px;font-weight:bold;cursor:pointer;}
+  .actions .withdraw { background:#e74c3c;} .actions .deposit { background:#2ecc71;}
+  .tabs { display:flex; justify-content:space-around; margin:20px 0; }
+  .tabs button { flex:1;padding:10px;background:#34495e;border:none;color:#fff;margin:0 5px;cursor:pointer;}
+  .tabs .active { background:#1abc9c;}
+  .bet-grid { display:flex; justify-content:space-between; padding:0 5px;}
+  .bet-grid button { width:32%; padding:15px 0;border:none;border-radius:5px;font-size:1em;}
+  .color-red { background:#c0392b;} .color-green { background:#27ae60;} .color-violet { background:#8e44ad;}
+  .numbers { display:flex; flex-wrap:wrap; justify-content:space-around;margin:10px 0;}
+  .numbers button { width:30px;height:30px;border-radius:50%;border:none;background:#2980b9;color:#fff; margin:5px;}
+  .popup { position:fixed; bottom:0; left:0; width:100%; background:#16a085;padding:20px;border-top-left-radius:15px;border-top-right-radius:15px; transform:translateY(100%); transition:transform .3s ease; }
+  .popup.active { transform:translateY(0); }
+  .popup h3 { margin-top:0;color:#fff;}
+  .popup .balance { color:#fff;margin-bottom:10px;}
+  .popup .multiplier button { margin:5px;padding:10px;border:none;border-radius:5px;cursor:pointer;}
+  .popup .actions { display:flex; justify-content:space-between;margin-top:10px; }
+  .slider { display:none;}
+  .history { padding:10px; background:#2c3e50;height:300px; overflow:auto;}
+  .history h3 { margin-top:0;text-align:center;}
+  .history-table { width:100%;border-collapse:collapse;font-size:0.9em;}
+  .history-table th, .history-table td { border:1px solid #34495e;padding:5px;text-align:center;}
+  .timer { text-align:center;font-size:1.2em;padding:10px;background:#34495e;}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎯 WinGo Game 🎯</h1>
 
-    <div class="timer">
-      <h2>⏳ Time Left: <span id="countdown">25</span> sec</h2>
-    </div>
+<div class="header">WinGo Game</div>
+<div class="wallet">Wallet: ₹<span id="wallet">Loading...</span></div>
 
-    <div class="result-display">
-      <h2>🎲 Last Result: <span id="lastResult">Loading...</span></h2>
-    </div>
+<div class="timer">Next Round In: <span id="countdown">30</span>s</div>
+<div style="text-align:center;">Last Result: <span id="lastResult">--</span></div>
 
-    <div class="bet-section">
-      <h2>Place Your Bet</h2>
-      <label>Amount</label>
-      <input type="number" id="amount" placeholder="Enter amount" />
+<div class="actions">
+  <button class="withdraw">Withdraw</button>
+  <button class="deposit">Deposit</button>
+</div>
 
-      <label>Choose Color</label>
-      <select id="color">
-        <option value="">--Select--</option>
-        <option value="Red">🔴 Red</option>
-        <option value="Green">🟢 Green</option>
-        <option value="Violet">🟣 Violet</option>
-      </select>
+<div class="bet-grid">
+  <button class="color-red" onclick="openPopup('Red',null)">Red</button>
+  <button class="color-green" onclick="openPopup('Green',null)">Green</button>
+  <button class="color-violet" onclick="openPopup('Violet',null)">Violet</button>
+</div>
 
-      <label>Choose Number (0-9)</label>
-      <input type="number" id="number" min="0" max="9" placeholder="Enter number" />
+<div class="numbers">
+  ${[...Array(10).keys()].map(n => `<button onclick="openPopup(null,${n})">${n}</button>`).join('')}
+</div>
 
-      <button onclick="placeBet()">Submit Bet</button>
-    </div>
-
-    <div class="bet-history">
-      <h2>📜 Bet History</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Round</th>
-            <th>Color</th>
-            <th>Number</th>
-            <th>Amount</th>
-            <th>Net</th>
-          </tr>
-        </thead>
-        <tbody id="betTableBody">
-          <tr><td colspan="5">Loading...</td></tr>
-        </tbody>
-      </table>
-    </div>
+<div class="popup" id="betPopup">
+  <h3>Place Bet on <span id="popupChoice"></span></h3>
+  <div class="balance">Balance: ₹<span id="popupBalance">0</span></div>
+  <div>
+    <input type="number" id="popupAmount" placeholder="Amount" style="width:48%;"/>
+    <select id="popupMultiplier" style="width:48%;">
+      <option value="1">x1</option><option value="5">x5</option><option value="10">x10</option>
+      <option value="50">x50</option><option value="100">x100</option>
+    </select>
   </div>
+  <div>Total: ₹<span id="popupTotal">0</span></div>
+  <div class="actions">
+    <button onclick="submitBet()">Confirm</button>
+    <button onclick="closePopup()">Cancel</button>
+  </div>
+</div>
 
-  <div class="popup" id="popup"></div>
+<div class="tabs">
+  <button class="active">Game History</button>
+  <button>My History</button>
+</div>
 
-  <script>
-    const api = 'https://wingo-backend-nqk5.onrender.com';
-    const email = 'user@example.com'; // hardcoded
+<div class="history" id="historyContainer">
+  <h3>History</h3>
+  <table class="history-table" id="historyTable">
+    <thead><tr><th>Round</th><th>Number</th><th>Color</th><th>Amount</th><th>Net</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-    let roundId = null;
-    let timerInterval;
-    let secondsLeft = 25;
+<script>
+  const API = 'https://wingo-backend-nqk5.onrender.com/api';
+  const email = 'user@example.com';
+  let curColor = null, curNumber = null, roundId = null;
 
-    async function fetchLatestRound() {
-      const res = await fetch(api + '/api/rounds');
-      const data = await res.json();
-      const latest = data[data.length - 1];
-      roundId = latest.roundId;
-      document.getElementById('lastResult').textContent = latest.result || 'Pending';
-    }
+  async function fetchRoundAndResult() {
+    const res = await fetch(API + '/rounds');
+    const data = await res.json();
+    const last = data[data.length-1];
+    roundId = last.roundId;
+    document.getElementById('lastResult').innerText = last.result ?? '--';
+  }
 
-    function startTimer() {
-      secondsLeft = 25;
-      document.getElementById('countdown').textContent = secondsLeft;
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        secondsLeft--;
-        if (secondsLeft <= 0) {
-          secondsLeft = 30; // include draw time
-          fetchLatestRound();
-        }
-        document.getElementById('countdown').textContent = secondsLeft;
-      }, 1000);
-    }
-
-    async function placeBet() {
-      const amount = parseInt(document.getElementById('amount').value);
-      const colorBet = document.getElementById('color').value;
-      const numberBet = document.getElementById('number').value;
-
-      if (!amount || (!colorBet && numberBet === '')) {
-        showPopup('Please enter a valid amount and at least one bet');
-        return;
-      }
-
-      const body = {
-        email,
-        roundId,
-        amount,
-        colorBet: colorBet || null,
-        numberBet: numberBet !== '' ? Number(numberBet) : null
-      };
-
-      const res = await fetch(api + '/api/bets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      const result = await res.json();
-      if (res.ok) {
-        showPopup('✅ Bet Placed Successfully!');
-        loadBetHistory();
-      } else {
-        showPopup('❌ ' + result.message);
-      }
-    }
-
-    function showPopup(message) {
-      const popup = document.getElementById('popup');
-      popup.textContent = message;
-      popup.style.display = 'block';
-      setTimeout(() => popup.style.display = 'none', 3000);
-    }
-
-    async function loadBetHistory() {
-      const res = await fetch(api + '/api/bets/user/' + email);
-      const data = await res.json();
-      const tbody = document.getElementById('betTableBody');
-      tbody.innerHTML = '';
-
-      data.slice().reverse().forEach(bet => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${bet.roundId || ''}</td>
-          <td>${bet.colorBet || '-'}</td>
-          <td>${bet.numberBet !== null ? bet.numberBet : '-'}</td>
-          <td>${bet.amount}</td>
-          <td>${bet.netAmount}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    // Initial Load
-    fetchLatestRound();
-    startTimer();
-    loadBetHistory();
-
-    // Auto-refresh round and bet history every 10 sec
+  function startTimer() {
+    let sec = 30 - Math.floor(Date.now()/1000 % 30);
+    const cEl = document.getElementById('countdown');
+    cEl.innerText = sec;
     setInterval(() => {
-      fetchLatestRound();
-      loadBetHistory();
-    }, 10000);
-  </script>
+      sec = sec <= 1 ? 30 : sec -1;
+      cEl.innerText = sec;
+      if (sec === 30) fetchHistory();
+    },1000);
+  }
+
+  async function fetchWallet() {
+    const res = await fetch(API + '/users/wallet/' + email);
+    const data = await res.json();
+    document.getElementById('wallet').innerText = data.balance?.toFixed(2) ?? '0';
+  }
+
+  function openPopup(color, number) {
+    curColor = color;
+    curNumber = number;
+    document.getElementById('popupChoice').innerText = color || number;
+    document.getElementById('popupBalance').innerText = document.getElementById('wallet').innerText;
+    document.getElementById('popupAmount').value = '';
+    document.getElementById('popupMultiplier').value = '1';
+    document.getElementById('popupTotal').innerText = '0';
+    document.getElementById('betPopup').classList.add('active');
+    document.getElementById('popupMultiplier').onchange = recalcTotal;
+  }
+
+  function recalcTotal() {
+    const amt = Number(document.getElementById('popupAmount').value)||0;
+    const mult = Number(document.getElementById('popupMultiplier').value);
+    document.getElementById('popupTotal').innerText = (amt * mult).toFixed(2);
+  }
+
+  function closePopup() {
+    document.getElementById('betPopup').classList.remove('active');
+  }
+
+  async function submitBet() {
+    const amt = Number(document.getElementById('popupTotal').innerText);
+    if (!amt || amt <= 0) return alert('Invalid amount');
+    const payload = { email, roundId, amount: amt };
+    if (curColor) payload.colorBet = curColor;
+    if (curNumber !== null) payload.numberBet = curNumber;
+    const res = await fetch(API + '/bets', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      await fetchWallet();
+      closePopup();
+      await fetchHistory();
+    } else {
+      alert(data.message || 'Bet failed');
+    }
+  }
+
+  async function fetchHistory() {
+    await fetchRoundAndResult();
+    const res = await fetch(API + '/bets/user/' + email);
+    const data = await res.json();
+    const tbody = document.getElementById('historyTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    data.slice(0,20).forEach(b => {
+      const row = `<tr>
+        <td>${b.roundId}</td>
+        <td>${b.numberBet ?? '-'}</td>
+        <td>${b.colorBet ?? '-'}</td>
+        <td>${b.amount}</td>
+        <td>${b.netAmount}</td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  }
+
+  // Init
+  fetchWallet(); fetchRoundAndResult(); startTimer(); fetchHistory();
+  setInterval(()=>{ fetchWallet(); fetchRoundAndResult(); fetchHistory(); },10000);
+</script>
 </body>
 </html>
