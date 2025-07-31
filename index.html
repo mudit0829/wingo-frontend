@@ -39,6 +39,11 @@
       color: white;
       border: none;
     }
+    #resultMessage {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #004080;
+    }
   </style>
 </head>
 <body>
@@ -74,13 +79,10 @@
     </div>
   </div>
 
-  <script>
-    const email = localStorage.getItem("email");
-    if (!email) {
-      alert("No email found. Please login first.");
-      window.location.href = "login.html";
-    }
+  <div id="resultMessage">No result yet.</div>
 
+  <script>
+    const email = "user@example.com"; // Hardcoded as requested
     let selectedBet = { type: null, number: null };
     let currentAmount = 0;
 
@@ -113,13 +115,11 @@
         }
         currentAmount = amount;
 
-        // Step 1: Get latest round
         const roundResponse = await fetch('https://wingo-backend-nqk5.onrender.com/api/rounds');
         const rounds = await roundResponse.json();
-        const latestRound = rounds[rounds.length - 1]; // Get last round
+        const latestRound = rounds[rounds.length - 1];
         const roundId = latestRound._id;
 
-        // Step 2: Prepare payload
         const payload = {
           email,
           roundId: roundId,
@@ -128,7 +128,6 @@
           numberBet: selectedBet.number !== null ? selectedBet.number : null
         };
 
-        // Step 3: Send POST request
         const response = await fetch('https://wingo-backend-nqk5.onrender.com/api/bets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -139,8 +138,8 @@
 
         if (response.ok) {
           alert('Bet placed successfully!');
-          console.log(result);
-          fetchWallet(); // Refresh wallet
+          fetchWallet();
+          checkResult(roundId);
         } else {
           alert('Bet placement failed: ' + result.message);
         }
@@ -151,7 +150,32 @@
       }
     }
 
-    // Fetch wallet on page load
+    async function checkResult(roundId) {
+      try {
+        const res = await fetch(`https://wingo-backend-nqk5.onrender.com/api/results/${roundId}`);
+        const resultData = await res.json();
+
+        const result = resultData.result;
+        let won = false;
+
+        if (selectedBet.type && selectedBet.type.toLowerCase() === result.toLowerCase()) {
+          won = true;
+        }
+        if (selectedBet.number !== null && String(selectedBet.number) === result) {
+          won = true;
+        }
+
+        document.getElementById("resultMessage").innerText = won
+          ? `🎉 You won! Result: ${result}`
+          : `❌ You lost. Result: ${result}`;
+
+        fetchWallet();
+      } catch (err) {
+        console.error("Error checking result:", err);
+        document.getElementById("resultMessage").innerText = "❗ Result could not be loaded.";
+      }
+    }
+
     window.onload = fetchWallet;
   </script>
 </body>
