@@ -24,10 +24,13 @@
       text-align: center;
     }
     .wallet-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
       margin-top: 10px;
+      flex-wrap: wrap;
     }
     .wallet-buttons button {
-      margin: 0 5px;
       padding: 6px 12px;
       border: none;
       background-color: #007bff;
@@ -67,6 +70,8 @@
       padding: 20px;
       transition: bottom 0.4s ease-in-out;
       z-index: 1000;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .popup.active {
@@ -150,7 +155,6 @@
   </div>
 
   <div class="numbers">
-    <!-- Number buttons in 2 rows -->
     <div style="display:flex;justify-content:center;width:100%;">
       <button class="number-btn" onclick="selectNumber(0)">0</button>
       <button class="number-btn" onclick="selectNumber(1)">1</button>
@@ -167,7 +171,6 @@
     </div>
   </div>
 
-  <!-- Popup for placing bet -->
   <div class="popup" id="betPopup">
     <div id="betTypeText" style="font-weight:bold;margin-bottom:10px;"></div>
 
@@ -216,7 +219,7 @@
   </div>
 
   <script>
-    const email = "user@example.com"; // Replace with logged-in user dynamically
+    const email = "user@example.com";
     let selectedColor = null;
     let selectedNumber = null;
     let multiplier = 1;
@@ -292,7 +295,7 @@
       fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email}`)
         .then(res => res.json())
         .then(data => {
-          const amount = (data?.wallet ?? 0).toFixed(2);
+          const amount = (data?.balance ?? 0).toFixed(2);
           document.getElementById('wallet').innerText = amount;
         })
         .catch(err => {
