@@ -7,351 +7,295 @@
   <style>
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: #f9fafb;
-      overflow-x: hidden;
-    }
-    header {
-      background-color: #111827;
-      color: white;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    header h1 {
-      margin: 0 auto;
-      font-size: 1.5rem;
-    }
-    .profile-btn {
-      font-size: 1.2rem;
-      color: white;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      text-align: center;
     }
 
-    .wallet-section {
-      text-align: center;
+    header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      background: #111;
+      position: relative;
+    }
+
+    #profile-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: #333;
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
+
+    .wallet {
       margin: 10px 0;
     }
-    .wallet-amount {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-    .wallet-buttons {
-      margin-top: 8px;
-    }
-    .wallet-buttons button {
-      padding: 8px 16px;
-      margin: 4px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      color: white;
-    }
-    .withdraw-btn { background: #ef4444; }
-    .deposit-btn { background: #22c55e; }
 
-    .round-info {
-      text-align: center;
-      margin: 15px 0;
-    }
-
-    .color-buttons, .number-buttons {
+    .btns {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
-      margin: 10px;
       gap: 10px;
-    }
-    .color-button {
-      flex: 1 1 30%;
-      min-width: 100px;
-      padding: 15px;
-      border: none;
-      font-size: 1rem;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-    }
-    .red { background: #dc2626; }
-    .green { background: #16a34a; }
-    .violet { background: #7c3aed; }
-
-    .number-buttons button {
-      width: 18%;
-      padding: 15px;
-      font-size: 1.2rem;
-      margin: 5px;
-      border: none;
-      border-radius: 6px;
-      background: #1e3a8a;
-      color: white;
-    }
-
-    /* Popup */
-    #bet-popup {
-      position: fixed;
-      bottom: -100%;
-      left: 0;
-      width: 100%;
-      background: #ffffff;
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-      padding: 20px;
-      transition: bottom 0.3s ease-in-out;
-      z-index: 1000;
-    }
-
-    #bet-popup.active {
-      bottom: 0;
-    }
-
-    .popup-title {
-      font-weight: bold;
-      text-align: center;
       margin-bottom: 10px;
     }
 
-    .amount-options button {
-      padding: 10px 20px;
-      margin: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    .multipliers {
-      text-align: center;
-      margin-top: 10px;
+    .btns button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
       font-weight: bold;
+      color: #fff;
+      cursor: pointer;
     }
 
-    .popup-actions {
+    .withdraw { background: #e53935; }
+    .deposit { background: #43a047; }
+
+    .round-info {
+      margin: 15px 0;
+      font-size: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .red { background: red; }
+    .green { background: green; }
+    .violet { background: violet; color: black; }
+
+    .numbers {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin: 20px;
+    }
+
+    .numbers button {
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #222;
+      color: white;
+      border: 2px solid #444;
+      border-radius: 10px;
+    }
+
+    .history-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .popup {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #222;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+
+    .amount-options, .multiplier-options {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .popup button {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .bottom-buttons {
       display: flex;
       justify-content: space-around;
-      margin-top: 15px;
     }
 
-    .popup-actions button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: none;
-      font-weight: bold;
-      color: white;
+    .popup .total {
+      font-size: 16px;
+      margin: 10px 0;
     }
 
-    .confirm-btn { background: #10b981; }
-    .cancel-btn { background: #ef4444; }
-
-    /* History */
-    .history-buttons {
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    .history-buttons button {
-      margin: 5px;
-      padding: 10px 15px;
-      font-size: 1rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-
-    th, td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-
-    @media (max-width: 480px) {
-      header h1 {
-        font-size: 1.2rem;
-      }
-      .color-button {
-        font-size: 0.9rem;
+    @media screen and (max-width: 600px) {
+      .tabs button, .numbers button {
+        font-size: 14px;
         padding: 10px;
+      }
+      .popup button {
+        font-size: 14px;
       }
     }
   </style>
 </head>
 <body>
+  <header>
+    <h2>WinGo</h2>
+    <button id="profile-btn">Profile</button>
+  </header>
 
-<header>
-  <div class="profile-btn">👤</div>
-  <h1>WinGo</h1>
-  <div style="width:30px;"></div>
-</header>
-
-<div class="wallet-section">
-  <div class="wallet-amount" id="wallet-display">Wallet: ₹0</div>
-  <div class="wallet-buttons">
-    <button class="withdraw-btn">Withdraw</button>
-    <button class="deposit-btn">Deposit</button>
+  <div class="wallet">
+    Wallet: ₹<span id="wallet-balance">Loading...</span>
   </div>
-</div>
 
-<div class="round-info">
-  <div id="round-id">Round ID: Loading...</div>
-  <div id="timer">30s</div>
-</div>
-
-<div class="color-buttons">
-  <button class="color-button red" onclick="openPopup('Red')">Red</button>
-  <button class="color-button green" onclick="openPopup('Green')">Green</button>
-  <button class="color-button violet" onclick="openPopup('Violet')">Violet</button>
-</div>
-
-<div class="number-buttons">
-  ${[0,1,2,3,4,5,6,7,8,9].map(n => `<button onclick="openPopup(${n})">${n}</button>`).join('')}
-</div>
-
-<div class="history-buttons">
-  <button onclick="fetchMyHistory()">📕 My History</button>
-</div>
-
-<table id="history-table" style="display:none;">
-  <thead>
-    <tr>
-      <th>Round ID</th>
-      <th>Color Bet</th>
-      <th>Number Bet</th>
-      <th>Result</th>
-      <th>Amount</th>
-    </tr>
-  </thead>
-  <tbody id="history-body"></tbody>
-</table>
-
-<!-- Bet Popup -->
-<div id="bet-popup">
-  <div class="popup-title" id="popup-title">Placing Bet: </div>
-  <div class="amount-options">
-    <button onclick="selectAmount(1)">₹1</button>
-    <button onclick="selectAmount(10)">₹10</button>
-    <button onclick="selectAmount(100)">₹100</button>
+  <div class="btns">
+    <button class="withdraw">Withdraw</button>
+    <button class="deposit">Deposit</button>
   </div>
-  <div class="multipliers">x2 x5 x10 x50 x100</div>
-  <div class="popup-actions">
-    <button class="confirm-btn" onclick="placeBet()">Place</button>
-    <button class="cancel-btn" onclick="closePopup()">Cancel</button>
+
+  <div class="round-info">
+    Round ID: <span id="round-id">-</span> | Timer: <span id="timer">30</span>s
   </div>
-</div>
 
-<script>
-  let selectedChoice = null;
-  let selectedAmount = 0;
-  let currentRoundId = null;
+  <div class="tabs">
+    <button class="red" onclick="openBetPopup('Red')">Red</button>
+    <button class="green" onclick="openBetPopup('Green')">Green</button>
+    <button class="violet" onclick="openBetPopup('Violet')">Violet</button>
+  </div>
 
-  const token = localStorage.getItem('token');
-  const email = localStorage.getItem('email') || 'user@example.com';
+  <div class="numbers" id="number-buttons">
+    <!-- number buttons will be generated -->
+  </div>
 
-  function fetchWallet() {
-    fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/user@example.com`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => res.json())
-      .then(data => {
-        document.getElementById('wallet-display').innerText = 'Wallet: ₹' + data.wallet;
-      });
-  }
+  <div class="history-buttons">
+    <button onclick="alert('Game History: Coming Soon')">Game History</button>
+    <button onclick="alert('My History: Will show backend data')">My History</button>
+  </div>
 
-  function fetchRound() {
-    fetch('https://wingo-backend-nqk5.onrender.com/api/rounds')
-      .then(res => res.json())
-      .then(data => {
-        const latest = data[data.length - 1];
-        currentRoundId = latest._id;
-        document.getElementById('round-id').innerText = 'Round ID: ' + currentRoundId.slice(-5);
-      });
-  }
+  <div class="popup" id="bet-popup">
+    <div>Placing Bet: <strong id="selected-option"></strong></div>
+    <div class="amount-options">
+      <button onclick="setAmount(1)">₹1</button>
+      <button onclick="setAmount(10)">₹10</button>
+      <button onclick="setAmount(100)">₹100</button>
+    </div>
+    <div class="multiplier-options">
+      <button onclick="setMultiplier(2)">x2</button>
+      <button onclick="setMultiplier(5)">x5</button>
+      <button onclick="setMultiplier(10)">x10</button>
+      <button onclick="setMultiplier(50)">x50</button>
+      <button onclick="setMultiplier(100)">x100</button>
+    </div>
+    <div class="total">Total: ₹<span id="total-amount">0</span></div>
+    <div class="bottom-buttons">
+      <button onclick="placeBet()">Place</button>
+      <button onclick="closePopup()">Cancel</button>
+    </div>
+  </div>
 
-  function startTimer() {
-    let time = 30;
-    const timerEl = document.getElementById('timer');
-    const interval = setInterval(() => {
-      timerEl.innerText = time + 's';
-      if (time <= 5) timerEl.innerText = 'No Bet Allowed';
-      if (--time < 0) {
-        clearInterval(interval);
-        startTimer(); // repeat
-        fetchRound();
+  <script>
+    let selectedOption = "";
+    let selectedAmount = 0;
+    let selectedMultiplier = 1;
+
+    const walletBalance = document.getElementById('wallet-balance');
+
+    async function fetchWallet() {
+      try {
+        const res = await fetch('https://wingo-backend-nqk5.onrender.com/api/users/user@example.com');
+        const data = await res.json();
+        walletBalance.textContent = data.balance || '0';
+      } catch {
+        walletBalance.textContent = 'Error';
       }
-    }, 1000);
-  }
-
-  function openPopup(choice) {
-    selectedChoice = choice;
-    selectedAmount = 0;
-    document.getElementById('popup-title').innerText = 'Placing Bet: ' + choice;
-    document.getElementById('bet-popup').classList.add('active');
-  }
-
-  function closePopup() {
-    document.getElementById('bet-popup').classList.remove('active');
-  }
-
-  function selectAmount(amt) {
-    selectedAmount = amt;
-  }
-
-  function placeBet() {
-    if (!selectedAmount || !selectedChoice || !currentRoundId) {
-      alert('Incomplete selection.');
-      return;
     }
-    const payload = {
-      email,
-      roundId: currentRoundId,
-      amount: selectedAmount
-    };
-    if (typeof selectedChoice === 'string') payload.colorBet = selectedChoice;
-    else payload.numberBet = selectedChoice;
 
-    fetch('https://wingo-backend-nqk5.onrender.com/api/bets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    })
-      .then(res => res.json())
-      .then(data => {
-        alert('Bet Placed! New Balance: ₹' + data.newWalletBalance);
-        fetchWallet();
-        closePopup();
-      });
-  }
+    async function fetchCurrentRound() {
+      try {
+        const res = await fetch('https://wingo-backend-nqk5.onrender.com/api/rounds/current');
+        const data = await res.json();
+        document.getElementById('round-id').textContent = data.roundId || '-';
+      } catch {
+        document.getElementById('round-id').textContent = '-';
+      }
+    }
 
-  function fetchMyHistory() {
-    fetch(`https://wingo-backend-nqk5.onrender.com/api/bets/user/${email}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        const body = document.getElementById('history-body');
-        body.innerHTML = '';
-        data.reverse().forEach(bet => {
-          const row = `<tr>
-            <td>${bet.roundId.slice(-5)}</td>
-            <td>${bet.colorBet || '-'}</td>
-            <td>${bet.numberBet ?? '-'}</td>
-            <td>${bet.result ?? '-'}</td>
-            <td>₹${bet.amount}</td>
-          </tr>`;
-          body.innerHTML += row;
-        });
-        document.getElementById('history-table').style.display = 'table';
-      });
-  }
+    function openBetPopup(option) {
+      selectedOption = option;
+      selectedAmount = 0;
+      selectedMultiplier = 1;
+      document.getElementById('selected-option').textContent = option;
+      document.getElementById('total-amount').textContent = '0';
+      document.getElementById('bet-popup').style.display = 'flex';
+    }
 
-  fetchWallet();
-  fetchRound();
-  startTimer();
-</script>
+    function setAmount(amount) {
+      selectedAmount = amount;
+      updateTotal();
+    }
 
+    function setMultiplier(mult) {
+      selectedMultiplier = mult;
+      updateTotal();
+    }
+
+    function updateTotal() {
+      document.getElementById('total-amount').textContent = selectedAmount * selectedMultiplier;
+    }
+
+    function closePopup() {
+      document.getElementById('bet-popup').style.display = 'none';
+    }
+
+    function placeBet() {
+      if (!selectedAmount || !selectedMultiplier) return alert('Select amount & multiplier');
+      alert(`Bet Placed: ${selectedOption}, ₹${selectedAmount}, x${selectedMultiplier}`);
+      closePopup();
+    }
+
+    function startTimer() {
+      let time = 30;
+      const timerEl = document.getElementById('timer');
+      setInterval(() => {
+        time--;
+        if (time <= 0) time = 30;
+        timerEl.textContent = time;
+      }, 1000);
+    }
+
+    function generateNumberButtons() {
+      const container = document.getElementById('number-buttons');
+      container.innerHTML = '';
+      for (let i = 0; i < 10; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.onclick = () => openBetPopup(i);
+        container.appendChild(btn);
+      }
+    }
+
+    fetchWallet();
+    fetchCurrentRound();
+    generateNumberButtons();
+    startTimer();
+  </script>
 </body>
 </html>
