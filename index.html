@@ -98,7 +98,7 @@ let totalAmount = 0;
 let multiplier = 1;
 let currentEmail = localStorage.getItem("userEmail") || "user@example.com";
 let currentRoundId = "";
-let roundTimer;
+let roundCheckInterval;
 
 function selectColor(color) {
   selectedColor = color;
@@ -152,36 +152,32 @@ async function fetchCurrentRound() {
   try {
     const res = await fetch(`${backendUrl}/api/rounds`);
     const rounds = await res.json();
-    const latestRound = rounds[0]; // ✅ FIX: Use first item as latest
-    currentRoundId = latestRound._id;
-    document.getElementById("roundId").textContent = latestRound._id.slice(-5);
-    startTimerFromTimestamp(latestRound.startTime || latestRound.timestamp);
-  } catch (err) {
-    console.error("Fetch Round Error:", err);
-  }
-}
+    const latestRound = rounds[0];
+    const newRoundId = latestRound._id;
+    const startTime = new Date(latestRound.startTime || latestRound.timestamp).getTime();
+    const now = Date.now();
+    const timePassed = Math.floor((now - startTime) / 1000);
+    const secondsLeft = 30 - timePassed;
 
-function startTimerFromTimestamp(lastTimestamp) {
-  clearInterval(roundTimer);
-  const timerEl = document.getElementById("timer");
-  const last = new Date(lastTimestamp).getTime();
-  const next = last + 30000;
+    document.getElementById("roundId").textContent = newRoundId.slice(-5);
+    document.getElementById("timer").textContent = secondsLeft > 0 ? `${secondsLeft}s` : "⏳ Waiting";
 
-  function update() {
-    const now = new Date().getTime();
-    let left = Math.max(0, Math.floor((next - now) / 1000));
-    timerEl.textContent = `${left}s`;
-    if (left <= 0) {
-      clearInterval(roundTimer);
-      fetchCurrentRound();
+    if (currentRoundId !== newRoundId) {
+      currentRoundId = newRoundId;
       fetchWalletBalance();
       loadMyHistory();
       fetchGameHistory();
     }
+  } catch (err) {
+    console.error("Fetch Round Error:", err);
+    document.getElementById("timer").textContent = "--";
   }
+}
 
-  update();
-  roundTimer = setInterval(update, 1000);
+function startLiveRoundTracking() {
+  fetchCurrentRound(); // initial fetch
+  clearInterval(roundCheckInterval);
+  roundCheckInterval = setInterval(fetchCurrentRound, 3000); // every 3 seconds
 }
 
 async function placeBet() {
@@ -273,7 +269,7 @@ function renderNumberButtons() {
 
 // Initialize
 fetchWalletBalance();
-fetchCurrentRound();
+startLiveRoundTracking();
 loadMyHistory();
 fetchGameHistory();
 renderNumberButtons();
