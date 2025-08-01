@@ -1,4 +1,4 @@
-<!-- Paste the full updated index.html below -->
+<!-- Full index.html with logic fixes applied -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -141,12 +141,8 @@ async function fetchWalletBalance() {
   try {
     const response = await fetch(`${backendUrl}/api/users/wallet/${currentEmail}`);
     const data = await response.json();
-    if (data.balance !== undefined || data.wallet !== undefined) {
-      const amount = data.wallet ?? data.balance;
-      document.getElementById("walletAmount").innerText = `₹${amount.toFixed(2)}`;
-    } else {
-      console.warn("Wallet not found in response:", data);
-    }
+    const amount = data.wallet ?? data.balance ?? 0;
+    document.getElementById("walletAmount").innerText = `₹${amount.toFixed(2)}`;
   } catch (error) {
     console.error("Wallet fetch error:", error);
   }
@@ -156,7 +152,7 @@ async function fetchCurrentRound() {
   try {
     const res = await fetch(`${backendUrl}/api/rounds`);
     const rounds = await res.json();
-    const latestRound = rounds[rounds.length - 1];
+    const latestRound = rounds[0]; // ✅ FIX: Use first item as latest
     currentRoundId = latestRound._id;
     document.getElementById("roundId").textContent = latestRound._id.slice(-5);
     startTimerFromTimestamp(latestRound.startTime || latestRound.timestamp);
@@ -230,23 +226,11 @@ async function loadMyHistory() {
 
       if (bet.colorBet) {
         table.innerHTML += `
-          <tr>
-            <td>${round}</td>
-            <td>${bet.colorBet}</td>
-            <td>-</td>
-            <td>${amount}</td>
-            <td>${status}</td>
-          </tr>`;
+          <tr><td>${round}</td><td>${bet.colorBet}</td><td>-</td><td>${amount}</td><td>${status}</td></tr>`;
       }
       if (bet.numberBet !== undefined && bet.numberBet !== null) {
         table.innerHTML += `
-          <tr>
-            <td>${round}</td>
-            <td>-</td>
-            <td>${bet.numberBet}</td>
-            <td>${amount}</td>
-            <td>${status}</td>
-          </tr>`;
+          <tr><td>${round}</td><td>-</td><td>${bet.numberBet}</td><td>${amount}</td><td>${status}</td></tr>`;
       }
     });
   } catch (err) {
@@ -261,15 +245,10 @@ async function fetchGameHistory() {
     const table = document.getElementById("gameHistoryTable");
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
 
-    rounds.reverse().slice(0, 20).forEach(round => {
+    rounds.slice(0, 20).forEach(round => {
       const time = new Date(round.startTime || round.timestamp).toLocaleTimeString();
       table.innerHTML += `
-        <tr>
-          <td>${round._id.slice(-5)}</td>
-          <td>${round.colorResult || '-'}</td>
-          <td>${round.numberResult ?? '-'}</td>
-          <td>${time}</td>
-        </tr>`;
+        <tr><td>${round._id.slice(-5)}</td><td>${round.colorResult || '-'}</td><td>${round.numberResult ?? '-'}</td><td>${time}</td></tr>`;
     });
   } catch (err) {
     console.error("Failed to load game history:", err);
