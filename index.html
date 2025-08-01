@@ -138,15 +138,21 @@ function updateAmount() {
   document.getElementById("betAmount").value = calculatedAmount;
 }
 
-async function fetchWallet(email) {
+async function fetchWalletBalance() {
+  const email = localStorage.getItem("userEmail");
+  if (!email) return;
+
   try {
-    const res = await fetch(`${backendUrl}/api/users/wallet/${email}`);
-    const data = await res.json();
-    document.getElementById("walletAmount").textContent = `₹${data.wallet?.toFixed(2) || '0.00'}`;
-  } catch (err) {
-    console.error("Wallet Fetch Error:", err);
+    const response = await fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email}`);
+    const data = await response.json();
+    if (data.wallet !== undefined) {
+      document.getElementById("walletBalance").innerText = `₹ ${data.wallet.toFixed(2)}`;
+    }
+  } catch (error) {
+    console.error("Wallet fetch error:", error);
   }
 }
+
 
 async function fetchCurrentRound() {
   try {
@@ -224,22 +230,24 @@ async function loadMyHistory() {
   }
 }
 
-async function loadGameHistory() {
+async function fetchGameHistory() {
   try {
-    const res = await fetch(`${backendUrl}/api/rounds`);
-    const data = await res.json();
-    const table = document.getElementById("gameHistoryTable");
-    table.innerHTML = `<tr><th>Round</th><th>Result</th><th>Time</th></tr>`;
-    data.slice(-10).reverse().forEach(round => {
-      const time = round.timestamp ? new Date(round.timestamp).toLocaleTimeString() : "-";
-      table.innerHTML += `<tr>
-        <td>${round.roundId || '-'}</td>
-        <td>${round.result || '-'}</td>
-        <td>${time}</td>
+    const response = await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds");
+    const rounds = await response.json();
+
+    const historyTable = document.getElementById("gameHistoryTableBody");
+    historyTable.innerHTML = "";
+
+    rounds.slice(-10).reverse().forEach(round => {
+      const row = `<tr>
+        <td>${round.roundId}</td>
+        <td>${round.result}</td>
+        <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
       </tr>`;
+      historyTable.innerHTML += row;
     });
   } catch (err) {
-    console.error("Game History Fetch Error:", err);
+    console.error("Failed to load game history:", err);
   }
 }
 
@@ -261,6 +269,7 @@ function renderNumberButtons() {
 
 // INIT
 fetchWallet(currentEmail);
+fetchWalletBalance();
 fetchCurrentRound();
 loadMyHistory();
 loadGameHistory();
