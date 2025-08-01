@@ -97,7 +97,7 @@ let selectedColor = null;
 let selectedNumber = null;
 let totalAmount = 0;
 let multiplier = 1;
-let currentEmail = "user@example.com";
+let currentEmail = localStorage.getItem("userEmail") || "user@example.com";
 let currentRoundId = "";
 let roundTimer;
 
@@ -139,20 +139,16 @@ function updateAmount() {
 }
 
 async function fetchWalletBalance() {
-  const email = localStorage.getItem("userEmail");
-  if (!email) return;
-
   try {
-    const response = await fetch(`https://wingo-backend-nqk5.onrender.com/api/users/wallet/${email}`);
+    const response = await fetch(`${backendUrl}/api/users/${currentEmail}`);
     const data = await response.json();
     if (data.wallet !== undefined) {
-      document.getElementById("walletBalance").innerText = `₹ ${data.wallet.toFixed(2)}`;
+      document.getElementById("walletAmount").innerText = `₹${data.wallet.toFixed(2)}`;
     }
   } catch (error) {
     console.error("Wallet fetch error:", error);
   }
 }
-
 
 async function fetchCurrentRound() {
   try {
@@ -161,29 +157,33 @@ async function fetchCurrentRound() {
     const latestRound = rounds[rounds.length - 1];
     currentRoundId = latestRound._id;
     document.getElementById("roundId").textContent = latestRound.roundId || "N/A";
-    startTimer(25);
+    startTimerFromTimestamp(latestRound.timestamp);
   } catch (err) {
     console.error("Fetch Round Error:", err);
   }
 }
 
-function startTimer(seconds) {
-  const timerEl = document.getElementById("timer");
+function startTimerFromTimestamp(lastTimestamp) {
   clearInterval(roundTimer);
-  let timeLeft = seconds;
-  roundTimer = setInterval(async () => {
-    if (timeLeft <= 0) {
+  const timerEl = document.getElementById("timer");
+  const last = new Date(lastTimestamp).getTime();
+  const next = last + 30000;
+
+  function update() {
+    const now = new Date().getTime();
+    let left = Math.max(0, Math.floor((next - now) / 1000));
+    timerEl.textContent = `${left}s`;
+    if (left <= 0) {
       clearInterval(roundTimer);
-      timerEl.textContent = "Waiting...";
-      await fetchCurrentRound();
-      await fetchWallet(currentEmail);
+      fetchCurrentRound();
+      fetchWalletBalance();
       loadGameHistory();
       loadMyHistory();
-    } else {
-      timerEl.textContent = `${timeLeft}s`;
-      timeLeft--;
     }
-  }, 1000);
+  }
+
+  update();
+  roundTimer = setInterval(update, 1000);
 }
 
 async function placeBet() {
@@ -191,8 +191,8 @@ async function placeBet() {
     const amount = parseInt(document.getElementById('betAmount').value);
     if (!currentEmail || !currentRoundId || !amount) throw new Error("Missing required fields");
     const payload = { email: currentEmail, roundId: currentRoundId, amount };
-    if (selectedColor && selectedNumber === null) payload.colorBet = selectedColor;
-    else if (!selectedColor && selectedNumber !== null) payload.numberBet = selectedNumber;
+    if (selectedColor && selectedNumber === null) payload.color = selectedColor;
+    else if (!selectedColor && selectedNumber !== null) payload.number = selectedNumber;
     else throw new Error("Select either a color or a number");
 
     const response = await fetch(`${backendUrl}/api/bets`, {
@@ -203,7 +203,7 @@ async function placeBet() {
     if (!response.ok) throw new Error(data.message || 'Failed to place bet');
     alert("✅ Bet placed successfully");
     closePopup();
-    fetchWallet(currentEmail);
+    fetchWalletBalance();
     loadMyHistory();
   } catch (err) {
     console.error("Place Bet Error:", err);
@@ -216,14 +216,29 @@ async function loadMyHistory() {
     const res = await fetch(`${backendUrl}/api/bets/user/${currentEmail}`);
     const data = await res.json();
     const table = document.getElementById("myHistoryTable");
-    table.innerHTML = `<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th></tr>`;
-    data.slice(-10).reverse().forEach(bet => {
-      table.innerHTML += `<tr>
-        <td>${bet.roundId || '-'}</td>
-        <td>${bet.colorBet || '-'}</td>
-        <td>${bet.numberBet ?? '-'}</td>
-        <td>₹${bet.amount}</td>
-      </tr>`;
+    table.innerHTML = `<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>`;
+
+    data.reverse().forEach(bet => {
+      if (bet.color) {
+        table.innerHTML += `
+          <tr>
+            <td>${bet.roundId || '-'}</td>
+            <td>${bet.color}</td>
+            <td>-</td>
+            <td>₹${bet.amount}</td>
+            <td>${bet.win ? '✅ Win' : '❌ Lose'}</td>
+          </tr>`;
+      }
+      if (bet.number !== undefined && bet.number !== null) {
+        table.innerHTML += `
+          <tr>
+            <td>${bet.roundId || '-'}</td>
+            <td>-</td>
+            <td>${bet.number}</td>
+            <td>₹${bet.amount}</td>
+            <td>${bet.win ? '✅ Win' : '❌ Lose'}</td>
+          </tr>`;
+      }
     });
   } catch (err) {
     console.error("My History Fetch Error:", err);
@@ -232,19 +247,19 @@ async function loadMyHistory() {
 
 async function fetchGameHistory() {
   try {
-    const response = await fetch("https://wingo-backend-nqk5.onrender.com/api/rounds");
+    const response = await fetch(`${backendUrl}/api/rounds`);
     const rounds = await response.json();
+    const table = document.getElementById("gameHistoryTable");
+    table.innerHTML = `<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>`;
 
-    const historyTable = document.getElementById("gameHistoryTableBody");
-    historyTable.innerHTML = "";
-
-    rounds.slice(-10).reverse().forEach(round => {
-      const row = `<tr>
-        <td>${round.roundId}</td>
-        <td>${round.result}</td>
-        <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
-      </tr>`;
-      historyTable.innerHTML += row;
+    rounds.reverse().slice(0, 20).forEach(round => {
+      table.innerHTML += `
+        <tr>
+          <td>${round.roundId}</td>
+          <td>${round.colorResult || '-'}</td>
+          <td>${round.numberResult ?? '-'}</td>
+          <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
+        </tr>`;
     });
   } catch (err) {
     console.error("Failed to load game history:", err);
