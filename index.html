@@ -134,7 +134,7 @@
   <h1>🎯 WinGo Game 🎯</h1>
 
   <div class="wallet-section">
-    <h3>Wallet: ₹<span id="walletAmount">0.00</span></h3>
+    <h3>Wallet: <span id="walletAmount">₹0.00</span></h3>
     <div class="wallet-buttons">
       <button onclick="alert('Deposit clicked')">Deposit</button>
       <button onclick="alert('Withdraw clicked')">Withdraw</button>
@@ -145,7 +145,7 @@
     Round: <span id="roundId">-</span>
   </div>
 
-  <div class="timer" id="timer">--:--</div>
+  <div class="timer" id="timer">--s</div>
 
   <div class="color-options">
     <button class="color-button color-red" onclick="openBetPopup('Red')">Red</button>
@@ -197,7 +197,7 @@
   let selectedColor = null;
   let totalAmount = 0;
   let multiplier = 1;
-  let currentEmail = "user@example.com"; // Set this dynamically in production
+  let currentEmail = "user@example.com";
   let currentRoundId = "";
 
   function openBetPopup(color) {
@@ -234,11 +234,7 @@
     try {
       const res = await fetch(`${backendUrl}/api/users/wallet/${email}`);
       const data = await res.json();
-      if (data.wallet !== undefined) {
-        document.getElementById("walletAmount").textContent = `₹${data.wallet}`;
-      } else {
-        console.error("Wallet not found");
-      }
+      document.getElementById("walletAmount").textContent = `₹${data.wallet?.toFixed(2) || '0.00'}`;
     } catch (err) {
       console.error("Wallet Fetch Error:", err);
     }
@@ -246,11 +242,12 @@
 
   async function fetchCurrentRound() {
     try {
-      const res = await fetch(`${backendUrl}/api/rounds/current`);
-      const data = await res.json();
-      currentRoundId = data._id;
-      document.getElementById("roundId").textContent = data.roundId || "N/A";
-      startTimer(25); // or use data.timer if backend sends countdown
+      const res = await fetch(`${backendUrl}/api/rounds`);
+      const rounds = await res.json();
+      const latestRound = rounds[rounds.length - 1];
+      currentRoundId = latestRound._id;
+      document.getElementById("roundId").textContent = latestRound.roundId || "N/A";
+      startTimer(25);
     } catch (err) {
       console.error("Fetch Round Error:", err);
     }
@@ -281,7 +278,7 @@
         roundId: currentRoundId,
         amount,
         colorBet: selectedColor,
-        numberBet: 5 // or let user select
+        numberBet: 5
       };
 
       const response = await fetch(`${backendUrl}/api/bets`, {
@@ -339,13 +336,22 @@
     }
   }
 
-  // INIT
+  function renderNumberButtons() {
+    const grid = document.getElementById("numberGrid");
+    for (let i = 0; i < 10; i++) {
+      const btn = document.createElement("button");
+      btn.className = "number-button";
+      btn.textContent = i;
+      btn.onclick = () => alert(`Number ${i} clicked`);
+      grid.appendChild(btn);
+    }
+  }
+
   fetchWallet(currentEmail);
   fetchCurrentRound();
   loadMyHistory();
   loadGameHistory();
+  renderNumberButtons();
 </script>
-
-
 </body>
 </html>
