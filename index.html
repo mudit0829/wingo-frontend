@@ -1,3 +1,4 @@
+<!-- Paste the full updated index.html below -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,8 +90,6 @@
   </table>
 </div>
 
-<!-- [same <head> section, styles, and static layout as you posted above] -->
-
 <script>
 const backendUrl = "https://wingo-backend-nqk5.onrender.com";
 let selectedColor = null;
@@ -142,8 +141,9 @@ async function fetchWalletBalance() {
   try {
     const response = await fetch(`${backendUrl}/api/users/wallet/${currentEmail}`);
     const data = await response.json();
-    if (data.wallet !== undefined) {
-      document.getElementById("walletAmount").innerText = `₹${data.wallet.toFixed(2)}`;
+    if (data.balance !== undefined || data.wallet !== undefined) {
+      const amount = data.wallet ?? data.balance;
+      document.getElementById("walletAmount").innerText = `₹${amount.toFixed(2)}`;
     } else {
       console.warn("Wallet not found in response:", data);
     }
@@ -292,6 +292,7 @@ function renderNumberButtons() {
   }
 }
 
+// Initialize
 fetchWalletBalance();
 fetchCurrentRound();
 loadMyHistory();
