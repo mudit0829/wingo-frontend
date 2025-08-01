@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
-  <style>
+ <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #101010;
@@ -195,13 +195,16 @@
 <script>
   const backendUrl = "https://wingo-backend-nqk5.onrender.com";
   let selectedColor = null;
+  let selectedNumber = null;
   let totalAmount = 0;
   let multiplier = 1;
   let currentEmail = "user@example.com";
   let currentRoundId = "";
+  let roundTimer;
 
   function openBetPopup(color) {
     selectedColor = color;
+    selectedNumber = null;
     document.getElementById("betTitle").textContent = `Place Bet on ${color}`;
     document.getElementById("popup").classList.add("show");
   }
@@ -210,6 +213,8 @@
     document.getElementById("popup").classList.remove("show");
     totalAmount = 0;
     multiplier = 1;
+    selectedColor = null;
+    selectedNumber = null;
     document.getElementById("totalAmount").textContent = totalAmount;
     document.getElementById("betAmount").value = totalAmount;
   }
@@ -255,11 +260,16 @@
 
   function startTimer(seconds) {
     const timerEl = document.getElementById("timer");
+    clearInterval(roundTimer);
     let timeLeft = seconds;
-    const interval = setInterval(() => {
+    roundTimer = setInterval(async () => {
       if (timeLeft <= 0) {
-        clearInterval(interval);
+        clearInterval(roundTimer);
         timerEl.textContent = "Waiting...";
+        await fetchCurrentRound();
+        await fetchWallet(currentEmail);
+        loadGameHistory();
+        loadMyHistory();
       } else {
         timerEl.textContent = `${timeLeft}s`;
         timeLeft--;
@@ -270,16 +280,17 @@
   async function placeBet() {
     try {
       const amount = parseInt(document.getElementById('betAmount').value);
-      if (!currentEmail || !currentRoundId || !amount || !selectedColor)
-        throw new Error("Missing required fields");
+      if (!currentEmail || !currentRoundId || !amount) throw new Error("Missing required fields");
 
       const payload = {
         email: currentEmail,
         roundId: currentRoundId,
-        amount,
-        colorBet: selectedColor,
-        numberBet: 5
+        amount
       };
+
+      if (selectedColor && !selectedNumber) payload.colorBet = selectedColor;
+      else if (!selectedColor && selectedNumber !== null) payload.numberBet = selectedNumber;
+      else throw new Error("Select either a color or a number");
 
       const response = await fetch(`${backendUrl}/api/bets`, {
         method: 'POST',
@@ -309,7 +320,7 @@
         table.innerHTML += `<tr>
           <td>${bet.roundId || '-'}</td>
           <td>${bet.colorBet || '-'}</td>
-          <td>${bet.numberBet || '-'}</td>
+          <td>${bet.numberBet ?? '-'}</td>
           <td>₹${bet.amount}</td>
         </tr>`;
       });
@@ -338,11 +349,16 @@
 
   function renderNumberButtons() {
     const grid = document.getElementById("numberGrid");
+    grid.innerHTML = "";
     for (let i = 0; i < 10; i++) {
       const btn = document.createElement("button");
       btn.className = "number-button";
       btn.textContent = i;
-      btn.onclick = () => alert(`Number ${i} clicked`);
+      btn.onclick = () => {
+        selectedNumber = i;
+        selectedColor = null;
+        openBetPopup(`Number ${i}`);
+      };
       grid.appendChild(btn);
     }
   }
