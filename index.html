@@ -89,6 +89,8 @@
   </table>
 </div>
 
+<!-- [same <head> section, styles, and static layout as you posted above] -->
+
 <script>
 const backendUrl = "https://wingo-backend-nqk5.onrender.com";
 let selectedColor = null;
@@ -142,6 +144,8 @@ async function fetchWalletBalance() {
     const data = await response.json();
     if (data.wallet !== undefined) {
       document.getElementById("walletAmount").innerText = `₹${data.wallet.toFixed(2)}`;
+    } else {
+      console.warn("Wallet not found in response:", data);
     }
   } catch (error) {
     console.error("Wallet fetch error:", error);
@@ -220,24 +224,28 @@ async function loadMyHistory() {
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
 
     data.reverse().forEach(bet => {
+      const round = bet.roundId?.slice(-5) || '-';
+      const amount = `₹${bet.amount}`;
+      const status = bet.win === true ? '✅ Win' : (bet.win === false ? '❌ Lose' : '⏳ Pending');
+
       if (bet.colorBet) {
         table.innerHTML += `
           <tr>
-            <td>${bet.roundId?.slice(-5) || '-'}</td>
+            <td>${round}</td>
             <td>${bet.colorBet}</td>
             <td>-</td>
-            <td>₹${bet.amount}</td>
-            <td>${bet.win ? '✅ Win' : '❌ Lose'}</td>
+            <td>${amount}</td>
+            <td>${status}</td>
           </tr>`;
       }
       if (bet.numberBet !== undefined && bet.numberBet !== null) {
         table.innerHTML += `
           <tr>
-            <td>${bet.roundId?.slice(-5) || '-'}</td>
+            <td>${round}</td>
             <td>-</td>
             <td>${bet.numberBet}</td>
-            <td>₹${bet.amount}</td>
-            <td>${bet.win ? '✅ Win' : '❌ Lose'}</td>
+            <td>${amount}</td>
+            <td>${status}</td>
           </tr>`;
       }
     });
@@ -254,12 +262,13 @@ async function fetchGameHistory() {
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
 
     rounds.reverse().slice(0, 20).forEach(round => {
+      const time = new Date(round.startTime || round.timestamp).toLocaleTimeString();
       table.innerHTML += `
         <tr>
           <td>${round._id.slice(-5)}</td>
           <td>${round.colorResult || '-'}</td>
           <td>${round.numberResult ?? '-'}</td>
-          <td>${new Date(round.startTime || round.timestamp).toLocaleTimeString()}</td>
+          <td>${time}</td>
         </tr>`;
     });
   } catch (err) {
@@ -289,6 +298,5 @@ loadMyHistory();
 fetchGameHistory();
 renderNumberButtons();
 </script>
-
 </body>
 </html>
