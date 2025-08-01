@@ -92,6 +92,7 @@
 
 <script>
 const backendUrl = "https://wingo-backend-nqk5.onrender.com";
+const apiUrl = backendUrl; // ✅ Fix for undefined variable
 let selectedColor = null;
 let selectedNumber = null;
 let totalAmount = 0;
@@ -160,7 +161,8 @@ async function fetchCurrentRound() {
     const timeElapsed = (currentTime - roundStartTime) / 1000; // in seconds
     const countdown = 30 - Math.floor(timeElapsed);
 
-    document.getElementById("round-id").textContent = latestRound._id;
+    currentRoundId = latestRound._id;
+    document.getElementById("roundId").textContent = latestRound._id.slice(-5);
     document.getElementById("timer").textContent =
       countdown > 0 ? countdown + "s" : "00s";
 
@@ -188,7 +190,8 @@ async function placeBet() {
     };
 
     const response = await fetch(`${backendUrl}/api/bets`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const data = await response.json();
