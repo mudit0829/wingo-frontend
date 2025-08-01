@@ -197,6 +197,8 @@
   let selectedColor = null;
   let totalAmount = 0;
   let multiplier = 1;
+  let currentEmail = "user@example.com"; // Set this dynamically in production
+  let currentRoundId = "";
 
   function openBetPopup(color) {
     selectedColor = color;
@@ -228,19 +230,58 @@
     document.getElementById("betAmount").value = calculatedAmount;
   }
 
+  async function fetchWallet(email) {
+    try {
+      const res = await fetch(`${backendUrl}/api/users/wallet/${email}`);
+      const data = await res.json();
+      if (data.wallet !== undefined) {
+        document.getElementById("walletAmount").textContent = `₹${data.wallet}`;
+      } else {
+        console.error("Wallet not found");
+      }
+    } catch (err) {
+      console.error("Wallet Fetch Error:", err);
+    }
+  }
+
+  async function fetchCurrentRound() {
+    try {
+      const res = await fetch(`${backendUrl}/api/rounds/current`);
+      const data = await res.json();
+      currentRoundId = data._id;
+      document.getElementById("roundId").textContent = data.roundId || "N/A";
+      startTimer(25); // or use data.timer if backend sends countdown
+    } catch (err) {
+      console.error("Fetch Round Error:", err);
+    }
+  }
+
+  function startTimer(seconds) {
+    const timerEl = document.getElementById("timer");
+    let timeLeft = seconds;
+    const interval = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        timerEl.textContent = "Waiting...";
+      } else {
+        timerEl.textContent = `${timeLeft}s`;
+        timeLeft--;
+      }
+    }, 1000);
+  }
+
   async function placeBet() {
     try {
-      const email = localStorage.getItem('email') || 'user@example.com';
-      const roundId = localStorage.getItem('currentRoundId') || '6880b1798509054b06a3025d';
       const amount = parseInt(document.getElementById('betAmount').value);
-      if (!email || !roundId || !amount || !selectedColor) throw new Error("Missing required fields");
+      if (!currentEmail || !currentRoundId || !amount || !selectedColor)
+        throw new Error("Missing required fields");
 
       const payload = {
-        email,
-        roundId,
+        email: currentEmail,
+        roundId: currentRoundId,
         amount,
         colorBet: selectedColor,
-        numberBet: 5
+        numberBet: 5 // or let user select
       };
 
       const response = await fetch(`${backendUrl}/api/bets`, {
@@ -251,14 +292,60 @@
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to place bet');
-      alert("Bet placed successfully");
+      alert("✅ Bet placed successfully");
       closePopup();
+      fetchWallet(currentEmail);
+      loadMyHistory();
     } catch (err) {
       console.error("Place Bet Error:", err);
       alert(err.message);
     }
   }
+
+  async function loadMyHistory() {
+    try {
+      const res = await fetch(`${backendUrl}/api/bets/user/${currentEmail}`);
+      const data = await res.json();
+      const table = document.getElementById("myHistoryTable");
+      table.innerHTML = `<tr><th>Round</th><th>Color</th><th>Number</th><th>Result</th></tr>`;
+      data.forEach(bet => {
+        table.innerHTML += `<tr>
+          <td>${bet.roundId || '-'}</td>
+          <td>${bet.colorBet || '-'}</td>
+          <td>${bet.numberBet || '-'}</td>
+          <td>₹${bet.amount}</td>
+        </tr>`;
+      });
+    } catch (err) {
+      console.error("My History Fetch Error:", err);
+    }
+  }
+
+  async function loadGameHistory() {
+    try {
+      const res = await fetch(`${backendUrl}/api/rounds`);
+      const data = await res.json();
+      const table = document.getElementById("gameHistoryTable");
+      table.innerHTML = `<tr><th>Round</th><th>Result</th><th>Time</th></tr>`;
+      data.slice(-10).reverse().forEach(round => {
+        table.innerHTML += `<tr>
+          <td>${round.roundId || '-'}</td>
+          <td>${round.result || '-'}</td>
+          <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
+        </tr>`;
+      });
+    } catch (err) {
+      console.error("Game History Fetch Error:", err);
+    }
+  }
+
+  // INIT
+  fetchWallet(currentEmail);
+  fetchCurrentRound();
+  loadMyHistory();
+  loadGameHistory();
 </script>
+
 
 </body>
 </html>
