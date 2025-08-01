@@ -172,13 +172,14 @@
     </div>
     <div>
       <p>Total Amount: ₹<span id="totalAmount">0</span></p>
+      <input type="hidden" id="betAmount" value="0"/>
       <button class="btn-primary" onclick="placeBet()">Place Bet</button>
       <button class="btn-cancel" onclick="closePopup()">Cancel</button>
     </div>
   </div>
 
   <div class="history">
-    <h3>🧾 My History</h3>
+    <h3>🗾 My History</h3>
     <table class="history-table" id="myHistoryTable">
       <tr><th>Round</th><th>Color</th><th>Number</th><th>Result</th></tr>
     </table>
@@ -192,56 +193,69 @@
   </div>
 
 <script>
+  const backendUrl = "https://wingo-backend-nqk5.onrender.com";
+  let selectedColor = null;
+  let totalAmount = 0;
+  let multiplier = 1;
+
+  function openBetPopup(color) {
+    selectedColor = color;
+    document.getElementById("betTitle").textContent = `Place Bet on ${color}`;
+    document.getElementById("popup").classList.add("show");
+  }
+
+  function closePopup() {
+    document.getElementById("popup").classList.remove("show");
+    totalAmount = 0;
+    multiplier = 1;
+    document.getElementById("totalAmount").textContent = totalAmount;
+    document.getElementById("betAmount").value = totalAmount;
+  }
+
+  function addAmount(amount) {
+    totalAmount += amount;
+    updateAmount();
+  }
+
+  function setMultiplier(mult) {
+    multiplier = mult;
+    updateAmount();
+  }
+
+  function updateAmount() {
+    const calculatedAmount = totalAmount * multiplier;
+    document.getElementById("totalAmount").textContent = calculatedAmount;
+    document.getElementById("betAmount").value = calculatedAmount;
+  }
+
   async function placeBet() {
     try {
-      const email = localStorage.getItem('email');
-      const roundId = localStorage.getItem('currentRoundId'); // set during round fetch
+      const email = localStorage.getItem('email') || 'user@example.com';
+      const roundId = localStorage.getItem('currentRoundId') || '6880b1798509054b06a3025d';
       const amount = parseInt(document.getElementById('betAmount').value);
-      const selectedColor = document.querySelector('.color-box.selected')?.dataset.color || null;
-      const selectedNumberBox = document.querySelector('.number-box.selected');
-      const numberBet = selectedNumberBox ? parseInt(selectedNumberBox.textContent) : null;
-
-      if (!email || !roundId || !amount || (!selectedColor && numberBet === null)) {
-        throw new Error("Missing required fields");
-      }
+      if (!email || !roundId || !amount || !selectedColor) throw new Error("Missing required fields");
 
       const payload = {
         email,
         roundId,
         amount,
         colorBet: selectedColor,
-        numberBet: numberBet
+        numberBet: 5
       };
 
       const response = await fetch(`${backendUrl}/api/bets`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to place bet');
-      }
-
       const data = await response.json();
-      console.log('Bet placed:', data);
-      alert('Bet placed successfully!');
-
-      // Reset selections
-      document.querySelectorAll('.color-box.selected').forEach(el => el.classList.remove('selected'));
-      document.querySelectorAll('.number-box.selected').forEach(el => el.classList.remove('selected'));
-      document.getElementById('betAmount').value = '';
-
-      // Refresh wallet
-      fetchWallet();
-      fetchUserHistory(); // optional
-
-    } catch (error) {
-      console.error('Place Bet Error:', error);
-      alert(error.message || 'Something went wrong');
+      if (!response.ok) throw new Error(data.message || 'Failed to place bet');
+      alert("Bet placed successfully");
+      closePopup();
+    } catch (err) {
+      console.error("Place Bet Error:", err);
+      alert(err.message);
     }
   }
 </script>
