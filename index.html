@@ -91,8 +91,7 @@
 </div>
 
 <script>
-const backendUrl = "https://wingo-backend-nqk5.onrender.com";
-const apiUrl = backendUrl; // ✅ Fix for undefined variable
+const apiUrl = "https://wingo-backend-nqk5.onrender.com";
 let selectedColor = null;
 let selectedNumber = null;
 let totalAmount = 0;
@@ -133,119 +132,114 @@ function setMultiplier(mult) {
 }
 
 function updateAmount() {
-  const calculatedAmount = totalAmount * multiplier;
-  document.getElementById("totalAmount").textContent = calculatedAmount;
-  document.getElementById("betAmount").value = calculatedAmount;
+  const calculated = totalAmount * multiplier;
+  document.getElementById("totalAmount").textContent = calculated;
+  document.getElementById("betAmount").value = calculated;
 }
 
 async function fetchWalletBalance() {
   try {
-    const response = await fetch(`${backendUrl}/api/users/wallet/${currentEmail}`);
-    const data = await response.json();
-    const amount = data.wallet ?? data.balance ?? 0;
-    document.getElementById("walletAmount").innerText = `₹${amount.toFixed(2)}`;
-  } catch (error) {
-    console.error("Wallet fetch error:", error);
+    const res = await fetch(`${apiUrl}/api/users/wallet/${currentEmail}`);
+    const data = await res.json();
+    const bal = data.wallet ?? data.balance ?? 0;
+    document.getElementById("walletAmount").innerText = `₹${bal.toFixed(2)}`;
+  } catch (err) {
+    console.error("Wallet fetch:", err);
   }
 }
 
 async function fetchCurrentRound() {
   try {
-    const response = await fetch(`${apiUrl}/api/rounds`);
-    const rounds = await response.json();
-    if (rounds.length === 0) return;
+    const res = await fetch(`${apiUrl}/api/rounds`);
+    const rounds = await res.json();
+    if (!rounds || rounds.length === 0) return;
+    const round = rounds[0];
+    const start = new Date(round.startTime).getTime();
+    const now = Date.now();
+    const elapsed = Math.floor((now - start) / 1000);
+    const left = 30 - elapsed;
+    document.getElementById("roundId").textContent = round._id.slice(-5);
+    document.getElementById("timer").textContent = left > 0 ? `${left}s` : "00s";
 
-    const latestRound = rounds[0]; // Assuming latest is first
-    const roundStartTime = new Date(latestRound.startTime).getTime();
-    const currentTime = new Date().getTime();
-    const timeElapsed = (currentTime - roundStartTime) / 1000; // in seconds
-    const countdown = 30 - Math.floor(timeElapsed);
-
-    currentRoundId = latestRound._id;
-    document.getElementById("roundId").textContent = latestRound._id.slice(-5);
-    document.getElementById("timer").textContent =
-      countdown > 0 ? countdown + "s" : "00s";
-
+    if (currentRoundId !== round._id) {
+      currentRoundId = round._id;
+      fetchWalletBalance();
+      loadMyHistory();
+      fetchGameHistory();
+    }
   } catch (err) {
-    console.error("Error fetching round:", err);
+    console.error("Fetch round:", err);
   }
 }
 
 function startLiveRoundTracking() {
-  fetchCurrentRound(); // initial fetch
+  fetchCurrentRound();
   clearInterval(roundCheckInterval);
-  roundCheckInterval = setInterval(fetchCurrentRound, 3000); // every 3 seconds
+  roundCheckInterval = setInterval(fetchCurrentRound, 3000);
 }
 
 async function placeBet() {
   try {
-    const amount = parseInt(document.getElementById('betAmount').value);
-    if (!currentEmail || !currentRoundId || !amount) throw new Error("Missing required fields");
+    const amount = parseInt(document.getElementById("betAmount").value);
+    if (!currentEmail || !currentRoundId || !amount) throw new Error("Missing fields");
     const payload = {
       email: currentEmail,
       roundId: currentRoundId,
       amount,
       ...(selectedColor && { colorBet: selectedColor }),
-      ...(selectedNumber !== null && { numberBet: selectedNumber })
+      ...(selectedNumber != null && { numberBet: selectedNumber }),
     };
-
-    const response = await fetch(`${backendUrl}/api/bets`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const res = await fetch(`${apiUrl}/api/bets`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to place bet');
-    alert("✅ Bet placed successfully");
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Bet failed");
+    alert("✅ Bet placed!");
     closePopup();
     fetchWalletBalance();
     loadMyHistory();
   } catch (err) {
-    console.error("Place Bet Error:", err);
+    console.error("Place Bet:", err);
     alert(err.message);
   }
 }
 
 async function loadMyHistory() {
   try {
-    const res = await fetch(`${backendUrl}/api/bets/user/${currentEmail}`);
+    const res = await fetch(`${apiUrl}/api/bets/user/${currentEmail}`);
     const data = await res.json();
     const table = document.getElementById("myHistoryTable");
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
-
     data.reverse().forEach(bet => {
-      const round = bet.roundId?.slice(-5) || '-';
-      const amount = `₹${bet.amount}`;
-      const status = bet.win === true ? '✅ Win' : (bet.win === false ? '❌ Lose' : '⏳ Pending');
-
+      const r = bet.roundId?.slice(-5) || "-";
+      const amt = `₹${bet.amount}`;
+      const status = bet.win === true ? "✅ Win" : bet.win === false ? "❌ Lose" : "⏳ Pending";
       if (bet.colorBet) {
-        table.innerHTML += `
-          <tr><td>${round}</td><td>${bet.colorBet}</td><td>-</td><td>${amount}</td><td>${status}</td></tr>`;
+        table.innerHTML += `<tr><td>${r}</td><td>${bet.colorBet}</td><td>-</td><td>${amt}</td><td>${status}</td></tr>`;
       }
-      if (bet.numberBet !== undefined && bet.numberBet !== null) {
-        table.innerHTML += `
-          <tr><td>${round}</td><td>-</td><td>${bet.numberBet}</td><td>${amount}</td><td>${status}</td></tr>`;
+      if (bet.numberBet != null) {
+        table.innerHTML += `<tr><td>${r}</td><td>-</td><td>${bet.numberBet}</td><td>${amt}</td><td>${status}</td></tr>`;
       }
     });
   } catch (err) {
-    console.error("My History Fetch Error:", err);
+    console.error("My history:", err);
   }
 }
 
 async function fetchGameHistory() {
   try {
-    const response = await fetch(`${backendUrl}/api/rounds`);
-    const rounds = await response.json();
+    const res = await fetch(`${apiUrl}/api/rounds`);
+    const rounds = await res.json();
     const table = document.getElementById("gameHistoryTable");
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
-
-    rounds.slice(0, 20).forEach(round => {
-      const time = new Date(round.startTime || round.timestamp).toLocaleTimeString();
-      table.innerHTML += `
-        <tr><td>${round._id.slice(-5)}</td><td>${round.colorResult || '-'}</td><td>${round.numberResult ?? '-'}</td><td>${time}</td></tr>`;
+    rounds.slice(0, 20).forEach(r => {
+      const t = new Date(r.startTime).toLocaleTimeString();
+      table.innerHTML += `<tr><td>${r._id.slice(-5)}</td><td>${r.colorResult ?? "-"}</td><td>${r.numberResult ?? "-"}</td><td>${t}</td></tr>`;
     });
   } catch (err) {
-    console.error("Failed to load game history:", err);
+    console.error("Game history:", err);
   }
 }
 
