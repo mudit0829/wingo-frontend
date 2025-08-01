@@ -202,10 +202,8 @@
   let currentRoundId = "";
   let roundTimer;
 
-  function openBetPopup(color) {
-    selectedColor = color;
-    selectedNumber = null;
-    document.getElementById("betTitle").textContent = `Place Bet on ${color}`;
+  function openBetPopup(label) {
+    document.getElementById("betTitle").textContent = `Place Bet on ${label}`;
     document.getElementById("popup").classList.add("show");
   }
 
@@ -288,9 +286,13 @@
         amount
       };
 
-      if (selectedColor && !selectedNumber) payload.colorBet = selectedColor;
-      else if (!selectedColor && selectedNumber !== null) payload.numberBet = selectedNumber;
-      else throw new Error("Select either a color or a number");
+      if (selectedColor && selectedNumber === null) {
+        payload.colorBet = selectedColor;
+      } else if (!selectedColor && selectedNumber !== null) {
+        payload.numberBet = selectedNumber;
+      } else {
+        throw new Error("Select either a color or a number");
+      }
 
       const response = await fetch(`${backendUrl}/api/bets`, {
         method: 'POST',
@@ -316,7 +318,7 @@
       const data = await res.json();
       const table = document.getElementById("myHistoryTable");
       table.innerHTML = `<tr><th>Round</th><th>Color</th><th>Number</th><th>Result</th></tr>`;
-      data.forEach(bet => {
+      data.slice(-10).reverse().forEach(bet => {
         table.innerHTML += `<tr>
           <td>${bet.roundId || '-'}</td>
           <td>${bet.colorBet || '-'}</td>
@@ -363,6 +365,7 @@
     }
   }
 
+  // Initial load
   fetchWallet(currentEmail);
   fetchCurrentRound();
   loadMyHistory();
