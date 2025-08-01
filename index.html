@@ -150,27 +150,22 @@ async function fetchWalletBalance() {
 
 async function fetchCurrentRound() {
   try {
-    const res = await fetch(`${backendUrl}/api/rounds`);
-    const rounds = await res.json();
-    const latestRound = rounds[0];
-    const newRoundId = latestRound._id;
-    const startTime = new Date(latestRound.startTime || latestRound.timestamp).getTime();
-    const now = Date.now();
-    const timePassed = Math.floor((now - startTime) / 1000);
-    const secondsLeft = 30 - timePassed;
+    const response = await fetch(`${apiUrl}/api/rounds`);
+    const rounds = await response.json();
+    if (rounds.length === 0) return;
 
-    document.getElementById("roundId").textContent = newRoundId.slice(-5);
-    document.getElementById("timer").textContent = secondsLeft > 0 ? `${secondsLeft}s` : "⏳ Waiting";
+    const latestRound = rounds[0]; // Assuming latest is first
+    const roundStartTime = new Date(latestRound.startTime).getTime();
+    const currentTime = new Date().getTime();
+    const timeElapsed = (currentTime - roundStartTime) / 1000; // in seconds
+    const countdown = 30 - Math.floor(timeElapsed);
 
-    if (currentRoundId !== newRoundId) {
-      currentRoundId = newRoundId;
-      fetchWalletBalance();
-      loadMyHistory();
-      fetchGameHistory();
-    }
+    document.getElementById("round-id").textContent = latestRound._id;
+    document.getElementById("timer").textContent =
+      countdown > 0 ? countdown + "s" : "00s";
+
   } catch (err) {
-    console.error("Fetch Round Error:", err);
-    document.getElementById("timer").textContent = "--";
+    console.error("Error fetching round:", err);
   }
 }
 
