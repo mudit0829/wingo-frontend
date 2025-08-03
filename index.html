@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <style>
-    /* Your existing CSS (unchanged) */
     body { font-family: Arial, sans-serif; background-color: #101010; color: #fff; margin: 0; padding: 0; text-align: center; }
     .wallet-section { margin: 10px auto; }
     .wallet-section h3 { margin: 0; font-size: 18px; }
@@ -186,7 +185,6 @@ async function fetchCurrentRound() {
     if (left <= 5 && !isBettingClosed) {
       isBettingClosed = true;
       disableBettingButtons();
-      console.log("🔒 Betting Closed");
     }
 
     if (left <= 0 && !resultBufferActive) {
@@ -249,8 +247,14 @@ async function placeBet() {
     if (!res.ok) throw new Error(data.message || "Bet failed");
     alert("✅ Bet placed!");
     closePopup();
-    fetchWalletBalance();
-    loadMyHistory();
+
+    // Instantly deduct from UI wallet
+    const currentWalletText = document.getElementById("walletAmount").innerText.replace('₹', '');
+    const currentWallet = parseFloat(currentWalletText);
+    const newWallet = currentWallet - amount;
+    document.getElementById("walletAmount").innerText = `₹${newWallet.toFixed(2)}`;
+
+    loadMyHistory();  // Refresh history immediately after bet
   } catch (err) {
     console.error("Place Bet:", err);
     alert(err.message);
