@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <style>
-    /* Same CSS as before (unchanged) */
+    /* Your existing CSS (unchanged) */
     body { font-family: Arial, sans-serif; background-color: #101010; color: #fff; margin: 0; padding: 0; text-align: center; }
     .wallet-section { margin: 10px auto; }
     .wallet-section h3 { margin: 0; font-size: 18px; }
@@ -89,6 +89,7 @@
     <tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>
   </table>
 </div>
+
 <script>
 const apiUrl = "https://wingo-backend-nqk5.onrender.com";
 let selectedColor = null;
@@ -265,7 +266,9 @@ async function loadMyHistory() {
     data.reverse().forEach(bet => {
       const r = bet.roundId?.slice(-5) || "-";
       const amt = `₹${bet.amount}`;
-      const status = bet.win === true ? "✅ Win" : bet.win === false ? "❌ Lose" : "⏳ Pending";
+      let status = "⏳ Pending";
+      if (bet.win === true) status = "✅ Win";
+      else if (bet.win === false) status = "❌ Lose";
       table.innerHTML += `<tr><td>${r}</td><td>${bet.colorBet || "-"}</td><td>${bet.numberBet != null ? bet.numberBet : "-"}</td><td>${amt}</td><td>${status}</td></tr>`;
     });
   } catch (err) {
