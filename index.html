@@ -98,6 +98,8 @@ let multiplier = 1;
 let currentEmail = localStorage.getItem("userEmail") || "user@example.com";
 let currentRoundId = "";
 let roundTimerInterval;
+let isBettingClosed = false;
+let resultBufferActive = false;
 
 function selectColor(color) {
   if (isBettingClosed) return;
@@ -164,9 +166,6 @@ async function fetchWalletBalance() {
     console.error("Wallet fetch:", err);
   }
 }
-
-let isBettingClosed = false;
-let resultBufferActive = false;
 
 async function fetchCurrentRound() {
   try {
