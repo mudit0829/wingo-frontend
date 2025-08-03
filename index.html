@@ -1,3 +1,4 @@
+<!-- index.html (Updated with Wallet Deduction Logic) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <style>
+    /* (All Your Existing CSS Unchanged) */
     body { font-family: Arial, sans-serif; background-color: #101010; color: #fff; margin: 0; padding: 0; text-align: center; }
     .wallet-section { margin: 10px auto; }
     .wallet-section h3 { margin: 0; font-size: 18px; }
@@ -33,6 +35,7 @@
 </head>
 <body>
 
+<!-- (HTML Structure Unchanged) -->
 <h1>🎯 WinGo Game 🎯</h1>
 <div class="wallet-section">
   <h3>Wallet: <span id="walletAmount">₹0.00</span></h3>
@@ -248,13 +251,11 @@ async function placeBet() {
     alert("✅ Bet placed!");
     closePopup();
 
-    // Instantly deduct from UI wallet
-    const currentWalletText = document.getElementById("walletAmount").innerText.replace('₹', '');
-    const currentWallet = parseFloat(currentWalletText);
-    const newWallet = currentWallet - amount;
-    document.getElementById("walletAmount").innerText = `₹${newWallet.toFixed(2)}`;
+    // Deduct Wallet Instantly in UI
+    const currentWallet = parseFloat(document.getElementById("walletAmount").innerText.replace('₹', ''));
+    document.getElementById("walletAmount").innerText = `₹${(currentWallet - amount).toFixed(2)}`;
 
-    loadMyHistory();  // Refresh history immediately after bet
+    loadMyHistory();  // Refresh user history instantly
   } catch (err) {
     console.error("Place Bet:", err);
     alert(err.message);
