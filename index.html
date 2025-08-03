@@ -283,8 +283,7 @@ async function loadMyHistoryPaginated() {
   try {
     const res = await fetch(`${apiUrl}/api/bets/user/${currentEmail}`);
     allUserBets = await res.json();
-    allUserBets.reverse();  // ✅ Always show latest bets first
-    myHistoryPage = 0;      // ✅ Reset to first page (latest bets)
+    myHistoryPage = 0; // Always start at page 0 (latest bets)
     renderMyHistoryPage();
   } catch (err) {
     console.error("My History Paginated:", err);
@@ -369,7 +368,6 @@ loadMyHistoryPaginated();
 fetchGameHistoryPaginated();
 renderNumberButtons();
 </script>
-
 
 </body>
 </html>
