@@ -97,13 +97,30 @@ let totalAmount = 0;
 let multiplier = 1;
 let currentEmail = localStorage.getItem("userEmail") || "user@example.com";
 let currentRoundId = "";
-let roundCheckInterval;
-let lastRoundId = "";
+let roundTimerInterval;
 
 function selectColor(color) {
+  if (isBettingClosed) return;
   selectedColor = color;
   selectedNumber = null;
   openBetPopup(color);
+}
+
+function renderNumberButtons() {
+  const grid = document.getElementById("numberGrid");
+  grid.innerHTML = "";
+  for (let i = 0; i < 10; i++) {
+    const btn = document.createElement("button");
+    btn.className = "number-button";
+    btn.textContent = i;
+    btn.onclick = () => {
+      if (isBettingClosed) return;
+      selectedNumber = i;
+      selectedColor = null;
+      openBetPopup(`Number ${i}`);
+    };
+    grid.appendChild(btn);
+  }
 }
 
 function openBetPopup(label) {
@@ -148,6 +165,9 @@ async function fetchWalletBalance() {
   }
 }
 
+let isBettingClosed = false;
+let resultBufferActive = false;
+
 async function fetchCurrentRound() {
   try {
     const res = await fetch(`${apiUrl}/api/rounds`);
@@ -159,25 +179,29 @@ async function fetchCurrentRound() {
     const now = Date.now();
     const elapsed = Math.floor((now - start) / 1000);
     const left = 30 - elapsed;
-    document.getElementById("roundId").textContent = round.roundId.slice(-5);
-    document.getElementById("timer").textContent = left > 0 ? `${left}s` : "00s";
 
-    // Detect Round Change
-    if (currentRoundId !== round.roundId) {
-      currentRoundId = round.roundId;
-      fetchWalletBalance();
-      loadMyHistory();
-      fetchGameHistory();
+    currentRoundId = round.roundId;
+    document.getElementById("roundId").textContent = round.roundId.slice(-5);
+
+    if (left <= 5 && !isBettingClosed) {
+      isBettingClosed = true;
+      disableBettingButtons();
+      console.log("🔒 Betting Closed");
     }
 
-    // Auto-refresh Wallet & Bets Status after result (buffer 5 sec)
-    if (left === 3 && lastRoundId !== round.roundId) {
-      lastRoundId = round.roundId;
+    if (left <= 0 && !resultBufferActive) {
+      resultBufferActive = true;
+      document.getElementById("timer").textContent = "Result in 3s...";
       setTimeout(() => {
         fetchWalletBalance();
         loadMyHistory();
         fetchGameHistory();
-      }, 5000);
+        isBettingClosed = false;
+        resultBufferActive = false;
+        enableBettingButtons();
+      }, 3000);
+    } else if (left > 0) {
+      document.getElementById("timer").textContent = `${left}s`;
     }
 
   } catch (err) {
@@ -185,10 +209,24 @@ async function fetchCurrentRound() {
   }
 }
 
-function startLiveRoundTracking() {
+function disableBettingButtons() {
+  document.querySelectorAll(".color-button, .number-button").forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+  });
+}
+
+function enableBettingButtons() {
+  document.querySelectorAll(".color-button, .number-button").forEach(btn => {
+    btn.disabled = false;
+    btn.style.opacity = "1";
+  });
+}
+
+function startRoundTimer() {
+  clearInterval(roundTimerInterval);
   fetchCurrentRound();
-  clearInterval(roundCheckInterval);
-  roundCheckInterval = setInterval(fetchCurrentRound, 3000);
+  roundTimerInterval = setInterval(fetchCurrentRound, 1000);
 }
 
 async function placeBet() {
@@ -225,23 +263,11 @@ async function loadMyHistory() {
     const data = await res.json();
     const table = document.getElementById("myHistoryTable");
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
-    data.forEach(bet => {
+    data.reverse().forEach(bet => {
       const r = bet.roundId?.slice(-5) || "-";
       const amt = `₹${bet.amount}`;
-      let statusIcon = "⏳ Pending";
-      if (bet.win === true) statusIcon = "✅ Win";
-      else if (bet.win === false) statusIcon = "❌ Lose";
-
-      const color = bet.colorBet || "-";
-      const number = bet.numberBet != null ? bet.numberBet : "-";
-
-      table.innerHTML += `<tr>
-        <td>${r}</td>
-        <td>${color}</td>
-        <td>${number}</td>
-        <td>${amt}</td>
-        <td>${statusIcon}</td>
-      </tr>`;
+      const status = bet.win === true ? "✅ Win" : bet.win === false ? "❌ Lose" : "⏳ Pending";
+      table.innerHTML += `<tr><td>${r}</td><td>${bet.colorBet || "-"}</td><td>${bet.numberBet != null ? bet.numberBet : "-"}</td><td>${amt}</td><td>${status}</td></tr>`;
     });
   } catch (err) {
     console.error("My history:", err);
@@ -265,25 +291,9 @@ async function fetchGameHistory() {
   }
 }
 
-function renderNumberButtons() {
-  const grid = document.getElementById("numberGrid");
-  grid.innerHTML = "";
-  for (let i = 0; i < 10; i++) {
-    const btn = document.createElement("button");
-    btn.className = "number-button";
-    btn.textContent = i;
-    btn.onclick = () => {
-      selectedNumber = i;
-      selectedColor = null;
-      openBetPopup(`Number ${i}`);
-    };
-    grid.appendChild(btn);
-  }
-}
-
-// Initialize App
+// Initialize
 fetchWalletBalance();
-startLiveRoundTracking();
+startRoundTimer();
 loadMyHistory();
 fetchGameHistory();
 renderNumberButtons();
