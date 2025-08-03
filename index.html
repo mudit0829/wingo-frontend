@@ -95,7 +95,7 @@ let selectedColor = null;
 let selectedNumber = null;
 let totalAmount = 0;
 let multiplier = 1;
-let currentEmail = "user@example.com"; // Hardcoded email
+let currentEmail = localStorage.getItem("userEmail") || "user@example.com";
 let currentRoundId = "";
 let roundCheckInterval;
 
@@ -153,15 +153,17 @@ async function fetchCurrentRound() {
     const rounds = await res.json();
     if (!rounds || rounds.length === 0) return;
     const round = rounds[0];
+
+    // Timer Calculation
     const start = new Date(round.startTime).getTime();
     const now = Date.now();
     const elapsed = Math.floor((now - start) / 1000);
     const left = 30 - elapsed;
-    document.getElementById("roundId").textContent = round._id.slice(-5);
+    document.getElementById("roundId").textContent = round.roundId.slice(-5);
     document.getElementById("timer").textContent = left > 0 ? `${left}s` : "00s";
 
-    if (currentRoundId !== round._id) {
-      currentRoundId = round._id;
+    if (currentRoundId !== round.roundId) {
+      currentRoundId = round.roundId;
       fetchWalletBalance();
       loadMyHistory();
       fetchGameHistory();
@@ -233,9 +235,11 @@ async function fetchGameHistory() {
     const rounds = await res.json();
     const table = document.getElementById("gameHistoryTable");
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
-    rounds.slice(0, 20).forEach(r => {
+    rounds.forEach(r => {
       const t = new Date(r.startTime).toLocaleTimeString();
-      table.innerHTML += `<tr><td>${r._id.slice(-5)}</td><td>${r.colorResult ?? "-"}</td><td>${r.numberResult ?? "-"}</td><td>${t}</td></tr>`;
+      const color = r.resultColor ?? "-";
+      const number = r.resultNumber != null ? r.resultNumber : "-";
+      table.innerHTML += `<tr><td>${r.roundId.slice(-5)}</td><td>${color}</td><td>${number}</td><td>${t}</td></tr>`;
     });
   } catch (err) {
     console.error("Game history:", err);
