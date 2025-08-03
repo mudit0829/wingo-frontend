@@ -283,6 +283,8 @@ async function loadMyHistoryPaginated() {
   try {
     const res = await fetch(`${apiUrl}/api/bets/user/${currentEmail}`);
     allUserBets = await res.json();
+    allUserBets.reverse();  // ✅ Always show latest bets first
+    myHistoryPage = 0;      // ✅ Reset to first page (latest bets)
     renderMyHistoryPage();
   } catch (err) {
     console.error("My History Paginated:", err);
@@ -294,7 +296,7 @@ function renderMyHistoryPage() {
   table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
 
   const start = myHistoryPage * pageSize;
-  const pageBets = allUserBets.slice().reverse().slice(start, start + pageSize);
+  const pageBets = allUserBets.slice(start, start + pageSize);
 
   pageBets.forEach(bet => {
     const r = bet.roundId?.slice(-5) || "-";
