@@ -265,10 +265,14 @@ async function placeBet() {
 async function loadMyHistory() {
   try {
     const res = await fetch(`${apiUrl}/api/bets/user/${currentEmail}`);
-    const data = await res.json();
+    let data = await res.json();
     const table = document.getElementById("myHistoryTable");
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
-    data.reverse().forEach(bet => {
+
+    // Show only last 10 bets
+    data = data.slice(-10).reverse();
+
+    data.forEach(bet => {
       const r = bet.roundId?.slice(-5) || "-";
       const amt = `₹${bet.amount}`;
       let status = "⏳ Pending";
@@ -280,6 +284,28 @@ async function loadMyHistory() {
     console.error("My history:", err);
   }
 }
+  
+async function fetchGameHistory() {
+  try {
+    const res = await fetch(`${apiUrl}/api/rounds`);
+    let rounds = await res.json();
+    const table = document.getElementById("gameHistoryTable");
+    table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
+
+    // Show only last 10 rounds
+    rounds = rounds.slice(0, 10);
+
+    rounds.forEach(r => {
+      const t = new Date(r.startTime).toLocaleTimeString();
+      const color = r.resultColor ?? "-";
+      const number = r.resultNumber != null ? r.resultNumber : "-";
+      table.innerHTML += `<tr><td>${r.roundId.slice(-5)}</td><td>${color}</td><td>${number}</td><td>${t}</td></tr>`;
+    });
+  } catch (err) {
+    console.error("Game history:", err);
+  }
+}
+
 
 async function fetchGameHistory() {
   try {
