@@ -84,6 +84,11 @@
     <tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>
   </table>
 </div>
+  <div>
+  <button onclick="prevMyHistoryPage()">⬅️ Prev</button>
+  <button onclick="nextMyHistoryPage()">Next ➡️</button>
+</div>
+
 
 <div class="history">
   <h3>🎲 Game History</h3>
@@ -91,6 +96,11 @@
     <tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>
   </table>
 </div>
+  <div>
+  <button onclick="prevGameHistoryPage()">⬅️ Prev</button>
+  <button onclick="nextGameHistoryPage()">Next ➡️</button>
+</div>
+
 
 <script>
 const apiUrl = "https://wingo-backend-nqk5.onrender.com";
@@ -103,6 +113,12 @@ let currentRoundId = "";
 let roundTimerInterval;
 let isBettingClosed = false;
 let resultBufferActive = false;
+
+let myHistoryPage = 0;
+let gameHistoryPage = 0;
+const pageSize = 10;
+let allUserBets = [];
+let allRounds = [];
 
 function selectColor(color) {
   if (isBettingClosed) return;
@@ -195,8 +211,8 @@ async function fetchCurrentRound() {
       document.getElementById("timer").textContent = "Result in 3s...";
       setTimeout(() => {
         fetchWalletBalance();
-        loadMyHistory();
-        fetchGameHistory();
+        loadMyHistoryPaginated();
+        fetchGameHistoryPaginated();
         isBettingClosed = false;
         resultBufferActive = false;
         enableBettingButtons();
@@ -255,82 +271,103 @@ async function placeBet() {
     const currentWallet = parseFloat(document.getElementById("walletAmount").innerText.replace('₹', ''));
     document.getElementById("walletAmount").innerText = `₹${(currentWallet - amount).toFixed(2)}`;
 
-    loadMyHistory();  // Refresh user history instantly
+    loadMyHistoryPaginated();
   } catch (err) {
     console.error("Place Bet:", err);
     alert(err.message);
   }
 }
 
-async function loadMyHistory() {
+// Pagination: My History
+async function loadMyHistoryPaginated() {
   try {
     const res = await fetch(`${apiUrl}/api/bets/user/${currentEmail}`);
-    let data = await res.json();
-    const table = document.getElementById("myHistoryTable");
-    table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
-
-    // Show only last 10 bets
-    data = data.slice(-10).reverse();
-
-    data.forEach(bet => {
-      const r = bet.roundId?.slice(-5) || "-";
-      const amt = `₹${bet.amount}`;
-      let status = "⏳ Pending";
-      if (bet.win === true) status = "✅ Win";
-      else if (bet.win === false) status = "❌ Lose";
-      table.innerHTML += `<tr><td>${r}</td><td>${bet.colorBet || "-"}</td><td>${bet.numberBet != null ? bet.numberBet : "-"}</td><td>${amt}</td><td>${status}</td></tr>`;
-    });
+    allUserBets = await res.json();
+    renderMyHistoryPage();
   } catch (err) {
-    console.error("My history:", err);
-  }
-}
-  
-async function fetchGameHistory() {
-  try {
-    const res = await fetch(`${apiUrl}/api/rounds`);
-    let rounds = await res.json();
-    const table = document.getElementById("gameHistoryTable");
-    table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
-
-    // Show only last 10 rounds
-    rounds = rounds.slice(0, 10);
-
-    rounds.forEach(r => {
-      const t = new Date(r.startTime).toLocaleTimeString();
-      const color = r.resultColor ?? "-";
-      const number = r.resultNumber != null ? r.resultNumber : "-";
-      table.innerHTML += `<tr><td>${r.roundId.slice(-5)}</td><td>${color}</td><td>${number}</td><td>${t}</td></tr>`;
-    });
-  } catch (err) {
-    console.error("Game history:", err);
+    console.error("My History Paginated:", err);
   }
 }
 
+function renderMyHistoryPage() {
+  const table = document.getElementById("myHistoryTable");
+  table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
 
-async function fetchGameHistory() {
+  const start = myHistoryPage * pageSize;
+  const pageBets = allUserBets.slice().reverse().slice(start, start + pageSize);
+
+  pageBets.forEach(bet => {
+    const r = bet.roundId?.slice(-5) || "-";
+    const amt = `₹${bet.amount}`;
+    let status = "⏳ Pending";
+    if (bet.win === true) status = "✅ Win";
+    else if (bet.win === false) status = "❌ Lose";
+    table.innerHTML += `<tr><td>${r}</td><td>${bet.colorBet || "-"}</td><td>${bet.numberBet != null ? bet.numberBet : "-"}</td><td>${amt}</td><td>${status}</td></tr>`;
+  });
+}
+
+function nextMyHistoryPage() {
+  if ((myHistoryPage + 1) * pageSize < allUserBets.length) {
+    myHistoryPage++;
+    renderMyHistoryPage();
+  }
+}
+
+function prevMyHistoryPage() {
+  if (myHistoryPage > 0) {
+    myHistoryPage--;
+    renderMyHistoryPage();
+  }
+}
+
+// Pagination: Game History
+async function fetchGameHistoryPaginated() {
   try {
     const res = await fetch(`${apiUrl}/api/rounds`);
-    const rounds = await res.json();
-    const table = document.getElementById("gameHistoryTable");
-    table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
-    rounds.forEach(r => {
-      const t = new Date(r.startTime).toLocaleTimeString();
-      const color = r.resultColor ?? "-";
-      const number = r.resultNumber != null ? r.resultNumber : "-";
-      table.innerHTML += `<tr><td>${r.roundId.slice(-5)}</td><td>${color}</td><td>${number}</td><td>${t}</td></tr>`;
-    });
+    allRounds = await res.json();
+    renderGameHistoryPage();
   } catch (err) {
-    console.error("Game history:", err);
+    console.error("Game History Paginated:", err);
+  }
+}
+
+function renderGameHistoryPage() {
+  const table = document.getElementById("gameHistoryTable");
+  table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>";
+
+  const start = gameHistoryPage * pageSize;
+  const pageRounds = allRounds.slice(start, start + pageSize);
+
+  pageRounds.forEach(r => {
+    const t = new Date(r.startTime).toLocaleTimeString();
+    const color = r.resultColor ?? "-";
+    const number = r.resultNumber != null ? r.resultNumber : "-";
+    table.innerHTML += `<tr><td>${r.roundId.slice(-5)}</td><td>${color}</td><td>${number}</td><td>${t}</td></tr>`;
+  });
+}
+
+function nextGameHistoryPage() {
+  if ((gameHistoryPage + 1) * pageSize < allRounds.length) {
+    gameHistoryPage++;
+    renderGameHistoryPage();
+  }
+}
+
+function prevGameHistoryPage() {
+  if (gameHistoryPage > 0) {
+    gameHistoryPage--;
+    renderGameHistoryPage();
   }
 }
 
 // Initialize
 fetchWalletBalance();
 startRoundTimer();
-loadMyHistory();
-fetchGameHistory();
+loadMyHistoryPaginated();
+fetchGameHistoryPaginated();
 renderNumberButtons();
 </script>
+
 
 </body>
 </html>
