@@ -89,8 +89,6 @@
     <tr><th>Round</th><th>Color</th><th>Number</th><th>Time</th></tr>
   </table>
 </div>
-<!-- Replace only <script> section from your code with this updated one -->
-
 <script>
 const apiUrl = "https://wingo-backend-nqk5.onrender.com";
 let selectedColor = null;
@@ -103,7 +101,6 @@ let roundCheckInterval;
 let lastRoundId = "";
 
 function selectColor(color) {
-  if (isBettingClosed) return; // Prevent betting after 5s
   selectedColor = color;
   selectedNumber = null;
   openBetPopup(color);
@@ -151,8 +148,6 @@ async function fetchWalletBalance() {
   }
 }
 
-let isBettingClosed = false;
-
 async function fetchCurrentRound() {
   try {
     const res = await fetch(`${apiUrl}/api/rounds`);
@@ -164,24 +159,10 @@ async function fetchCurrentRound() {
     const now = Date.now();
     const elapsed = Math.floor((now - start) / 1000);
     const left = 30 - elapsed;
-
     document.getElementById("roundId").textContent = round.roundId.slice(-5);
     document.getElementById("timer").textContent = left > 0 ? `${left}s` : "00s";
 
-    // Disable Betting after 5s
-    if (left <= 5 && !isBettingClosed) {
-      isBettingClosed = true;
-      disableBettingButtons();
-      closePopup();  // Close any open bet popup forcibly
-    }
-
-    // Reset betting for new round
-    if (left > 5 && isBettingClosed && currentRoundId !== round.roundId) {
-      isBettingClosed = false;
-      enableBettingButtons();
-    }
-
-    // If New Round Started
+    // Detect Round Change
     if (currentRoundId !== round.roundId) {
       currentRoundId = round.roundId;
       fetchWalletBalance();
@@ -189,14 +170,14 @@ async function fetchCurrentRound() {
       fetchGameHistory();
     }
 
-    // After Round ends, wait for 3 seconds to refresh Wallet & Bets
-    if (left <= 0 && lastRoundId !== round.roundId) {
+    // Auto-refresh Wallet & Bets Status after result (buffer 5 sec)
+    if (left === 3 && lastRoundId !== round.roundId) {
       lastRoundId = round.roundId;
       setTimeout(() => {
         fetchWalletBalance();
         loadMyHistory();
         fetchGameHistory();
-      }, 3000);  // 3 seconds buffer after round end
+      }, 5000);
     }
 
   } catch (err) {
@@ -204,26 +185,10 @@ async function fetchCurrentRound() {
   }
 }
 
-function disableBettingButtons() {
-  document.querySelectorAll(".color-button, .number-button").forEach(btn => {
-    btn.disabled = true;
-    btn.style.opacity = 0.5;
-    btn.style.cursor = "not-allowed";
-  });
-}
-
-function enableBettingButtons() {
-  document.querySelectorAll(".color-button, .number-button").forEach(btn => {
-    btn.disabled = false;
-    btn.style.opacity = 1;
-    btn.style.cursor = "pointer";
-  });
-}
-
 function startLiveRoundTracking() {
   fetchCurrentRound();
   clearInterval(roundCheckInterval);
-  roundCheckInterval = setInterval(fetchCurrentRound, 1000); // Faster tracking per second
+  roundCheckInterval = setInterval(fetchCurrentRound, 3000);
 }
 
 async function placeBet() {
@@ -260,16 +225,23 @@ async function loadMyHistory() {
     const data = await res.json();
     const table = document.getElementById("myHistoryTable");
     table.innerHTML = "<tr><th>Round</th><th>Color</th><th>Number</th><th>Amount</th><th>Status</th></tr>";
-    data.reverse().forEach(bet => {
+    data.forEach(bet => {
       const r = bet.roundId?.slice(-5) || "-";
       const amt = `₹${bet.amount}`;
-      const status = bet.win === true ? "✅ Win" : bet.win === false ? "❌ Lose" : "⏳ Pending";
-      if (bet.colorBet) {
-        table.innerHTML += `<tr><td>${r}</td><td>${bet.colorBet}</td><td>-</td><td>${amt}</td><td>${status}</td></tr>`;
-      }
-      if (bet.numberBet != null) {
-        table.innerHTML += `<tr><td>${r}</td><td>-</td><td>${bet.numberBet}</td><td>${amt}</td><td>${status}</td></tr>`;
-      }
+      let statusIcon = "⏳ Pending";
+      if (bet.win === true) statusIcon = "✅ Win";
+      else if (bet.win === false) statusIcon = "❌ Lose";
+
+      const color = bet.colorBet || "-";
+      const number = bet.numberBet != null ? bet.numberBet : "-";
+
+      table.innerHTML += `<tr>
+        <td>${r}</td>
+        <td>${color}</td>
+        <td>${number}</td>
+        <td>${amt}</td>
+        <td>${statusIcon}</td>
+      </tr>`;
     });
   } catch (err) {
     console.error("My history:", err);
@@ -301,7 +273,6 @@ function renderNumberButtons() {
     btn.className = "number-button";
     btn.textContent = i;
     btn.onclick = () => {
-      if (isBettingClosed) return;  // Disable click after 5s
       selectedNumber = i;
       selectedColor = null;
       openBetPopup(`Number ${i}`);
