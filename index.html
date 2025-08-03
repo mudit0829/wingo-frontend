@@ -95,29 +95,9 @@ let selectedColor = null;
 let selectedNumber = null;
 let totalAmount = 0;
 let multiplier = 1;
-let currentEmail = "";
+let currentEmail = "user@example.com"; // Hardcoded email
 let currentRoundId = "";
 let roundCheckInterval;
-
-async function fetchUserEmail() {
-  try {
-    const res = await fetch(`${apiUrl}/api/auth/profile`, { credentials: 'include' });
-    const data = await res.json();
-    if (res.ok && data.email) {
-      currentEmail = data.email;
-      console.log("Logged in as:", currentEmail);
-      fetchWalletBalance();
-      loadMyHistory();
-    } else {
-      alert("Please login first.");
-      window.location.href = "login.html";
-    }
-  } catch (err) {
-    console.error("Fetch User Email Error:", err);
-    alert("Session expired. Please login again.");
-    window.location.href = "login.html";
-  }
-}
 
 function selectColor(color) {
   selectedColor = color;
@@ -279,8 +259,9 @@ function renderNumberButtons() {
 }
 
 // Initialize
-fetchUserEmail();
+fetchWalletBalance();
 startLiveRoundTracking();
+loadMyHistory();
 fetchGameHistory();
 renderNumberButtons();
 </script>
