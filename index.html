@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WinGo Game</title>
   <style>
+    /* Same CSS as before (unchanged) */
     body { font-family: Arial, sans-serif; background-color: #101010; color: #fff; margin: 0; padding: 0; text-align: center; }
     .wallet-section { margin: 10px auto; }
     .wallet-section h3 { margin: 0; font-size: 18px; }
@@ -98,6 +99,7 @@ let multiplier = 1;
 let currentEmail = localStorage.getItem("userEmail") || "user@example.com";
 let currentRoundId = "";
 let roundCheckInterval;
+let lastRoundId = "";
 
 function selectColor(color) {
   selectedColor = color;
@@ -154,7 +156,6 @@ async function fetchCurrentRound() {
     if (!rounds || rounds.length === 0) return;
     const round = rounds[0];
 
-    // Timer Calculation
     const start = new Date(round.startTime).getTime();
     const now = Date.now();
     const elapsed = Math.floor((now - start) / 1000);
@@ -162,12 +163,24 @@ async function fetchCurrentRound() {
     document.getElementById("roundId").textContent = round.roundId.slice(-5);
     document.getElementById("timer").textContent = left > 0 ? `${left}s` : "00s";
 
+    // If Round Changed
     if (currentRoundId !== round.roundId) {
       currentRoundId = round.roundId;
       fetchWalletBalance();
       loadMyHistory();
       fetchGameHistory();
     }
+
+    // Auto-refresh Wallet & Bets Status after round ends
+    if (left === 3 && lastRoundId !== round.roundId) {
+      lastRoundId = round.roundId;
+      setTimeout(() => {
+        fetchWalletBalance();
+        loadMyHistory();
+        fetchGameHistory();
+      }, 5000);  // 5 seconds after result is updated
+    }
+
   } catch (err) {
     console.error("Fetch round:", err);
   }
@@ -262,19 +275,12 @@ function renderNumberButtons() {
   }
 }
 
-// Initialize
+// Initialize App
 fetchWalletBalance();
 startLiveRoundTracking();
 loadMyHistory();
 fetchGameHistory();
 renderNumberButtons();
-  
-  // Auto Refresh Wallet & My History after every Round End (every 30s)
-setInterval(() => {
-  fetchWalletBalance();
-  loadMyHistory();
-}, 30000);
-
 </script>
 </body>
 </html>
