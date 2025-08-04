@@ -4,21 +4,34 @@
   <meta charset="UTF-8">
   <title>WinGo Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    .tab-buttons button { margin-right: 10px; }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
   <h2>WinGo Admin Panel</h2>
 
-  <div>
-    <button onclick="generateAutoResult()">Generate Auto Result</button>
+  <div class="tab-buttons">
+    <button onclick="showTab('resultControl')">Result Control</button>
+    <button onclick="showTab('profitLoss')">Profit/Loss</button>
+    <button onclick="showTab('recentRounds')">Recent Rounds</button>
     <button onclick="logout()">Logout</button>
   </div>
 
-  <h3>Manual Result Control</h3>
-  <div>
-    <label for="manualRoundId">Round ID:</label>
+  <!-- Result Control Tab -->
+  <div id="resultControl" class="tab-section">
+    <h3>Result Control</h3>
+    <button onclick="generateAutoResult()">Generate Auto Result</button>
+    <h4>Manual Result Control</h4>
+    <label>Round ID:</label>
     <input type="text" id="manualRoundId" placeholder="Enter Round ID" />
 
-    <label for="manualColor">Color:</label>
+    <label>Color:</label>
     <select id="manualColor">
       <option value="">Select Color</option>
       <option value="Red">Red</option>
@@ -26,7 +39,7 @@
       <option value="Violet">Violet</option>
     </select>
 
-    <label for="manualNumber">Number:</label>
+    <label>Number:</label>
     <select id="manualNumber">
       <option value="">Select Number</option>
       ${[...Array(10).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
@@ -35,13 +48,28 @@
     <button onclick="setManualResult()">Set Manual Result</button>
   </div>
 
-  <h3>Recent Rounds</h3>
-  <table id="adminTable">
-    <thead>
-      <tr><th>Round ID</th><th>Color</th><th>Number</th><th>Time</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- Profit/Loss Tab -->
+  <div id="profitLoss" class="tab-section hidden">
+    <h3>Profit/Loss Report</h3>
+    <button onclick="fetchProfitLoss()">Refresh Report</button>
+    <table>
+      <thead>
+        <tr><th>User Email</th><th>Total Bets</th><th>Total Wins</th><th>Profit/Loss</th></tr>
+      </thead>
+      <tbody id="profitLossTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Recent Rounds Tab -->
+  <div id="recentRounds" class="tab-section hidden">
+    <h3>Recent Rounds</h3>
+    <table>
+      <thead>
+        <tr><th>Round ID</th><th>Color</th><th>Number</th><th>Time</th></tr>
+      </thead>
+      <tbody id="adminTable"></tbody>
+    </table>
+  </div>
 
   <script>
     const apiBase = 'https://wingo-backend-nqk5.onrender.com';
@@ -49,6 +77,11 @@
     function logout() {
       localStorage.clear();
       window.location.href = 'login.html';
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-section').forEach(tab => tab.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
     }
 
     async function generateAutoResult() {
@@ -101,9 +134,29 @@
           </tr>
         `).join('');
 
-        document.querySelector('#adminTable tbody').innerHTML = rows;
+        document.getElementById('adminTable').innerHTML = rows;
       } catch (err) {
         console.error(err);
+      }
+    }
+
+    async function fetchProfitLoss() {
+      try {
+        const res = await fetch(`${apiBase}/api/users/profitLoss`);
+        const data = await res.json();
+
+        const rows = data.map(user => `
+          <tr>
+            <td>${user.email}</td>
+            <td>₹${user.totalBets.toFixed(2)}</td>
+            <td>₹${user.totalWins.toFixed(2)}</td>
+            <td style="color:${user.profitLoss >=0 ? 'green' : 'red'};">₹${user.profitLoss.toFixed(2)}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('profitLossTable').innerHTML = rows;
+      } catch (err) {
+        alert('Error fetching profit/loss');
       }
     }
 
