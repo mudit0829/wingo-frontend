@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WinGo Admin</title>
+  <title>WinGo Admin (Direct Access)</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
     body { font-family: Arial, sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
@@ -38,26 +38,25 @@
   </div>
 
   <script>
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
     const apiBase = 'https://wingo-backend-nqk5.onrender.com';
-
-    if (role !== 'admin') window.location.href = 'login.html';
+    const hardcodedToken = 'HARDCODED_ADMIN_TOKEN'; // Not needed as we skip auth
 
     let allRounds = [];
     let currentPage = 0;
     const pageSize = 10;
 
     function logout() {
-      localStorage.clear();
-      window.location.href = 'login.html';
+      window.location.href = 'index.html';
     }
 
     async function generateResult() {
       try {
         const res = await fetch(`${apiBase}/api/cron/generateResult`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: {
+            // Hardcoded dummy token (Backend should skip auth for now)
+            'Authorization': `Bearer ${hardcodedToken}`
+          }
         });
 
         const data = await res.json();
@@ -70,15 +69,15 @@
     }
 
     function startTimer() {
-      alert('Start Timer clicked (Implement backend API if needed)');
-      // Future API Call can be added here.
+      alert('Start Timer clicked (Implement API if needed)');
+      // Future API Call can be placed here
     }
 
     async function loadRounds() {
       try {
         const res = await fetch(`${apiBase}/api/rounds`);
         allRounds = await res.json();
-        currentPage = 0; // Always start from latest page
+        currentPage = 0; // Reset to latest
         renderRoundsTable();
       } catch (err) {
         console.error(err);
@@ -124,8 +123,9 @@
       }
     }
 
+    // Initialize
     loadRounds();
-    setInterval(loadRounds, 10000); // Auto-refresh every 10 seconds
+    setInterval(loadRounds, 10000);
   </script>
 
 </body>
