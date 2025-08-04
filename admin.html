@@ -2,80 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WinGo Admin Panel (Full Tabs)</title>
+  <title>WinGo Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body { font-family: Arial, sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
-    button { margin: 5px; padding: 10px 20px; border: none; background: #1e90ff; color: white; cursor: pointer; border-radius: 5px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #444; padding: 8px; text-align: center; }
-    .tab { display: none; }
-    .tab.active { display: block; }
-    .tab-buttons button.active { background: #ff6347; }
-    .pagination { margin-top: 10px; }
-    .pagination button { padding: 5px 10px; background: #444; }
+    body { font-family: Arial; padding: 20px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-button { padding: 10px 20px; cursor: pointer; background: #f0f0f0; border: none; border-radius: 5px; }
+    .tab-button.active { background: #4CAF50; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { padding: 8px 12px; margin: 5px; }
   </style>
 </head>
 <body>
-
   <h2>WinGo Admin Panel</h2>
 
-  <div class="tab-buttons">
-    <button onclick="showTab('roundsTab')" class="active">Rounds</button>
-    <button onclick="showTab('profitTab')">Profit/Loss</button>
-    <button onclick="showTab('timerTab')">Timer Control</button>
+  <div class="tabs">
+    <button class="tab-button active" onclick="switchTab('resultTab')">Result Control</button>
+    <button class="tab-button" onclick="switchTab('profitTab')">Profit/Loss</button>
+    <button class="tab-button" onclick="switchTab('timerTab')">Timer Control</button>
     <button onclick="logout()">Logout</button>
   </div>
 
-  <!-- Rounds Tab -->
-  <div id="roundsTab" class="tab active">
-    <h3>Recent Rounds</h3>
+  <div id="resultTab" class="tab-content active">
     <button onclick="generateResult()">Generate Result</button>
-    <table id="adminTable">
-      <thead><tr><th>Round ID</th><th>Result Color</th><th>Result Number</th><th>Timestamp</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="pagination">
-      <button onclick="prevPage()">Prev</button>
-      <span id="pageIndicator">Page 1</span>
-      <button onclick="nextPage()">Next</button>
-    </div>
-  </div>
-
-  <!-- Profit/Loss Tab -->
-  <div id="profitTab" class="tab">
-    <h3>Profit / Loss Summary</h3>
-    <table id="profitTable">
-      <thead><tr><th>User</th><th>Total Bets</th><th>Winnings</th><th>Profit/Loss</th></tr></thead>
-      <tbody></tbody>
+    <h3>Recent Rounds</h3>
+    <table>
+      <thead>
+        <tr><th>Round ID</th><th>Result</th><th>Time</th></tr>
+      </thead>
+      <tbody id="resultTable"></tbody>
     </table>
   </div>
 
-  <!-- Timer Control Tab -->
-  <div id="timerTab" class="tab">
-    <h3>Game Timer Control</h3>
+  <div id="profitTab" class="tab-content">
+    <h3>Profit/Loss Summary</h3>
+    <button onclick="fetchProfitLoss()">Refresh</button>
+    <p>Total Bets: <span id="totalBets">0</span></p>
+    <p>Total Payouts: <span id="totalPayouts">0</span></p>
+    <p>Platform Profit: <span id="platformProfit">0</span></p>
+  </div>
+
+  <div id="timerTab" class="tab-content">
+    <h3>Timer Control</h3>
     <button onclick="startTimer()">Start Timer</button>
-    <button onclick="pauseTimer()">Pause Timer</button>
-    <p id="timerStatus">Status: Not Implemented</p>
+    <button onclick="stopTimer()">Stop Timer</button>
+    <p>Timer Status: <span id="timerStatus">Stopped</span></p>
   </div>
 
   <script>
     const apiBase = 'https://wingo-backend-nqk5.onrender.com';
-    let allRounds = [];
-    let currentPage = 0;
-    const pageSize = 10;
 
     function logout() {
-      window.location.href = 'index.html';
+      localStorage.clear();
+      window.location.href = 'login.html';
     }
 
-    function showTab(tabId) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-buttons button').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       event.target.classList.add('active');
-
-      if (tabId === 'profitTab') fetchProfitLoss();
+      document.getElementById(tabId).classList.add('active');
     }
 
     async function generateResult() {
@@ -83,99 +72,61 @@
         const res = await fetch(`${apiBase}/api/cron/generateResult`, { method: 'POST' });
         const data = await res.json();
         alert(data.message || 'Result generated');
-        await loadRounds();
-      } catch (err) {
-        console.error(err);
+        loadResults();
+      } catch {
         alert('Error generating result');
       }
     }
 
-    async function loadRounds() {
+    async function loadResults() {
       try {
         const res = await fetch(`${apiBase}/api/rounds`);
-        allRounds = await res.json();
-        currentPage = 0;
-        renderRoundsTable();
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function renderRoundsTable() {
-      const tbody = document.querySelector('#adminTable tbody');
-      tbody.innerHTML = '';
-      const start = currentPage * pageSize;
-      const pageRounds = allRounds.slice(start, start + pageSize);
-
-      pageRounds.forEach(round => {
-        const resultColor = round.resultColor || '-';
-        const resultNumber = round.resultNumber != null ? round.resultNumber : '-';
-        const timestamp = new Date(round.startTime).toLocaleString();
-
-        tbody.innerHTML += `
+        const rounds = await res.json();
+        const rows = rounds.slice(-10).reverse().map(r => `
           <tr>
-            <td>${round.roundId?.slice(-5) || '-'}</td>
-            <td>${resultColor}</td>
-            <td>${resultNumber}</td>
-            <td>${timestamp}</td>
-          </tr>
-        `;
-      });
-
-      document.getElementById('pageIndicator').textContent = `Page ${currentPage + 1}`;
-    }
-
-    function nextPage() {
-      if ((currentPage + 1) * pageSize < allRounds.length) {
-        currentPage++;
-        renderRoundsTable();
-      }
-    }
-
-    function prevPage() {
-      if (currentPage > 0) {
-        currentPage--;
-        renderRoundsTable();
+            <td>${r.roundId || '-'}</td>
+            <td>${r.resultColor || '-'} ${r.resultNumber != null ? r.resultNumber : '-'}</td>
+            <td>${new Date(r.startTime).toLocaleTimeString()}</td>
+          </tr>`).join('');
+        document.getElementById('resultTable').innerHTML = rows;
+      } catch {
+        console.error('Error loading results');
       }
     }
 
     async function fetchProfitLoss() {
       try {
-        const res = await fetch(`${apiBase}/api/bets/profitLossSummary`);
+        const res = await fetch(`${apiBase}/api/cron/profitLoss`);
         const data = await res.json();
-        const tbody = document.querySelector('#profitTable tbody');
-        tbody.innerHTML = '';
-
-        data.forEach(user => {
-          const profitLoss = user.winnings - user.totalBets;
-          const profitLossText = profitLoss >= 0 ? `+₹${profitLoss}` : `-₹${Math.abs(profitLoss)}`;
-          tbody.innerHTML += `
-            <tr>
-              <td>${user.email}</td>
-              <td>₹${user.totalBets}</td>
-              <td>₹${user.winnings}</td>
-              <td>${profitLossText}</td>
-            </tr>
-          `;
-        });
-      } catch (err) {
-        console.error(err);
-        alert('Failed to fetch Profit/Loss');
+        document.getElementById('totalBets').textContent = data.totalBets || 0;
+        document.getElementById('totalPayouts').textContent = data.totalPayouts || 0;
+        document.getElementById('platformProfit').textContent = data.platformProfit || 0;
+      } catch {
+        alert('Error fetching profit/loss');
       }
     }
 
-    function startTimer() {
-      alert('Start Timer clicked (Implement API if needed)');
+    async function startTimer() {
+      try {
+        await fetch(`${apiBase}/api/timer/start`, { method: 'POST' });
+        document.getElementById('timerStatus').textContent = 'Running';
+      } catch {
+        alert('Failed to start timer');
+      }
     }
 
-    function pauseTimer() {
-      alert('Pause Timer clicked (Implement API if needed)');
+    async function stopTimer() {
+      try {
+        await fetch(`${apiBase}/api/timer/stop`, { method: 'POST' });
+        document.getElementById('timerStatus').textContent = 'Stopped';
+      } catch {
+        alert('Failed to stop timer');
+      }
     }
 
-    // Initialize
-    loadRounds();
-    setInterval(loadRounds, 10000);
+    // Initial Load
+    loadResults();
+    setInterval(loadResults, 10000);
   </script>
-
 </body>
 </html>
