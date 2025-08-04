@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WinGo Admin (Direct Access)</title>
+  <title>WinGo Admin Panel (Full Tabs)</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
     body { font-family: Arial, sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
     button { margin: 5px; padding: 10px 20px; border: none; background: #1e90ff; color: white; cursor: pointer; border-radius: 5px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #444; padding: 8px; text-align: center; }
+    .tab { display: none; }
+    .tab.active { display: block; }
+    .tab-buttons button.active { background: #ff6347; }
     .pagination { margin-top: 10px; }
     .pagination button { padding: 5px 10px; background: #444; }
   </style>
@@ -17,30 +20,47 @@
 
   <h2>WinGo Admin Panel</h2>
 
-  <div>
-    <button onclick="generateResult()">Generate Result</button>
-    <button onclick="startTimer()">Start Timer</button>
+  <div class="tab-buttons">
+    <button onclick="showTab('roundsTab')" class="active">Rounds</button>
+    <button onclick="showTab('profitTab')">Profit/Loss</button>
+    <button onclick="showTab('timerTab')">Timer Control</button>
     <button onclick="logout()">Logout</button>
   </div>
 
-  <h3>Recent Rounds</h3>
-  <table id="adminTable">
-    <thead>
-      <tr><th>Round ID</th><th>Result Color</th><th>Result Number</th><th>Timestamp</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- Rounds Tab -->
+  <div id="roundsTab" class="tab active">
+    <h3>Recent Rounds</h3>
+    <button onclick="generateResult()">Generate Result</button>
+    <table id="adminTable">
+      <thead><tr><th>Round ID</th><th>Result Color</th><th>Result Number</th><th>Timestamp</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="pagination">
+      <button onclick="prevPage()">Prev</button>
+      <span id="pageIndicator">Page 1</span>
+      <button onclick="nextPage()">Next</button>
+    </div>
+  </div>
 
-  <div class="pagination">
-    <button onclick="prevPage()">Prev</button>
-    <span id="pageIndicator">Page 1</span>
-    <button onclick="nextPage()">Next</button>
+  <!-- Profit/Loss Tab -->
+  <div id="profitTab" class="tab">
+    <h3>Profit / Loss Summary</h3>
+    <table id="profitTable">
+      <thead><tr><th>User</th><th>Total Bets</th><th>Winnings</th><th>Profit/Loss</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Timer Control Tab -->
+  <div id="timerTab" class="tab">
+    <h3>Game Timer Control</h3>
+    <button onclick="startTimer()">Start Timer</button>
+    <button onclick="pauseTimer()">Pause Timer</button>
+    <p id="timerStatus">Status: Not Implemented</p>
   </div>
 
   <script>
     const apiBase = 'https://wingo-backend-nqk5.onrender.com';
-    const hardcodedToken = 'HARDCODED_ADMIN_TOKEN'; // Not needed as we skip auth
-
     let allRounds = [];
     let currentPage = 0;
     const pageSize = 10;
@@ -49,16 +69,18 @@
       window.location.href = 'index.html';
     }
 
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-buttons button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabId === 'profitTab') fetchProfitLoss();
+    }
+
     async function generateResult() {
       try {
-        const res = await fetch(`${apiBase}/api/cron/generateResult`, {
-          method: 'POST',
-          headers: {
-            // Hardcoded dummy token (Backend should skip auth for now)
-            'Authorization': `Bearer ${hardcodedToken}`
-          }
-        });
-
+        const res = await fetch(`${apiBase}/api/cron/generateResult`, { method: 'POST' });
         const data = await res.json();
         alert(data.message || 'Result generated');
         await loadRounds();
@@ -68,16 +90,11 @@
       }
     }
 
-    function startTimer() {
-      alert('Start Timer clicked (Implement API if needed)');
-      // Future API Call can be placed here
-    }
-
     async function loadRounds() {
       try {
         const res = await fetch(`${apiBase}/api/rounds`);
         allRounds = await res.json();
-        currentPage = 0; // Reset to latest
+        currentPage = 0;
         renderRoundsTable();
       } catch (err) {
         console.error(err);
@@ -87,7 +104,6 @@
     function renderRoundsTable() {
       const tbody = document.querySelector('#adminTable tbody');
       tbody.innerHTML = '';
-
       const start = currentPage * pageSize;
       const pageRounds = allRounds.slice(start, start + pageSize);
 
@@ -121,6 +137,39 @@
         currentPage--;
         renderRoundsTable();
       }
+    }
+
+    async function fetchProfitLoss() {
+      try {
+        const res = await fetch(`${apiBase}/api/bets/profitLossSummary`);
+        const data = await res.json();
+        const tbody = document.querySelector('#profitTable tbody');
+        tbody.innerHTML = '';
+
+        data.forEach(user => {
+          const profitLoss = user.winnings - user.totalBets;
+          const profitLossText = profitLoss >= 0 ? `+₹${profitLoss}` : `-₹${Math.abs(profitLoss)}`;
+          tbody.innerHTML += `
+            <tr>
+              <td>${user.email}</td>
+              <td>₹${user.totalBets}</td>
+              <td>₹${user.winnings}</td>
+              <td>${profitLossText}</td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error(err);
+        alert('Failed to fetch Profit/Loss');
+      }
+    }
+
+    function startTimer() {
+      alert('Start Timer clicked (Implement API if needed)');
+    }
+
+    function pauseTimer() {
+      alert('Pause Timer clicked (Implement API if needed)');
     }
 
     // Initialize
