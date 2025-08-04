@@ -1,117 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>WinGo Admin Panel</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    button { margin: 5px; padding: 10px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    .tab { display: none; }
-    .tab.active { display: block; }
-    .tab-buttons button { margin-right: 10px; }
+    button { margin: 5px; padding: 10px; }
+    .tabContent { display: none; }
+    .activeTab { display: block; }
   </style>
 </head>
 <body>
-
   <h2>WinGo Admin Panel</h2>
 
-  <div class="tab-buttons">
-    <button onclick="showTab('controlTab')">Result Control</button>
-    <button onclick="showTab('profitLossTab')">Profit/Loss</button>
-    <button onclick="showTab('timerTab')">Timer Control</button>
-    <button onclick="showTab('upcomingRoundsTab')">Upcoming Rounds</button>
+  <div>
+    <button onclick="showTab('resultControl')">Result Control</button>
+    <button onclick="showTab('profitLoss')">Profit/Loss</button>
+    <button onclick="showTab('timerControl')">Timer Control</button>
+    <button onclick="showTab('upcomingRounds')">Upcoming Rounds</button>
     <button onclick="logout()">Logout</button>
   </div>
 
   <!-- Result Control Tab -->
-  <div id="controlTab" class="tab active">
-    <h3>Manual Result Control</h3>
-    <label>Round ID: <input type="text" id="manualRoundId" /></label><br><br>
-    <label>Color Result:
-      <select id="manualColor">
-        <option value="">Select</option>
-        <option value="Red">Red</option>
-        <option value="Green">Green</option>
-        <option value="Violet">Violet</option>
-      </select>
-    </label><br><br>
-    <label>Number Result:
-      <select id="manualNumber">
-        <option value="">Select</option>
-        ${[...Array(10).keys()].map(n => `<option value="${n}">${n}</option>`).join('')}
-      </select>
-    </label><br><br>
-    <button onclick="submitManualResult()">Submit Result</button>
+  <div id="resultControl" class="tabContent">
+    <h3>Result Control</h3>
+    <input type="text" id="manualRoundId" placeholder="Round ID (e.g., R0012)">
+    <select id="manualResultColor">
+      <option value="">Select Color</option>
+      <option value="Red">Red</option>
+      <option value="Green">Green</option>
+      <option value="Violet">Violet</option>
+    </select>
+    <input type="number" id="manualResultNumber" placeholder="Result Number (0-9)">
+    <button onclick="setManualResult()">Set Result</button>
   </div>
 
   <!-- Profit/Loss Tab -->
-  <div id="profitLossTab" class="tab">
+  <div id="profitLoss" class="tabContent">
     <h3>Profit/Loss Summary</h3>
-    <div id="profitLossSummary">
-      <p>Total Bets: ₹0</p>
-      <p>Total Payouts: ₹0</p>
-      <p>Profit: ₹0</p>
-    </div>
-    <button onclick="fetchProfitLoss()">Refresh</button>
+    <button onclick="fetchProfitLoss()">Refresh Summary</button>
+    <p id="profitLossData"></p>
   </div>
 
   <!-- Timer Control Tab -->
-  <div id="timerTab" class="tab">
-    <h3>Timer Controls</h3>
+  <div id="timerControl" class="tabContent">
+    <h3>Timer Control</h3>
     <button onclick="startTimer()">Start Timer</button>
     <button onclick="stopTimer()">Stop Timer</button>
   </div>
 
   <!-- Upcoming Rounds Tab -->
-  <div id="upcomingRoundsTab" class="tab">
+  <div id="upcomingRounds" class="tabContent">
     <h3>Upcoming Rounds</h3>
-    <table id="upcomingTable">
+    <table id="upcomingRoundsTable">
       <thead>
         <tr><th>Round ID</th><th>Start Time</th></tr>
       </thead>
       <tbody></tbody>
     </table>
-    <button onclick="prevUpcomingPage()">Previous</button>
-    <button onclick="nextUpcomingPage()">Next</button>
+    <button onclick="prevPage()">Previous</button>
+    <button onclick="nextPage()">Next</button>
   </div>
 
   <script>
     const apiBase = 'https://wingo-backend-nqk5.onrender.com';
-    let upcomingPage = 0;
+    let currentPage = 1;
 
     function showTab(tabId) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
+      document.querySelectorAll('.tabContent').forEach(tab => tab.classList.remove('activeTab'));
+      document.getElementById(tabId).classList.add('activeTab');
     }
 
     function logout() {
       localStorage.clear();
-      window.location.href = 'login.html';
+      alert('Logged out');
     }
 
-    async function submitManualResult() {
+    async function setManualResult() {
       const roundId = document.getElementById('manualRoundId').value.trim();
-      const color = document.getElementById('manualColor').value;
-      const number = document.getElementById('manualNumber').value;
+      const resultColor = document.getElementById('manualResultColor').value;
+      const resultNumber = parseInt(document.getElementById('manualResultNumber').value);
 
-      if (!roundId || !color || number === "") {
-        alert('Please select Round ID, Color, and Number');
+      if (!roundId || !resultColor || isNaN(resultNumber)) {
+        alert('Please fill all fields correctly.');
         return;
       }
 
       try {
-        const res = await fetch(`${apiBase}/api/cron/manualResult`, {
+        const res = await fetch(`${apiBase}/api/admin/manualResult`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roundId, color, number: parseInt(number) })
+          body: JSON.stringify({ roundId, resultColor, resultNumber })
         });
+
         const data = await res.json();
-        alert(data.message || 'Result submitted');
+        alert(data.message || 'Manual result set.');
       } catch (err) {
-        console.error('Manual Result Error:', err);
-        alert('Failed to submit result');
+        console.error('Set Manual Result Error:', err);
       }
     }
 
@@ -119,70 +105,75 @@
       try {
         const res = await fetch(`${apiBase}/api/admin/profitLoss`);
         const data = await res.json();
-        document.getElementById('profitLossSummary').innerHTML = `
-          <p>Total Bets: ₹${data.totalBets}</p>
-          <p>Total Payouts: ₹${data.totalPayouts}</p>
-          <p>Profit: ₹${data.profit}</p>
-        `;
+        document.getElementById('profitLossData').innerText = 
+          `Total Bets: ₹${data.totalBets} | Total Payouts: ₹${data.totalPayouts} | Profit: ₹${data.profit}`;
       } catch (err) {
-        console.error('Profit/Loss Error:', err);
-        alert('Failed to fetch profit/loss');
+        console.error('Profit/Loss Fetch Error:', err);
       }
     }
 
     async function startTimer() {
       try {
-        await fetch(`${apiBase}/api/admin/timer/start`, { method: 'POST' });
-        alert('Timer started');
+        const res = await fetch(`${apiBase}/api/admin/timer/start`, { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
       } catch (err) {
-        alert('Failed to start timer');
+        console.error('Start Timer Error:', err);
       }
     }
 
     async function stopTimer() {
       try {
-        await fetch(`${apiBase}/api/admin/timer/stop`, { method: 'POST' });
-        alert('Timer stopped');
+        const res = await fetch(`${apiBase}/api/admin/timer/stop`, { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
       } catch (err) {
-        alert('Failed to stop timer');
+        console.error('Stop Timer Error:', err);
       }
     }
 
-    async function loadUpcomingRounds() {
+    async function loadUpcomingRounds(page = 1) {
       try {
-        const res = await fetch(`${apiBase}/api/rounds/upcoming?page=${upcomingPage}`);
-        const response = await res.json();
-        const data = response.rounds || response;  // <-- Safe Fallback Fix
+        console.log('Fetching upcoming rounds, Page:', page);
+        const res = await fetch(`${apiBase}/api/rounds/upcoming?page=${page}`);
+        const data = await res.json();
+
+        console.log('API Response:', data);
+
+        if (!Array.isArray(data)) {
+          console.error('Expected array but got:', data);
+          return;
+        }
 
         const rows = data.map(round => `
           <tr>
             <td>${round.roundId}</td>
-            <td>${new Date(round.startTime).toLocaleTimeString()}</td>
+            <td>${new Date(round.startTime).toLocaleString()}</td>
           </tr>
         `).join('');
 
-        document.querySelector('#upcomingTable tbody').innerHTML = rows;
+        document.querySelector('#upcomingRoundsTable tbody').innerHTML = rows;
       } catch (err) {
-        console.error('Upcoming Rounds Load Error:', err);
+        console.error('Error loading upcoming rounds:', err);
       }
     }
 
-    function nextUpcomingPage() {
-      upcomingPage++;
+    function nextPage() {
+      currentPage++;
+      loadUpcomingRounds(currentPage);
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        loadUpcomingRounds(currentPage);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      showTab('resultControl');
       loadUpcomingRounds();
-    }
-
-    function prevUpcomingPage() {
-      if (upcomingPage > 0) {
-        upcomingPage--;
-        loadUpcomingRounds();
-      }
-    }
-
-    // Initialize
-    loadUpcomingRounds();
-    fetchProfitLoss();
+    });
   </script>
-
 </body>
 </html>
