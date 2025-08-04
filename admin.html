@@ -4,53 +4,44 @@
   <meta charset="UTF-8">
   <title>WinGo Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-button { padding: 10px 20px; cursor: pointer; background: #f0f0f0; border: none; border-radius: 5px; }
-    .tab-button.active { background: #4CAF50; color: white; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    button { padding: 8px 12px; margin: 5px; }
-  </style>
 </head>
 <body>
   <h2>WinGo Admin Panel</h2>
 
-  <div class="tabs">
-    <button class="tab-button active" onclick="switchTab('resultTab')">Result Control</button>
-    <button class="tab-button" onclick="switchTab('profitTab')">Profit/Loss</button>
-    <button class="tab-button" onclick="switchTab('timerTab')">Timer Control</button>
+  <div>
+    <button onclick="generateAutoResult()">Generate Auto Result</button>
     <button onclick="logout()">Logout</button>
   </div>
 
-  <div id="resultTab" class="tab-content active">
-    <button onclick="generateResult()">Generate Result</button>
-    <h3>Recent Rounds</h3>
-    <table>
-      <thead>
-        <tr><th>Round ID</th><th>Result</th><th>Time</th></tr>
-      </thead>
-      <tbody id="resultTable"></tbody>
-    </table>
+  <h3>Manual Result Control</h3>
+  <div>
+    <label for="manualRoundId">Round ID:</label>
+    <input type="text" id="manualRoundId" placeholder="Enter Round ID" />
+
+    <label for="manualColor">Color:</label>
+    <select id="manualColor">
+      <option value="">Select Color</option>
+      <option value="Red">Red</option>
+      <option value="Green">Green</option>
+      <option value="Violet">Violet</option>
+    </select>
+
+    <label for="manualNumber">Number:</label>
+    <select id="manualNumber">
+      <option value="">Select Number</option>
+      ${[...Array(10).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
+    </select>
+
+    <button onclick="setManualResult()">Set Manual Result</button>
   </div>
 
-  <div id="profitTab" class="tab-content">
-    <h3>Profit/Loss Summary</h3>
-    <button onclick="fetchProfitLoss()">Refresh</button>
-    <p>Total Bets: <span id="totalBets">0</span></p>
-    <p>Total Payouts: <span id="totalPayouts">0</span></p>
-    <p>Platform Profit: <span id="platformProfit">0</span></p>
-  </div>
-
-  <div id="timerTab" class="tab-content">
-    <h3>Timer Control</h3>
-    <button onclick="startTimer()">Start Timer</button>
-    <button onclick="stopTimer()">Stop Timer</button>
-    <p>Timer Status: <span id="timerStatus">Stopped</span></p>
-  </div>
+  <h3>Recent Rounds</h3>
+  <table id="adminTable">
+    <thead>
+      <tr><th>Round ID</th><th>Color</th><th>Number</th><th>Time</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     const apiBase = 'https://wingo-backend-nqk5.onrender.com';
@@ -60,73 +51,64 @@
       window.location.href = 'login.html';
     }
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
-
-    async function generateResult() {
+    async function generateAutoResult() {
       try {
-        const res = await fetch(`${apiBase}/api/cron/generateResult`, { method: 'POST' });
+        const res = await fetch(`${apiBase}/api/cron/run`);
         const data = await res.json();
-        alert(data.message || 'Result generated');
-        loadResults();
-      } catch {
+        alert(data.message || 'Auto Result Generated');
+        loadRounds();
+      } catch (err) {
         alert('Error generating result');
       }
     }
 
-    async function loadResults() {
+    async function setManualResult() {
+      const roundId = document.getElementById('manualRoundId').value.trim();
+      const color = document.getElementById('manualColor').value;
+      const number = document.getElementById('manualNumber').value;
+
+      if (!roundId || !color || number === "") {
+        alert("Please fill all fields correctly");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${apiBase}/api/cron/admin/setResult`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roundId, color, number: parseInt(number) })
+        });
+
+        const data = await res.json();
+        alert(data.message || 'Manual Result Set');
+        loadRounds();
+      } catch (err) {
+        alert('Error setting manual result');
+      }
+    }
+
+    async function loadRounds() {
       try {
         const res = await fetch(`${apiBase}/api/rounds`);
-        const rounds = await res.json();
-        const rows = rounds.slice(-10).reverse().map(r => `
-          <tr>
-            <td>${r.roundId || '-'}</td>
-            <td>${r.resultColor || '-'} ${r.resultNumber != null ? r.resultNumber : '-'}</td>
-            <td>${new Date(r.startTime).toLocaleTimeString()}</td>
-          </tr>`).join('');
-        document.getElementById('resultTable').innerHTML = rows;
-      } catch {
-        console.error('Error loading results');
-      }
-    }
-
-    async function fetchProfitLoss() {
-      try {
-        const res = await fetch(`${apiBase}/api/cron/profitLoss`);
         const data = await res.json();
-        document.getElementById('totalBets').textContent = data.totalBets || 0;
-        document.getElementById('totalPayouts').textContent = data.totalPayouts || 0;
-        document.getElementById('platformProfit').textContent = data.platformProfit || 0;
-      } catch {
-        alert('Error fetching profit/loss');
+
+        const rows = data.slice(-20).reverse().map(round => `
+          <tr>
+            <td>${round.roundId || '-'}</td>
+            <td>${round.resultColor || '-'}</td>
+            <td>${round.resultNumber != null ? round.resultNumber : '-'}</td>
+            <td>${new Date(round.startTime).toLocaleTimeString()}</td>
+          </tr>
+        `).join('');
+
+        document.querySelector('#adminTable tbody').innerHTML = rows;
+      } catch (err) {
+        console.error(err);
       }
     }
 
-    async function startTimer() {
-      try {
-        await fetch(`${apiBase}/api/timer/start`, { method: 'POST' });
-        document.getElementById('timerStatus').textContent = 'Running';
-      } catch {
-        alert('Failed to start timer');
-      }
-    }
-
-    async function stopTimer() {
-      try {
-        await fetch(`${apiBase}/api/timer/stop`, { method: 'POST' });
-        document.getElementById('timerStatus').textContent = 'Stopped';
-      } catch {
-        alert('Failed to stop timer');
-      }
-    }
-
-    // Initial Load
-    loadResults();
-    setInterval(loadResults, 10000);
+    loadRounds();
+    setInterval(loadRounds, 10000);
   </script>
 </body>
 </html>
