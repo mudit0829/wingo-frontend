@@ -4,22 +4,38 @@
   <meta charset="UTF-8">
   <title>WinGo Admin</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
+    button { margin: 5px; padding: 10px 20px; border: none; background: #1e90ff; color: white; cursor: pointer; border-radius: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #444; padding: 8px; text-align: center; }
+    .pagination { margin-top: 10px; }
+    .pagination button { padding: 5px 10px; background: #444; }
+  </style>
 </head>
 <body>
+
   <h2>WinGo Admin Panel</h2>
 
   <div>
     <button onclick="generateResult()">Generate Result</button>
+    <button onclick="startTimer()">Start Timer</button>
     <button onclick="logout()">Logout</button>
   </div>
 
   <h3>Recent Rounds</h3>
   <table id="adminTable">
     <thead>
-      <tr><th>Round ID</th><th>Result</th><th>Time</th></tr>
+      <tr><th>Round ID</th><th>Result Color</th><th>Result Number</th><th>Timestamp</th></tr>
     </thead>
     <tbody></tbody>
   </table>
+
+  <div class="pagination">
+    <button onclick="prevPage()">Prev</button>
+    <span id="pageIndicator">Page 1</span>
+    <button onclick="nextPage()">Next</button>
+  </div>
 
   <script>
     const token = localStorage.getItem('token');
@@ -27,6 +43,10 @@
     const apiBase = 'https://wingo-backend-nqk5.onrender.com';
 
     if (role !== 'admin') window.location.href = 'login.html';
+
+    let allRounds = [];
+    let currentPage = 0;
+    const pageSize = 10;
 
     function logout() {
       localStorage.clear();
@@ -37,40 +57,76 @@
       try {
         const res = await fetch(`${apiBase}/api/cron/generateResult`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
         const data = await res.json();
         alert(data.message || 'Result generated');
-        loadRounds();
+        await loadRounds();
       } catch (err) {
+        console.error(err);
         alert('Error generating result');
       }
+    }
+
+    function startTimer() {
+      alert('Start Timer clicked (Implement backend API if needed)');
+      // Future API Call can be added here.
     }
 
     async function loadRounds() {
       try {
         const res = await fetch(`${apiBase}/api/rounds`);
-        const data = await res.json();
-
-        const rows = data.slice(-10).reverse().map(round => `
-          <tr>
-            <td>${round.roundId || '-'}</td>
-            <td>${round.result ?? '-'}</td>
-            <td>${new Date(round.timestamp).toLocaleTimeString()}</td>
-          </tr>
-        `).join('');
-
-        document.querySelector('#adminTable tbody').innerHTML = rows;
+        allRounds = await res.json();
+        currentPage = 0; // Always start from latest page
+        renderRoundsTable();
       } catch (err) {
         console.error(err);
       }
     }
 
+    function renderRoundsTable() {
+      const tbody = document.querySelector('#adminTable tbody');
+      tbody.innerHTML = '';
+
+      const start = currentPage * pageSize;
+      const pageRounds = allRounds.slice(start, start + pageSize);
+
+      pageRounds.forEach(round => {
+        const resultColor = round.resultColor || '-';
+        const resultNumber = round.resultNumber != null ? round.resultNumber : '-';
+        const timestamp = new Date(round.startTime).toLocaleString();
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${round.roundId?.slice(-5) || '-'}</td>
+            <td>${resultColor}</td>
+            <td>${resultNumber}</td>
+            <td>${timestamp}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('pageIndicator').textContent = `Page ${currentPage + 1}`;
+    }
+
+    function nextPage() {
+      if ((currentPage + 1) * pageSize < allRounds.length) {
+        currentPage++;
+        renderRoundsTable();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        renderRoundsTable();
+      }
+    }
+
     loadRounds();
-    setInterval(loadRounds, 10000);
+    setInterval(loadRounds, 10000); // Auto-refresh every 10 seconds
   </script>
+
 </body>
 </html>
