@@ -33,12 +33,14 @@
   <div id="resultControl" class="tabContent">
     <h2>Manual Result Control</h2>
     <input type="text" id="roundIdInput" placeholder="Round ID">
-    <select id="colorInput">
+    <select id="colorInput" onchange="adjustNumberOptions()">
       <option value="Red">Red</option>
       <option value="Green">Green</option>
       <option value="Violet">Violet</option>
     </select>
-    <input type="number" id="numberInput" placeholder="Number (0-9)" min="0" max="9">
+    <select id="numberInput">
+      <!-- Options will be populated dynamically -->
+    </select>
     <button onclick="submitManualResult()">Set Result</button>
     <div id="manualResultMessage"></div>
   </div>
@@ -141,24 +143,59 @@ async function stopTimer() {
   alert('Timer Stopped');
 }
 
+function adjustNumberOptions() {
+  const color = document.getElementById('colorInput').value;
+  const numberInput = document.getElementById('numberInput');
+  numberInput.innerHTML = '';  // Clear current options
+
+  let numbers = [];
+  if (color === 'Violet') numbers = [0,5];
+  else if (color === 'Red') numbers = [1,3,7,9];
+  else if (color === 'Green') numbers = [2,4,6,8];
+
+  numbers.forEach(num => {
+    const option = document.createElement('option');
+    option.value = num;
+    option.text = num;
+    numberInput.appendChild(option);
+  });
+}
+
 async function submitManualResult() {
   const roundId = document.getElementById('roundIdInput').value;
   const resultColor = document.getElementById('colorInput').value;
   const resultNumber = parseInt(document.getElementById('numberInput').value);
 
-  const res = await fetch(`${apiBaseUrl}/api/admin/manualResult`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roundId, resultColor, resultNumber })
-  });
+  if (!roundId || isNaN(resultNumber)) {
+    alert('Please provide valid Round ID and Number');
+    return;
+  }
 
-  const data = await res.json();
-  document.getElementById('manualResultMessage').innerText = data.message || 'Result Updated';
-  fetchRecentRounds();
+  const payload = { roundId, resultColor, resultNumber };
+
+  try {
+    const res = await fetch(`${apiBaseUrl}/api/admin/manualResult`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('manualResultMessage').innerText = data.message || 'Result Set Successfully';
+      fetchRecentRounds();
+    } else {
+      document.getElementById('manualResultMessage').innerText = data.message || 'Failed to set result';
+    }
+  } catch (error) {
+    console.error(error);
+    document.getElementById('manualResultMessage').innerText = 'Server Error';
+  }
 }
 
 fetchRecentRounds();
 loadUpcomingRounds();
+adjustNumberOptions();
 </script>
 
 </body>
