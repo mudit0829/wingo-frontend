@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BDG Game</title>
+  <link rel="stylesheet" href="style.css"> <!-- We'll keep CSS separate for clarity -->
+</head>
+<body>
+
+  <header class="header">
+    <img src="assets/logo.webp" alt="BDG GAME" class="logo">
+    <div class="wallet-balance">
+      ₹<span id="walletAmount">0.00</span>
+    </div>
+  </header>
+
+  <section class="wallet-actions">
+    <button class="btn-withdraw">Withdraw</button>
+    <button class="btn-deposit">Deposit</button>
+  </section>
+
+  <section class="round-info">
+    <div class="round-id">
+      <span id="roundId">20250806100050361</span>
+    </div>
+    <div class="timer">
+      <span id="timer">00:30</span>
+    </div>
+  </section>
+
+  <section class="color-buttons">
+    <button class="btn-color green" onclick="selectColor('Green')">Green</button>
+    <button class="btn-color violet" onclick="selectColor('Violet')">Violet</button>
+    <button class="btn-color red" onclick="selectColor('Red')">Red</button>
+  </section>
+
+  <section class="number-grid" id="numberGrid">
+    <!-- JS will render numbers 0-9 here dynamically -->
+  </section>
+
+  <section class="bet-controls">
+    <button class="btn-random">Random</button>
+    <div class="multiplier-buttons">
+      <button>x1</button>
+      <button>x5</button>
+      <button>x10</button>
+      <button>x20</button>
+      <button>x50</button>
+      <button>x100</button>
+    </div>
+    <div class="big-small-buttons">
+      <button class="btn-big">Big</button>
+      <button class="btn-small">Small</button>
+    </div>
+  </section>
+
+  <section class="history-section">
+    <div class="history-tabs">
+      <button onclick="showGameHistory()">Game History</button>
+      <button onclick="showChart()">Chart</button>
+      <button onclick="showMyHistory()">My History</button>
+    </div>
+
+    <div class="history-table" id="historyTable">
+      <!-- JS will render history table here -->
+    </div>
+
+    <div class="pagination">
+      <button onclick="prevHistoryPage()">⬅️</button>
+      <button onclick="nextHistoryPage()">➡️</button>
+    </div>
+  </section>
+
+<script src="game.js"></script>
+</body>
+</html>
